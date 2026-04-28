@@ -1,4 +1,26 @@
 <script setup lang="ts">
+const route = useRoute();
+const isDebug = computed(() => route.query.debug !== undefined);
+
+interface DebugInfo {
+ ok: boolean;
+ keys: Record<string, boolean>;
+ nodeEnv: string;
+ timestamp: string;
+}
+const debugInfo = ref<DebugInfo | null>(null);
+const debugError = ref("");
+
+const loadDebug = async () => {
+ try {
+  debugInfo.value = await $fetch<DebugInfo>("/api/contact/debug");
+ } catch (err: any) {
+  debugError.value =
+   err?.statusMessage || err?.message || "Failed to load debug info.";
+ }
+};
+if (isDebug.value) loadDebug();
+
 const form = reactive({
  name: "",
  email: "",
@@ -10,6 +32,7 @@ const form = reactive({
 const isSubmitting = ref(false);
 const submitted = ref(false);
 const errorMessage = ref("");
+const lastErrorStatus = ref<number | null>(null);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -23,6 +46,7 @@ const isValid = computed(
 const handleSubmit = async () => {
  if (!isValid.value || isSubmitting.value) return;
  errorMessage.value = "";
+ lastErrorStatus.value = null;
  isSubmitting.value = true;
  try {
   await $fetch("/api/contact", {
@@ -31,10 +55,12 @@ const handleSubmit = async () => {
   });
   submitted.value = true;
  } catch (err: any) {
+  lastErrorStatus.value = err?.statusCode || err?.response?.status || null;
   errorMessage.value =
    err?.statusMessage ||
    err?.data?.statusMessage ||
    "Something went wrong. Please try again.";
+  if (isDebug.value) loadDebug();
  } finally {
   isSubmitting.value = false;
  }
@@ -53,6 +79,57 @@ useSeoMeta({
    Have a question or commission in mind? Send us a message and we'll get back
    to you within 1–2 business days.
   </p>
+
+  <!-- Debug panel: only shown when ?debug is in the URL -->
+  <div
+   v-if="isDebug"
+   class="mb-8 p-4 border border-yellow-300 bg-yellow-50 text-yellow-900 rounded-lg text-sm font-mono dark:bg-yellow-900/20 dark:border-yellow-700 dark:text-yellow-100"
+  >
+   <div class="flex items-center justify-between mb-2">
+    <strong class="font-bold">Contact form debug</strong>
+    <button type="button" class="underline cursor-pointer" @click="loadDebug">
+     Refresh
+    </button>
+   </div>
+   <div v-if="debugError" class="text-red-600 dark:text-red-400">
+    Debug endpoint error: {{ debugError }}
+   </div>
+   <div v-else-if="debugInfo">
+    <div>
+     Overall:
+     <span
+      :class="
+       debugInfo.ok
+        ? 'text-green-700 dark:text-green-400'
+        : 'text-red-700 dark:text-red-400'
+      "
+     >
+      {{
+       debugInfo.ok ? "✓ all required env vars are set" : "✗ missing env vars"
+      }}
+     </span>
+    </div>
+    <div>NODE_ENV: {{ debugInfo.nodeEnv }}</div>
+    <div>Server time: {{ debugInfo.timestamp }}</div>
+    <ul class="mt-2">
+     <li v-for="(present, key) in debugInfo.keys" :key="key">
+      <span
+       :class="
+        present
+         ? 'text-green-700 dark:text-green-400'
+         : 'text-red-700 dark:text-red-400'
+       "
+       >{{ present ? "✓" : "✗" }}</span
+      >
+      {{ key }}
+     </li>
+    </ul>
+    <div v-if="lastErrorStatus" class="mt-2">
+     Last submit error status: <strong>{{ lastErrorStatus }}</strong>
+    </div>
+   </div>
+   <div v-else>Loading…</div>
+  </div>
 
   <div
    v-if="submitted"
