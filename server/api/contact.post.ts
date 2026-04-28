@@ -11,14 +11,6 @@ interface ContactPayload {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const escapeHtml = (s: string) =>
- s
-  .replace(/&/g, "&amp;")
-  .replace(/</g, "&lt;")
-  .replace(/>/g, "&gt;")
-  .replace(/"/g, "&quot;")
-  .replace(/'/g, "&#39;");
-
 export default defineEventHandler(async (event) => {
  const config = useRuntimeConfig();
 
@@ -26,7 +18,8 @@ export default defineEventHandler(async (event) => {
   !config.sendgridApiKey ||
   !config.contactFromEmail ||
   !config.contactRecipientEmail ||
-  !config.sendgridAutoreplyTemplateId
+  !config.sendgridAutoreplyTemplateId ||
+  !config.sendgridNotificationTemplateId
  ) {
   throw createError({
    statusCode: 500,
@@ -71,18 +64,15 @@ export default defineEventHandler(async (event) => {
 
  const notification = {
   to: config.contactRecipientEmail,
-  from: config.contactFromEmail,
+  from: { email: config.contactFromEmail, name: "Lilies of the Field" },
   replyTo: { email, name },
-  subject: `[Contact] ${subjectLine}`,
-  text: `New contact form submission\n\nName: ${name}\nEmail: ${email}\nSubject: ${subjectLine}\n\nMessage:\n${message}\n`,
-  html: `
-      <h2>New contact form submission</h2>
-      <p><strong>Name:</strong> ${escapeHtml(name)}</p>
-      <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-      <p><strong>Subject:</strong> ${escapeHtml(subjectLine)}</p>
-      <p><strong>Message:</strong></p>
-      <p style="white-space:pre-wrap">${escapeHtml(message)}</p>
-    `,
+  templateId: config.sendgridNotificationTemplateId,
+  dynamicTemplateData: {
+   name,
+   email,
+   subject: subjectLine,
+   message,
+  },
  };
 
  const autoReply = {
