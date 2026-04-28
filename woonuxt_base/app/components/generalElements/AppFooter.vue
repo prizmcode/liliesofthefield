@@ -89,8 +89,7 @@ const { wishlistLink } = useAuth();
     <div class="container border-t border-gray-200 dark:border-gray-700 flex items-center justify-center mb-4">
       <div class="copywrite">
         <p class="py-4 text-xs text-center text-gray-600 dark:text-gray-400">
-          <a href="https://woonuxt.com" :title="`WooNuxt v${wooNuxtVersionInfo}`">{{ `WooNuxt v${wooNuxtVersionInfo}` }}</a> - by
-          <a href="https://scottyzen.com" title="Scott Kennedy - Web Developer" target="_blank">Scott Kennedy</a>
+          Website by <a href="https://prizmstudio.com" title="Prizm Studio">Prizm Studio</a>
         </p>
       </div>
       <SocialIcons class="ml-auto" />

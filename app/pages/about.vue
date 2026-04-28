@@ -4,7 +4,7 @@
   <h2 class="font-display text-3xl">This is where the story begins.</h2>
   <p>Lilies of the Field is the result of a life of interest in the arts.</p>
   <div class="content-section">
-   <div class="flex-1">
+   <div class="flex-1 p-8">
     <h2 class="font-display text-4xl">Calligraphy</h2>
     <p>
      As a child, our family hosted many different Japanese exchange students in
@@ -36,7 +36,7 @@
   </div>
 
   <div class="content-section">
-   <div class="flex-1">
+   <div class="flex-1 p-8">
     <h2 class="font-display text-4xl">Portraits</h2>
     <p>
      When I was a kid, I was referred to as 'that weird girl that doesn't talk
@@ -60,7 +60,7 @@
   </div>
 
   <div class="content-section">
-   <div class="flex-1">
+   <div class="flex-1 p-8">
     <h2 class="font-display text-4xl">Florals</h2>
     <p>
      Fresh or dried, flowers are God's way of smiling. Whether arranging or
