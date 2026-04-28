@@ -19,12 +19,9 @@ const { wishlistLink } = useAuth();
       <div class="w-[42.857%] lg:w-auto">
         <div class="mb-1 font-semibold text-gray-900 dark:text-white">{{ $t('general.information') }}</div>
         <div class="text-sm text-gray-700 dark:text-gray-300">
-          <a class="py-1.5 block" href="https://github.com/scottyzen/woonuxt?tab=readme-ov-file#next-generation-front-end-for-woocommerce" target="_blank">{{
-            $t('general.about')
-          }}</a>
-          <a href="/" class="py-1.5 block">{{ $t('general.careers') }}</a>
-          <a href="/" class="py-1.5 block">{{ $t('general.press') }}</a>
-          <a href="https://woonuxt.com/faq" class="py-1.5 block" rel="noreferrer" target="_blank">FAQ's</a>
+          <a class="py-1.5 block" href="/about" target="_blank">{{ $t('general.about') }}</a>
+
+          <a href="/faq" class="py-1.5 block" rel="noreferrer" target="_blank">FAQ's</a>
         </div>
       </div>
       <div class="w-[42.857%] lg:w-auto">
@@ -48,7 +45,6 @@ const { wishlistLink } = useAuth();
               <a href="/products?orderby=rating&order=ASC&filter=rating[1]" class="py-1.5 block">{{ $t('shop.topRated') }}</a>
             </template>
           </ClientOnly>
-          <a href="/" class="py-1.5 block">{{ $t('shop.giftCards') }}</a>
         </div>
       </div>
       <div class="w-[42.857%] lg:w-auto">
@@ -60,9 +56,9 @@ const { wishlistLink } = useAuth();
               <a href="/contact" class="py-1.5 block">{{ $t('general.contactUs') }}</a>
             </template>
           </ClientOnly>
-          <a href="/" class="py-1.5 block">{{ $t('general.shippingReturns') }}</a>
-          <a href="/" class="py-1.5 block">{{ $t('general.privacyPolicy') }}</a>
-          <a href="/" class="py-1.5 block">{{ $t('general.termsConditions') }}</a>
+          <a href="/shipping-returns" class="py-1.5 block">{{ $t('general.shippingReturns') }}</a>
+          <a href="/privacy-policy" class="py-1.5 block">{{ $t('general.privacyPolicy') }}</a>
+          <a href="/terms-conditions" class="py-1.5 block">{{ $t('general.termsConditions') }}</a>
         </div>
       </div>
       <div class="w-[42.857%] lg:w-auto">

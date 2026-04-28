@@ -4,10 +4,12 @@
  * Below are the default values.
  */
 export default defineAppConfig({
-  siteName: 'WooNuxt',
-  shortDescription: 'This is an example of a WooNuxt store. It provides a modern, fast, and SEO friendly ecommerce store built with Nuxt and WooCommerce.',
-  description: `WooNuxt is unmatched when it comes to performance and scalability. Reap the benefits of having a online store that out performs all of your competitors. You can edit components to display your own information just like the one you're reading now.`,
-  baseUrl: 'https://v3.woonuxt.com',
+  siteName: 'Lilies of the Field',
+  shortDescription:
+    'Lilies of the Field is a curated creative studio specializing in calligraphy, original artwork, and handcrafted ceramics. Combining timeless elegance with organic beauty, we create mindful, intentional pieces designed to bring warmth and elevated artistry into the home.',
+  description: `Lilies of the Field is a curated creative studio specializing in calligraphy, original artwork, and handcrafted ceramics designed to bring intentional beauty into everyday life. 
+From custom, hand-lettered commissions for special occasions to thoughtful, handcrafted ceramic pieces and original paintings, every item is designed and produced with meticulous care. `,
+  baseUrl: 'https://liliesofthefield.co',
   siteImage: 'https://user-images.githubusercontent.com/5116925/218879668-f4c1f9fd-bef4-44b0-bc7f-e87d994aa3a1.png',
   stripePaymentMethod: 'payment', // 'card' or 'payment'
   // Stripe Payment Method Options:
