@@ -37,6 +37,10 @@ export default defineNuxtConfig({
   css: [resolve('./app/assets/css/main.css')],
 
   runtimeConfig: {
+    sendgridApiKey: process.env.SENDGRID_API_KEY || '',
+    contactFromEmail: process.env.CONTACT_FROM_EMAIL || '',
+    contactRecipientEmail: process.env.CONTACT_RECIPIENT_EMAIL || '',
+    sendgridAutoreplyTemplateId: process.env.SENDGRID_AUTOREPLY_TEMPLATE_ID || '',
     public: {
       'graphql-client': {
         clients: {

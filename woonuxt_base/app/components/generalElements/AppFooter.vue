@@ -7,9 +7,9 @@ const { wishlistLink } = useAuth();
   <footer class="bg-white dark:bg-gray-800 order-last">
     <div class="container flex flex-wrap justify-between gap-12 my-24 md:gap-24">
       <div class="mr-auto">
-        <Logo />
-        <WebsiteShortDescription />
-        <div class="inline-flex gap-2 justify-start mt-8">
+        <div class="max-w-[300px] mx-auto"><Logo /></div>
+        <div class="text-center"><WebsiteShortDescription /></div>
+        <div class="inline-flex gap-2 justify-center mt-8 mx-auto text-center">
           <LangSwitcher />
           <ClientOnly>
             <ColorModeSwitcher />
