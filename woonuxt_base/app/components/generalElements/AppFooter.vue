@@ -9,7 +9,7 @@ const { wishlistLink } = useAuth();
       <div class="mr-auto">
         <div class="max-w-[300px] mx-auto"><Logo /></div>
         <div class="text-center"><WebsiteShortDescription /></div>
-        <div class="inline-flex gap-2 justify-center mt-8 mx-auto text-center">
+        <div class="flex gap-2 justify-center mt-8 mx-auto text-center">
           <LangSwitcher />
           <ClientOnly>
             <ColorModeSwitcher />
@@ -19,9 +19,18 @@ const { wishlistLink } = useAuth();
       <div class="w-[42.857%] lg:w-auto">
         <div class="mb-1 font-semibold text-gray-900 dark:text-white">{{ $t('general.information') }}</div>
         <div class="text-sm text-gray-700 dark:text-gray-300">
-          <a class="py-1.5 block" href="/about" target="_blank">{{ $t('general.about') }}</a>
-
-          <a href="/faq" class="py-1.5 block" rel="noreferrer" target="_blank">FAQ's</a>
+          <ClientOnly>
+            <NuxtLink to="/about" class="py-1.5 block">{{ $t('general.about') }}</NuxtLink>
+            <template #fallback>
+              <a href="/about" class="py-1.5 block">{{ $t('general.about') }}</a>
+            </template>
+          </ClientOnly>
+          <ClientOnly>
+            <NuxtLink to="/faq" class="py-1.5 block">FAQ's</NuxtLink>
+            <template #fallback>
+              <a href="/faq" class="py-1.5 block">FAQ's</a>
+            </template>
+          </ClientOnly>
         </div>
       </div>
       <div class="w-[42.857%] lg:w-auto">
@@ -86,10 +95,14 @@ const { wishlistLink } = useAuth();
         </div>
       </div>
     </div>
-    <div class="container border-t border-gray-200 dark:border-gray-700 flex items-center justify-center mb-4">
+    <div
+      class="bg-linear-to-b from-gray-200 to-gray-300 text-center p-4 my-4 text-gray-400 uppercase dark:text-white dark:from-gray-600 dark:to-gray-800 text-sm md:text-base">
+      10% of all proceeds donated to <a href="https://www.atlasfree.org/">Atlas Free</a>
+    </div>
+    <div class="container dark:border-gray-700 flex items-center justify-center mb-8">
       <div class="copywrite">
-        <p class="py-4 text-xs text-center text-gray-600 dark:text-gray-400">
-          Website by <a href="https://prizmstudio.com" title="Prizm Studio">Prizm Studio</a>
+        <p class="py-4 text-xs text-center text-gray-400 dark:text-gray-400">
+          Website Design & Development by <a href="https://prizmstudio.com" title="Prizm Studio">Prizm Studio</a>
         </p>
       </div>
       <SocialIcons class="ml-auto" />

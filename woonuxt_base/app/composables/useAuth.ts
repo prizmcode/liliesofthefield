@@ -143,9 +143,13 @@ export const useAuth = () => {
       const errorMsg = getErrorMessage(error);
       return { success: false, error: errorMsg };
     } finally {
-      if (router.currentRoute.value.path === '/my-account' && viewer.value === null) {
+      const currentPath = router.currentRoute.value.path;
+      const protectedPrefixes = ['/my-account', '/checkout', '/wishlist', '/order-summary'];
+      const isOnProtectedRoute = protectedPrefixes.some((p) => currentPath === p || currentPath.startsWith(`${p}/`));
+
+      if (currentPath === '/my-account' && viewer.value === null) {
         router.push('/my-account');
-      } else {
+      } else if (isOnProtectedRoute) {
         router.push('/');
       }
     }

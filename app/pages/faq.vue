@@ -60,11 +60,11 @@ useSeoMeta({
     :value="`item-${idx}`"
     class="group"
    >
-    <AccordionHeader>
+    <AccordionHeader class="bg-white px-6">
      <AccordionTrigger
-      class="flex w-full items-center justify-between gap-4 py-5 text-left text-lg font-medium hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm cursor-pointer"
+      class="flex w-full items-center justify-between gap-4 py-2 text-left text-lg font-medium hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm cursor-pointer"
      >
-      <span>{{ item.q }}</span>
+      <span class="font-bold text-lg">{{ item.q }}</span>
       <Icon
        name="ion:chevron-down"
        size="20"
@@ -72,7 +72,7 @@ useSeoMeta({
       />
      </AccordionTrigger>
     </AccordionHeader>
-    <AccordionContent class="accordion-content overflow-hidden">
+    <AccordionContent class="accordion-content overflow-hidden p-8 bg-gray-200">
      <p class="pb-5 pr-8 text-gray-600 dark:text-gray-300 leading-relaxed">
       {{ item.a }}
      </p>

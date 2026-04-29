@@ -15,12 +15,24 @@ h4 {
   @apply py-4;
 }
 
+header a {
+  @apply leading-1.5 tracking-widest;
+}
 @layer base {
   strong {
     font-weight: 700;
   }
 }
+.page {
+  @apply py-8 px-4 md:px-8;
+}
 
+.page h1 {
+  @apply text-4xl md:text-6xl font-display text-center md:text-left;
+}
+.page h2 {
+  @apply font-display text-3xl md:text-4xl;
+}
 @theme {
   /* Primary Color Shades */
   --color-primary: var(--color-primary, #7f54b2);

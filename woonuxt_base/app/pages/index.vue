@@ -41,14 +41,7 @@ useSeoMeta({
       </div>
     </section>
 
-    <section class="container grid gap-4 my-24 md:grid-cols-2 lg:grid-cols-4">
-      <div class="flex items-center gap-8 p-8 bg-white dark:bg-gray-800 rounded-lg">
-        <img src="/icons/box.svg" width="60" height="60" alt="Free Shipping" loading="lazy" />
-        <div>
-          <h3 class="text-xl font-semibold dark:text-white">Free Shipping</h3>
-          <p class="text-sm dark:text-gray-300">Free shipping on order over €50</p>
-        </div>
-      </div>
+    <section class="container grid gap-4 my-24 md:grid-cols-3">
       <div class="flex items-center gap-8 p-8 bg-white dark:bg-gray-800 rounded-lg">
         <img src="/icons/moneyback.svg" width="60" height="60" alt="Money Back" loading="lazy" />
         <div>
