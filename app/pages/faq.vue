@@ -14,12 +14,12 @@ interface FaqItem {
 
 const faqs: FaqItem[] = [
  {
-  q: "Do you take custom calligraphy commissions?",
-  a: "Yes — I love working on bespoke pieces for weddings, gifts, and personal scriptures. Reach out via the contact page with the wording, size, and any timing details and we'll go from there.",
+  q: "Do you take custom commissions?",
+  a: "Yes — I love working on bespoke calligraphy, original artwork, and portraits for weddings, gifts, and personal scriptures. Reach out via the contact page with the subject, size, and any timing details and we'll go from there.",
  },
  {
   q: "How long does a custom piece take?",
-  a: "Most calligraphy commissions are completed within 2–3 weeks of confirmation. Larger ceramic pieces or paintings can take 4–6 weeks depending on drying, firing, and finishing time.",
+  a: "Most calligraphy commissions are completed within 2–3 weeks of confirmation. Original artwork and portraits typically take 4–6 weeks depending on size, complexity, and reference materials.",
  },
  {
   q: "Do you ship internationally?",
@@ -30,8 +30,8 @@ const faqs: FaqItem[] = [
   a: "Because each piece is handmade, we don't accept returns on custom or commissioned work. For non-custom items, returns are accepted within 14 days of delivery in original condition.",
  },
  {
-  q: "Are your ceramics food-safe?",
-  a: "All glazed pieces marked as food-safe use lead-free, dishwasher-safe glazes.",
+  q: "How should I care for my original artwork?",
+  a: "Keep pieces out of direct sunlight and away from high-humidity areas to preserve color and paper. For framed artwork, dust the glass with a soft, dry cloth — avoid spraying cleaners directly on the frame.",
  },
 ];
 

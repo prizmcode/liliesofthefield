@@ -5,7 +5,7 @@ const { isShowingMobileMenu, toggleMobileMenu, addBodyClass, removeBodyClass } =
 const { siteName } = useAppConfig();
 const config = useRuntimeConfig();
 
-const primaryColor = computed(() => config.public.PRIMARY_COLOR || '#7f54b2');
+const primaryColor = computed(() => config.public.PRIMARY_COLOR || '#925200');
 
 const closeCartAndMenu = () => {
   toggleCart(false);

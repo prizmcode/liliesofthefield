@@ -33,9 +33,12 @@ header a {
 .page h2 {
   @apply font-display text-3xl md:text-4xl;
 }
+a {
+  @apply hover:font-bold text-primary no-underline;
+}
 @theme {
   /* Primary Color Shades */
-  --color-primary: var(--color-primary, #7f54b2);
+  --color-primary: var(--color-primary, #925200);
   --color-primary-light: oklch(from var(--color-primary) calc(l + 0.15) c h);
   --color-primary-dark: oklch(from var(--color-primary) calc(l - 0.15) c h);
 
