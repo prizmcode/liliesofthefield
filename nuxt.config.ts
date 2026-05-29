@@ -4,6 +4,12 @@ export default defineNuxtConfig({
 
  components: [{ path: "./app/components", pathPrefix: false, priority: 10 }],
 
+ modules: ["nuxt-gtag"],
+
+ gtag: {
+  id: "G-L4PCRT3MWR",
+ },
+
  /**
   * Depending on your servers capabilities, you may need to adjust the following settings.
   * It will affect the build time but also increase the reliability of the build process.
