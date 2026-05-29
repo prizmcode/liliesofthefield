@@ -25,7 +25,7 @@
    </div>
    <div class="flex-1">
     <video
-     src="https://player.mediadelivery.net/play/672581/0e194d74-d308-4bfb-9211-1d480c0b1783"
+     src="https://vz-da671964-974.b-cdn.net/0e194d74-d308-4bfb-9211-1d480c0b1783/play_720p.mp4"
      autoplay
      muted
      loop
@@ -50,7 +50,7 @@
    </div>
    <div class="flex-1">
     <video
-     src="https://player.mediadelivery.net/play/672581/4a64c01e-2b84-405e-99b6-03a4a08076a0"
+     src="https://vz-da671964-974.b-cdn.net/4a64c01e-2b84-405e-99b6-03a4a08076a0/play_720p.mp4"
      autoplay
      muted
      loop
@@ -72,7 +72,7 @@
    </div>
    <div class="flex-1">
     <video
-     src="https://player.mediadelivery.net/play/672581/7124c9de-5338-4ede-a1bc-8ac8d1dcf077"
+     src="https://vz-da671964-974.b-cdn.net/7124c9de-5338-4ede-a1bc-8ac8d1dcf077/play_720p.mp4"
      autoplay
      muted
      loop
