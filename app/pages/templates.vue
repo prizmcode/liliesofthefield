@@ -1,0 +1,369 @@
+<script setup lang="ts">
+const PAGE_W = 215.9;
+const PAGE_H = 279.4;
+
+const margin = ref(12.7);
+const autoFill = ref(true);
+const numLines = ref(8);
+const ascenderH = ref(5);
+const xHeight = ref(5);
+const descenderH = ref(5);
+const lineGap = ref(10);
+const showSlant = ref(false);
+const slantAngle = ref(20);
+const slantSpacing = ref(10);
+
+const groupHeight = computed(
+ () => ascenderH.value + xHeight.value + descenderH.value,
+);
+const writingAreaW = computed(() => PAGE_W - margin.value * 2);
+const writingAreaH = computed(() => PAGE_H - margin.value * 2);
+
+const maxLines = computed(() => {
+ const denom = groupHeight.value + lineGap.value;
+ if (groupHeight.value <= 0 || denom <= 0) return 1;
+ return Math.max(1, Math.floor((writingAreaH.value + lineGap.value) / denom));
+});
+
+watchEffect(() => {
+ if (numLines.value > maxLines.value) numLines.value = maxLines.value;
+});
+
+const ruleGroups = computed(() => {
+ const groups: {
+  top: number;
+  waist: number;
+  baseline: number;
+  bottom: number;
+ }[] = [];
+ if (groupHeight.value <= 0) return groups;
+ const pageBottom = PAGE_H - margin.value;
+ let y = margin.value;
+ let count = 0;
+ while (y + groupHeight.value <= pageBottom) {
+  if (!autoFill.value && count >= numLines.value) break;
+  groups.push({
+   top: y,
+   waist: y + ascenderH.value,
+   baseline: y + ascenderH.value + xHeight.value,
+   bottom: y + groupHeight.value,
+  });
+  y += groupHeight.value + lineGap.value;
+  count++;
+ }
+ return groups;
+});
+
+const slantLines = computed(() => {
+ if (!showSlant.value) return [];
+ const lines: { x1: number; y1: number; x2: number; y2: number }[] = [];
+ const angleRad = (slantAngle.value * Math.PI) / 180;
+ const dx = -writingAreaH.value * Math.tan(angleRad);
+ const startX = margin.value - Math.max(dx, 0);
+ const endX = margin.value + writingAreaW.value - Math.min(dx, 0);
+ for (let x = startX; x <= endX; x += slantSpacing.value) {
+  lines.push({
+   x1: x,
+   y1: margin.value,
+   x2: x + dx,
+   y2: margin.value + writingAreaH.value,
+  });
+ }
+ return lines;
+});
+
+const settingsLabel = computed(() => {
+ const parts = [
+  `A ${ascenderH.value}mm`,
+  `X ${xHeight.value}mm`,
+  `D ${descenderH.value}mm`,
+  `Gap ${lineGap.value}mm`,
+  `Margin ${margin.value}mm`,
+ ];
+ if (showSlant.value)
+  parts.push(`Slant ${slantAngle.value}° @ ${slantSpacing.value}mm`);
+ parts.push(`${ruleGroups.value.length} lines`);
+ return parts.join(" · ");
+});
+
+useSeoMeta({
+ title: "Free Calligraphy Template Generator",
+ description:
+  "Design and print custom calligraphy practice sheets with adjustable x-height, ascender, descender, line spacing, and slant guides.",
+});
+
+function handlePrint() {
+ window.print();
+}
+</script>
+
+<template>
+ <div class="container my-12">
+  <div class="no-print">
+   <h1 class="mb-2 text-4xl font-display">Calligraphy Template Generator</h1>
+   <p class="mb-8 text-gray-600 dark:text-gray-300">
+    Design your practice sheet, then print at actual size on US Letter (8.5" ×
+    11") paper.
+   </p>
+  </div>
+
+  <div class="grid gap-8 lg:grid-cols-[320px_1fr]">
+   <aside class="space-y-5 no-print">
+    <div class="space-y-3">
+     <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+      <input v-model="autoFill" type="checkbox" />
+      <span>Auto-fill page</span>
+     </label>
+     <div v-if="!autoFill">
+      <label class="flex justify-between text-sm font-medium">
+       <span>Number of lines</span>
+       <span class="text-gray-500">{{ numLines }} / {{ maxLines }}</span>
+      </label>
+      <input
+       v-model.number="numLines"
+       type="range"
+       min="1"
+       :max="maxLines"
+       step="1"
+      />
+     </div>
+    </div>
+
+    <div>
+     <label class="flex justify-between text-sm font-medium">
+      <span>Ascender height</span>
+      <span class="text-gray-500">{{ ascenderH }} mm</span>
+     </label>
+     <input
+      v-model.number="ascenderH"
+      type="range"
+      min="0"
+      max="20"
+      step="0.5"
+     />
+    </div>
+
+    <div>
+     <label class="flex justify-between text-sm font-medium">
+      <span>X-height</span>
+      <span class="text-gray-500">{{ xHeight }} mm</span>
+     </label>
+     <input v-model.number="xHeight" type="range" min="2" max="25" step="0.5" />
+    </div>
+
+    <div>
+     <label class="flex justify-between text-sm font-medium">
+      <span>Descender height</span>
+      <span class="text-gray-500">{{ descenderH }} mm</span>
+     </label>
+     <input
+      v-model.number="descenderH"
+      type="range"
+      min="0"
+      max="20"
+      step="0.5"
+     />
+    </div>
+
+    <div>
+     <label class="flex justify-between text-sm font-medium">
+      <span>Space between lines</span>
+      <span class="text-gray-500">{{ lineGap }} mm</span>
+     </label>
+     <input v-model.number="lineGap" type="range" min="0" max="40" step="0.5" />
+    </div>
+
+    <div>
+     <label class="flex justify-between text-sm font-medium">
+      <span>Page margin</span>
+      <span class="text-gray-500">{{ margin }} mm</span>
+     </label>
+     <input v-model.number="margin" type="range" min="5" max="30" step="0.5" />
+    </div>
+
+    <div class="border-t border-gray-200 pt-5 space-y-4">
+     <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+      <input v-model="showSlant" type="checkbox" class="accent-current" />
+      <span>Show slant guides</span>
+     </label>
+
+     <template v-if="showSlant">
+      <div>
+       <label class="flex justify-between text-sm font-medium">
+        <span>Slant angle</span>
+        <span class="text-gray-500">{{ slantAngle }}°</span>
+       </label>
+       <input
+        v-model.number="slantAngle"
+        type="range"
+        min="0"
+        max="55"
+        step="1"
+       />
+      </div>
+      <div>
+       <label class="flex justify-between text-sm font-medium">
+        <span>Slant spacing</span>
+        <span class="text-gray-500">{{ slantSpacing }} mm</span>
+       </label>
+       <input
+        v-model.number="slantSpacing"
+        type="range"
+        min="3"
+        max="30"
+        step="0.5"
+       />
+      </div>
+     </template>
+    </div>
+
+    <button
+     type="button"
+     @click="handlePrint"
+     class="w-full px-6 py-3 font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-xl cursor-pointer"
+    >
+     Print
+    </button>
+   </aside>
+
+   <div class="calligraphy-print-area">
+    <svg
+     :viewBox="`0 0 ${PAGE_W} ${PAGE_H}`"
+     xmlns="http://www.w3.org/2000/svg"
+     class="w-full h-auto bg-white border border-gray-300 shadow-sm"
+     preserveAspectRatio="xMidYMid meet"
+    >
+     <defs>
+      <clipPath id="ruleGroupsClip">
+       <rect
+        v-for="(g, i) in ruleGroups"
+        :key="`clip-${i}`"
+        :x="margin"
+        :y="g.top"
+        :width="writingAreaW"
+        :height="g.bottom - g.top"
+       />
+      </clipPath>
+     </defs>
+     <g
+      v-if="showSlant"
+      clip-path="url(#ruleGroupsClip)"
+      stroke="#6b7280"
+      stroke-width="0.2"
+      stroke-dasharray="0.8,0.6"
+     >
+      <line
+       v-for="(l, i) in slantLines"
+       :key="`s-${i}`"
+       :x1="l.x1"
+       :y1="l.y1"
+       :x2="l.x2"
+       :y2="l.y2"
+      />
+     </g>
+     <g v-for="(g, i) in ruleGroups" :key="`g-${i}`">
+      <line
+       :x1="margin"
+       :y1="g.top"
+       :x2="PAGE_W - margin"
+       :y2="g.top"
+       stroke="#4b5563"
+       stroke-width="0.25"
+      />
+      <line
+       :x1="margin"
+       :y1="g.waist"
+       :x2="PAGE_W - margin"
+       :y2="g.waist"
+       stroke="#374151"
+       stroke-width="0.3"
+      />
+      <line
+       :x1="margin"
+       :y1="g.baseline"
+       :x2="PAGE_W - margin"
+       :y2="g.baseline"
+       stroke="#111827"
+       stroke-width="0.4"
+      />
+      <line
+       :x1="margin"
+       :y1="g.bottom"
+       :x2="PAGE_W - margin"
+       :y2="g.bottom"
+       stroke="#4b5563"
+       stroke-width="0.25"
+      />
+     </g>
+     <text
+      :x="margin"
+      :y="PAGE_H - margin / 2"
+      font-family="sans-serif"
+      font-size="2.2"
+      fill="#6b7280"
+     >
+      {{ settingsLabel }}
+     </text>
+     <text
+      :x="PAGE_W - margin"
+      :y="PAGE_H - margin / 2"
+      text-anchor="end"
+      font-family="sans-serif"
+      font-size="2.2"
+      fill="#6b7280"
+     >
+      Lilies of the Field Calligraphy Templates · liliesofthefield.co/templates
+     </text>
+    </svg>
+   </div>
+  </div>
+ </div>
+</template>
+
+<style scoped>
+@reference "#tailwind";
+
+input[type="range"] {
+ @apply w-full h-2 mt-2 bg-gray-200 rounded-lg appearance-none cursor-pointer;
+ accent-color: var(--color-primary);
+}
+</style>
+
+<style>
+@page {
+ size: letter portrait;
+ margin: 0;
+}
+
+@media print {
+ header,
+ footer,
+ .no-print {
+  display: none !important;
+ }
+ html,
+ body {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: white !important;
+ }
+ .calligraphy-print-area {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 8.5in !important;
+  height: 11in !important;
+  page-break-after: avoid !important;
+  page-break-inside: avoid !important;
+ }
+ .calligraphy-print-area svg {
+  display: block !important;
+  width: 8.5in !important;
+  height: 11in !important;
+  border: none !important;
+  box-shadow: none !important;
+ }
+}
+</style>

@@ -1,8 +1,6 @@
 <template>
  <div class="container mx-auto page">
   <h1>About Us.</h1>
-  <h2>This is where the story begins.</h2>
-  <p>Lilies of the Field is the result of a life of interest in the arts.</p>
   <div class="content-section">
    <div class="flex-1">
     <h2>Calligraphy</h2>
