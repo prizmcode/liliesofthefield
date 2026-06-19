@@ -20,8 +20,10 @@
   "@stripe/stripe-js": "^8.11.0",
   "@tailwindcss/postcss": "^4.2.2",
   "@vueuse/core": "^14.2.1",
+  "jspdf": "^4.2.1",
   "nuxt-gtag": "^4.1.0",
   "reka-ui": "^2.9.2",
+  "svg2pdf.js": "^2.7.0",
   "tailwind-merge": "^3.5.0",
   "tailwindcss": "^4.2.2"
  },

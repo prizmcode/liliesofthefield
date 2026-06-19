@@ -87,13 +87,62 @@ const settingsLabel = computed(() => {
 });
 
 useSeoMeta({
- title: "Free Calligraphy Template Generator",
+ title: "Calligraphy Template Generator",
  description:
   "Design and print custom calligraphy practice sheets with adjustable x-height, ascender, descender, line spacing, and slant guides.",
 });
 
+const svgEl = ref<SVGSVGElement | null>(null);
+const logoDataUrl = ref<string | null>(null);
+const LOGO_SIZE = 16;
+const LOGO_GAP = 1.2;
+
+const logoX = computed(() => PAGE_W - margin.value - LOGO_SIZE);
+const logoY = computed(() => PAGE_H - margin.value / 2 - LOGO_SIZE / 2 - 0.4);
+const brandingTextX = computed(
+ () => PAGE_W - margin.value - LOGO_SIZE - LOGO_GAP,
+);
+
+onMounted(() => {
+ const img = new Image();
+ img.onload = () => {
+  const canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  canvas.getContext("2d")?.drawImage(img, 0, 0);
+  logoDataUrl.value = canvas.toDataURL("image/png");
+ };
+ // change when actual logo is done
+ img.src = "/liliesofthefield.webp";
+});
+
 function handlePrint() {
  window.print();
+}
+
+function buildFilename() {
+ const slug = settingsLabel.value
+  .replace(/·/g, "-")
+  .replace(/[°@]/g, "")
+  .replace(/[^a-zA-Z0-9-]+/g, "-")
+  .replace(/-+/g, "-")
+  .replace(/^-|-$/g, "");
+ return `Calligraphy-Template-${slug}.pdf`;
+}
+
+async function handleDownloadPdf() {
+ if (!svgEl.value) return;
+ const [{ jsPDF }, { svg2pdf }] = await Promise.all([
+  import("jspdf"),
+  import("svg2pdf.js"),
+ ]);
+ const pdf = new jsPDF({
+  orientation: "portrait",
+  unit: "mm",
+  format: "letter",
+ });
+ await svg2pdf(svgEl.value, pdf, { x: 0, y: 0, width: PAGE_W, height: PAGE_H });
+ pdf.save(buildFilename());
 }
 </script>
 
@@ -224,10 +273,19 @@ function handlePrint() {
     >
      Print
     </button>
+
+    <button
+     type="button"
+     @click="handleDownloadPdf"
+     class="w-full px-6 py-3 font-bold text-gray-800 bg-white border border-gray-800 hover:bg-gray-100 rounded-xl cursor-pointer"
+    >
+     Download PDF
+    </button>
    </aside>
 
    <div class="calligraphy-print-area">
     <svg
+     ref="svgEl"
      :viewBox="`0 0 ${PAGE_W} ${PAGE_H}`"
      xmlns="http://www.w3.org/2000/svg"
      class="w-full h-auto bg-white border border-gray-300 shadow-sm"
@@ -304,8 +362,17 @@ function handlePrint() {
      >
       {{ settingsLabel }}
      </text>
+     <image
+      v-if="logoDataUrl"
+      :href="logoDataUrl"
+      :x="logoX"
+      :y="logoY"
+      :width="LOGO_SIZE"
+      :height="LOGO_SIZE"
+      preserveAspectRatio="xMidYMid meet"
+     />
      <text
-      :x="PAGE_W - margin"
+      :x="brandingTextX"
       :y="PAGE_H - margin / 2"
       text-anchor="end"
       font-family="sans-serif"
