@@ -37,5 +37,9 @@
   "nuxt": "^4.4.2",
   "nuxt-graphql-client": "^0.2.46",
   "prettier": "^3.8.1"
+ },
+ "overrides": {
+  "simple-git": "^3.36.0",
+  "immutable@<3.8.3": "3.8.3"
  }
 }
