@@ -12,6 +12,81 @@ const lineGap = ref(10);
 const showSlant = ref(false);
 const slantAngle = ref(20);
 const slantSpacing = ref(10);
+const showCenterLine = ref(false);
+
+type Preset = {
+ name: string;
+ ascenderH: number;
+ xHeight: number;
+ descenderH: number;
+ lineGap: number;
+ showSlant: boolean;
+ slantAngle: number;
+ slantSpacing: number;
+};
+
+const presets: Preset[] = [
+ {
+  name: "Copperplate",
+  ascenderH: 3,
+  xHeight: 6,
+  descenderH: 3,
+  lineGap: 5,
+  showSlant: true,
+  slantAngle: 55,
+  slantSpacing: 6,
+ },
+ {
+  name: "Spencerian",
+  ascenderH: 3,
+  xHeight: 5,
+  descenderH: 3,
+  lineGap: 5,
+  showSlant: true,
+  slantAngle: 52,
+  slantSpacing: 5,
+ },
+ {
+  name: "Italic",
+  ascenderH: 4,
+  xHeight: 5,
+  descenderH: 4,
+  lineGap: 5,
+  showSlant: true,
+  slantAngle: 7,
+  slantSpacing: 5,
+ },
+ {
+  name: "Blackletter",
+  ascenderH: 3,
+  xHeight: 6,
+  descenderH: 3,
+  lineGap: 5,
+  showSlant: true,
+  slantAngle: 0,
+  slantSpacing: 6,
+ },
+ {
+  name: "Modern Brush",
+  ascenderH: 12,
+  xHeight: 6,
+  descenderH: 12,
+  lineGap: 6,
+  showSlant: true,
+  slantAngle: 17,
+  slantSpacing: 12,
+ },
+];
+
+function applyPreset(p: Preset) {
+ ascenderH.value = p.ascenderH;
+ xHeight.value = p.xHeight;
+ descenderH.value = p.descenderH;
+ lineGap.value = p.lineGap;
+ showSlant.value = p.showSlant;
+ slantAngle.value = p.slantAngle;
+ slantSpacing.value = p.slantSpacing;
+}
 
 const groupHeight = computed(
  () => ascenderH.value + xHeight.value + descenderH.value,
@@ -82,6 +157,7 @@ const settingsLabel = computed(() => {
  ];
  if (showSlant.value)
   parts.push(`Slant ${slantAngle.value}° @ ${slantSpacing.value}mm`);
+ if (showCenterLine.value) parts.push("Center line");
  parts.push(`${ruleGroups.value.length} lines`);
  return parts.join(" · ");
 });
@@ -158,7 +234,22 @@ async function handleDownloadPdf() {
 
   <div class="grid gap-8 lg:grid-cols-[320px_1fr]">
    <aside class="space-y-5 no-print">
-    <div class="space-y-3">
+    <div>
+     <p class="text-sm font-medium mb-2">Presets</p>
+     <div class="grid grid-cols-2 gap-2">
+      <button
+       v-for="p in presets"
+       :key="p.name"
+       type="button"
+       @click="applyPreset(p)"
+       class="px-3 py-1.5 text-sm border border-gray-300 hover:bg-gray-100 rounded-lg cursor-pointer"
+      >
+       {{ p.name }}
+      </button>
+     </div>
+    </div>
+
+    <div class="space-y-3 border-t border-gray-200 pt-5">
      <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
       <input v-model="autoFill" type="checkbox" />
       <span>Auto-fill page</span>
@@ -264,6 +355,11 @@ async function handleDownloadPdf() {
        />
       </div>
      </template>
+
+     <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+      <input v-model="showCenterLine" type="checkbox" class="accent-current" />
+      <span>Show center line</span>
+     </label>
     </div>
 
     <button
@@ -353,6 +449,15 @@ async function handleDownloadPdf() {
        stroke-width="0.25"
       />
      </g>
+     <line
+      v-if="showCenterLine"
+      :x1="PAGE_W / 2"
+      :y1="margin"
+      :x2="PAGE_W / 2"
+      :y2="PAGE_H - margin"
+      stroke="#4b5563"
+      stroke-width="0.25"
+     />
      <text
       :x="margin"
       :y="PAGE_H - margin / 2"
