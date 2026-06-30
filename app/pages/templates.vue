@@ -13,6 +13,7 @@ const showSlant = ref(false);
 const slantAngle = ref(20);
 const slantSpacing = ref(10);
 const showCenterLine = ref(false);
+const showRulers = ref(true);
 
 type Preset = {
  name: string;
@@ -128,6 +129,47 @@ const ruleGroups = computed(() => {
  }
  return groups;
 });
+
+const MM_PER_INCH = 25.4;
+const TICK_STEP = MM_PER_INCH / 4;
+const TICK_MAJOR_LEN = 2.5;
+const TICK_MINOR_LEN = 1.2;
+const RULER_THICKNESS = 5;
+
+type Tick = { pos: number; major: boolean; label?: number };
+
+const horizontalTicks = computed<Tick[]>(() => {
+ const ticks: Tick[] = [];
+ for (let i = 0; i * TICK_STEP <= PAGE_W + 0.001; i++) {
+  const major = i % 4 === 0;
+  ticks.push({
+   pos: i * TICK_STEP,
+   major,
+   label: major && i > 0 ? i / 4 : undefined,
+  });
+ }
+ return ticks;
+});
+
+const verticalTicks = computed<Tick[]>(() => {
+ const ticks: Tick[] = [];
+ for (let i = 0; i * TICK_STEP <= PAGE_H + 0.001; i++) {
+  const major = i % 4 === 0;
+  ticks.push({
+   pos: i * TICK_STEP,
+   major,
+   label: major && i > 0 ? i / 4 : undefined,
+  });
+ }
+ return ticks;
+});
+
+const horizontalLabels = computed(() =>
+ horizontalTicks.value.filter((t) => t.label !== undefined),
+);
+const verticalLabels = computed(() =>
+ verticalTicks.value.filter((t) => t.label !== undefined),
+);
 
 const slantLines = computed(() => {
  if (!showSlant.value) return [];
@@ -278,7 +320,7 @@ async function handleDownloadPdf() {
       v-model.number="ascenderH"
       type="range"
       min="0"
-      max="20"
+      max="40"
       step="0.5"
      />
     </div>
@@ -288,7 +330,7 @@ async function handleDownloadPdf() {
       <span>X-height</span>
       <span class="text-gray-500">{{ xHeight }} mm</span>
      </label>
-     <input v-model.number="xHeight" type="range" min="2" max="25" step="0.5" />
+     <input v-model.number="xHeight" type="range" min="2" max="50" step="0.5" />
     </div>
 
     <div>
@@ -300,7 +342,7 @@ async function handleDownloadPdf() {
       v-model.number="descenderH"
       type="range"
       min="0"
-      max="20"
+      max="40"
       step="0.5"
      />
     </div>
@@ -310,7 +352,7 @@ async function handleDownloadPdf() {
       <span>Space between lines</span>
       <span class="text-gray-500">{{ lineGap }} mm</span>
      </label>
-     <input v-model.number="lineGap" type="range" min="0" max="40" step="0.5" />
+     <input v-model.number="lineGap" type="range" min="0" max="80" step="0.5" />
     </div>
 
     <div>
@@ -318,7 +360,7 @@ async function handleDownloadPdf() {
       <span>Page margin</span>
       <span class="text-gray-500">{{ margin }} mm</span>
      </label>
-     <input v-model.number="margin" type="range" min="5" max="30" step="0.5" />
+     <input v-model.number="margin" type="range" min="5" max="60" step="0.5" />
     </div>
 
     <div class="border-t border-gray-200 pt-5 space-y-4">
@@ -360,6 +402,11 @@ async function handleDownloadPdf() {
       <input v-model="showCenterLine" type="checkbox" class="accent-current" />
       <span>Show center line</span>
      </label>
+
+     <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+      <input v-model="showRulers" type="checkbox" class="accent-current" />
+      <span>Show rulers</span>
+     </label>
     </div>
 
     <button
@@ -380,113 +427,219 @@ async function handleDownloadPdf() {
    </aside>
 
    <div class="calligraphy-print-area">
-    <svg
-     ref="svgEl"
-     :viewBox="`0 0 ${PAGE_W} ${PAGE_H}`"
-     xmlns="http://www.w3.org/2000/svg"
-     class="w-full h-auto bg-white border border-gray-300 shadow-sm"
-     preserveAspectRatio="xMidYMid meet"
-    >
-     <defs>
-      <clipPath id="ruleGroupsClip">
-       <rect
-        v-for="(g, i) in ruleGroups"
-        :key="`clip-${i}`"
-        :x="margin"
-        :y="g.top"
-        :width="writingAreaW"
-        :height="g.bottom - g.top"
+    <div class="preview-grid">
+     <div v-if="showRulers" class="ruler ruler-top no-print">
+      <svg
+       :viewBox="`0 0 ${PAGE_W} ${RULER_THICKNESS}`"
+       preserveAspectRatio="none"
+      >
+       <line
+        v-for="(t, i) in horizontalTicks"
+        :key="`rt-${i}`"
+        :x1="t.pos"
+        :y1="RULER_THICKNESS"
+        :x2="t.pos"
+        :y2="RULER_THICKNESS - (t.major ? TICK_MAJOR_LEN : TICK_MINOR_LEN)"
+        stroke="#1f2937"
+        stroke-width="0.4"
+        vector-effect="non-scaling-stroke"
        />
-      </clipPath>
-     </defs>
-     <g
-      v-if="showSlant"
-      clip-path="url(#ruleGroupsClip)"
-      stroke="#6b7280"
-      stroke-width="0.2"
-      stroke-dasharray="0.8,0.6"
-     >
-      <line
-       v-for="(l, i) in slantLines"
-       :key="`s-${i}`"
-       :x1="l.x1"
-       :y1="l.y1"
-       :x2="l.x2"
-       :y2="l.y2"
-      />
-     </g>
-     <g v-for="(g, i) in ruleGroups" :key="`g-${i}`">
-      <line
-       :x1="margin"
-       :y1="g.top"
-       :x2="PAGE_W - margin"
-       :y2="g.top"
-       stroke="#4b5563"
-       stroke-width="0.25"
-      />
-      <line
-       :x1="margin"
-       :y1="g.waist"
-       :x2="PAGE_W - margin"
-       :y2="g.waist"
-       stroke="#374151"
-       stroke-width="0.3"
-      />
-      <line
-       :x1="margin"
-       :y1="g.baseline"
-       :x2="PAGE_W - margin"
-       :y2="g.baseline"
-       stroke="#111827"
-       stroke-width="0.4"
-      />
-      <line
-       :x1="margin"
-       :y1="g.bottom"
-       :x2="PAGE_W - margin"
-       :y2="g.bottom"
-       stroke="#4b5563"
-       stroke-width="0.25"
-      />
-     </g>
-     <line
-      v-if="showCenterLine"
-      :x1="PAGE_W / 2"
-      :y1="margin"
-      :x2="PAGE_W / 2"
-      :y2="PAGE_H - margin"
-      stroke="#4b5563"
-      stroke-width="0.25"
-     />
-     <text
-      :x="margin"
-      :y="PAGE_H - margin / 2"
-      font-family="sans-serif"
-      font-size="2.2"
-      fill="#6b7280"
-     >
-      {{ settingsLabel }}
-     </text>
-     <image
-      v-if="logoDataUrl"
-      :href="logoDataUrl"
-      :x="logoX"
-      :y="logoY"
-      :width="LOGO_SIZE"
-      :height="LOGO_SIZE"
+      </svg>
+      <span
+       v-for="t in horizontalLabels"
+       :key="`lt-${t.pos}`"
+       class="ruler-label ruler-label-h"
+       :style="{ left: `${(t.pos / PAGE_W) * 100}%` }"
+      >
+       {{ t.label }}
+      </span>
+     </div>
+     <div v-if="showRulers" class="ruler ruler-left no-print">
+      <svg
+       :viewBox="`0 0 ${RULER_THICKNESS} ${PAGE_H}`"
+       preserveAspectRatio="none"
+      >
+       <line
+        v-for="(t, i) in verticalTicks"
+        :key="`rl-${i}`"
+        :x1="RULER_THICKNESS"
+        :y1="t.pos"
+        :x2="RULER_THICKNESS - (t.major ? TICK_MAJOR_LEN : TICK_MINOR_LEN)"
+        :y2="t.pos"
+        stroke="#1f2937"
+        stroke-width="0.4"
+        vector-effect="non-scaling-stroke"
+       />
+      </svg>
+      <span
+       v-for="t in verticalLabels"
+       :key="`ll-${t.pos}`"
+       class="ruler-label ruler-label-v"
+       :style="{ top: `${(t.pos / PAGE_H) * 100}%` }"
+      >
+       {{ t.label }}
+      </span>
+     </div>
+     <svg
+      ref="svgEl"
+      :viewBox="`0 0 ${PAGE_W} ${PAGE_H}`"
+      xmlns="http://www.w3.org/2000/svg"
+      class="paper w-full h-auto bg-white border border-gray-300 shadow-sm"
       preserveAspectRatio="xMidYMid meet"
-     />
-     <text
-      :x="brandingTextX"
-      :y="PAGE_H - margin / 2"
-      text-anchor="end"
-      font-family="sans-serif"
-      font-size="2.2"
-      fill="#6b7280"
      >
-      Lilies of the Field Calligraphy Templates · liliesofthefield.co/templates
-     </text>
-    </svg>
+      <defs>
+       <clipPath id="ruleGroupsClip">
+        <rect
+         v-for="(g, i) in ruleGroups"
+         :key="`clip-${i}`"
+         :x="margin"
+         :y="g.top"
+         :width="writingAreaW"
+         :height="g.bottom - g.top"
+        />
+       </clipPath>
+      </defs>
+      <g
+       v-if="showSlant"
+       clip-path="url(#ruleGroupsClip)"
+       stroke="#6b7280"
+       stroke-width="0.2"
+       stroke-dasharray="0.8,0.6"
+      >
+       <line
+        v-for="(l, i) in slantLines"
+        :key="`s-${i}`"
+        :x1="l.x1"
+        :y1="l.y1"
+        :x2="l.x2"
+        :y2="l.y2"
+       />
+      </g>
+      <g v-for="(g, i) in ruleGroups" :key="`g-${i}`">
+       <line
+        :x1="margin"
+        :y1="g.top"
+        :x2="PAGE_W - margin"
+        :y2="g.top"
+        stroke="#4b5563"
+        stroke-width="0.25"
+       />
+       <line
+        :x1="margin"
+        :y1="g.waist"
+        :x2="PAGE_W - margin"
+        :y2="g.waist"
+        stroke="#374151"
+        stroke-width="0.3"
+       />
+       <line
+        :x1="margin"
+        :y1="g.baseline"
+        :x2="PAGE_W - margin"
+        :y2="g.baseline"
+        stroke="#111827"
+        stroke-width="0.4"
+       />
+       <line
+        :x1="margin"
+        :y1="g.bottom"
+        :x2="PAGE_W - margin"
+        :y2="g.bottom"
+        stroke="#4b5563"
+        stroke-width="0.25"
+       />
+      </g>
+      <line
+       v-if="showCenterLine"
+       :x1="PAGE_W / 2"
+       :y1="margin"
+       :x2="PAGE_W / 2"
+       :y2="PAGE_H - margin"
+       stroke="#4b5563"
+       stroke-width="0.25"
+      />
+      <text
+       :x="margin"
+       :y="PAGE_H - margin / 2"
+       font-family="sans-serif"
+       font-size="2.2"
+       fill="#6b7280"
+      >
+       {{ settingsLabel }}
+      </text>
+      <image
+       v-if="logoDataUrl"
+       :href="logoDataUrl"
+       :x="logoX"
+       :y="logoY"
+       :width="LOGO_SIZE"
+       :height="LOGO_SIZE"
+       preserveAspectRatio="xMidYMid meet"
+      />
+      <text
+       :x="brandingTextX"
+       :y="PAGE_H - margin / 2"
+       text-anchor="end"
+       font-family="sans-serif"
+       font-size="2.2"
+       fill="#6b7280"
+      >
+       Lilies of the Field Calligraphy Templates · liliesofthefield.co/templates
+      </text>
+     </svg>
+     <div v-if="showRulers" class="ruler ruler-right no-print">
+      <svg
+       :viewBox="`0 0 ${RULER_THICKNESS} ${PAGE_H}`"
+       preserveAspectRatio="none"
+      >
+       <line
+        v-for="(t, i) in verticalTicks"
+        :key="`rr-${i}`"
+        :x1="0"
+        :y1="t.pos"
+        :x2="t.major ? TICK_MAJOR_LEN : TICK_MINOR_LEN"
+        :y2="t.pos"
+        stroke="#1f2937"
+        stroke-width="0.4"
+        vector-effect="non-scaling-stroke"
+       />
+      </svg>
+      <span
+       v-for="t in verticalLabels"
+       :key="`lr-${t.pos}`"
+       class="ruler-label ruler-label-v"
+       :style="{ top: `${(t.pos / PAGE_H) * 100}%` }"
+      >
+       {{ t.label }}
+      </span>
+     </div>
+     <div v-if="showRulers" class="ruler ruler-bottom no-print">
+      <svg
+       :viewBox="`0 0 ${PAGE_W} ${RULER_THICKNESS}`"
+       preserveAspectRatio="none"
+      >
+       <line
+        v-for="(t, i) in horizontalTicks"
+        :key="`rb-${i}`"
+        :x1="t.pos"
+        :y1="0"
+        :x2="t.pos"
+        :y2="t.major ? TICK_MAJOR_LEN : TICK_MINOR_LEN"
+        stroke="#1f2937"
+        stroke-width="0.4"
+        vector-effect="non-scaling-stroke"
+       />
+      </svg>
+      <span
+       v-for="t in horizontalLabels"
+       :key="`lb-${t.pos}`"
+       class="ruler-label ruler-label-h"
+       :style="{ left: `${(t.pos / PAGE_W) * 100}%` }"
+      >
+       {{ t.label }}
+      </span>
+     </div>
+    </div>
    </div>
   </div>
  </div>
@@ -498,6 +651,84 @@ async function handleDownloadPdf() {
 input[type="range"] {
  @apply w-full h-2 mt-2 bg-gray-200 rounded-lg appearance-none cursor-pointer;
  accent-color: var(--color-primary);
+}
+
+.preview-grid {
+ display: grid;
+ grid-template-columns: auto 1fr auto;
+ grid-template-rows: auto auto auto;
+}
+
+.ruler {
+ position: relative;
+}
+
+.ruler > svg {
+ display: block;
+ width: 100%;
+ height: 100%;
+}
+
+.ruler-label {
+ position: absolute;
+ font-family: sans-serif;
+ font-size: 9px;
+ line-height: 1;
+ color: #1f2937;
+ pointer-events: none;
+}
+
+.ruler-label-h {
+ transform: translateX(-50%);
+}
+
+.ruler-label-v {
+ transform: translateY(-50%);
+}
+
+.ruler-top {
+ grid-column: 2;
+ grid-row: 1;
+ width: 100%;
+ height: 22px;
+}
+.ruler-top .ruler-label-h {
+ top: 2px;
+}
+
+.ruler-bottom {
+ grid-column: 2;
+ grid-row: 3;
+ width: 100%;
+ height: 22px;
+}
+.ruler-bottom .ruler-label-h {
+ bottom: 2px;
+}
+
+.ruler-left {
+ grid-column: 1;
+ grid-row: 2;
+ width: 22px;
+ height: 100%;
+}
+.ruler-left .ruler-label-v {
+ left: 2px;
+}
+
+.ruler-right {
+ grid-column: 3;
+ grid-row: 2;
+ width: 22px;
+ height: 100%;
+}
+.ruler-right .ruler-label-v {
+ right: 2px;
+}
+
+.paper {
+ grid-column: 2;
+ grid-row: 2;
 }
 </style>
 
@@ -536,6 +767,9 @@ input[type="range"] {
   height: 11in !important;
   border: none !important;
   box-shadow: none !important;
+ }
+ .preview-grid {
+  display: block !important;
  }
 }
 </style>

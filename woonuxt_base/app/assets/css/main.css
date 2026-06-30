@@ -27,6 +27,16 @@ header a {
   @apply py-8 px-4 md:px-8;
 }
 
+footer a {
+  @apply uppercase text-xs;
+}
+nav {
+  @apply uppercase text-xs;
+}
+
+.display {
+  @apply font-display text-xl;
+}
 h1 {
   @apply text-4xl md:text-6xl font-display text-center md:text-left;
 }
@@ -38,7 +48,7 @@ a {
 }
 @theme {
   /* Primary Color Shades */
-  --color-primary: var(--color-primary, #925200);
+  --color-primary: var(--color-primary, #660033);
   --color-primary-light: oklch(from var(--color-primary) calc(l + 0.15) c h);
   --color-primary-dark: oklch(from var(--color-primary) calc(l - 0.15) c h);
 

@@ -1,36 +1,31 @@
+<script setup lang="ts">
+import InstagramFeed from "~/components/InstagramFeed.vue";
+</script>
+
 <template>
  <div class="container mx-auto page">
   <h1>About Us.</h1>
   <p>
-   Lilies of the Field is inspired by Matthew 6:26-34. A reminder of God's
-   provision in anxious times. LOTF is working with my hands, aiming to create
-   beautiful things with the time, talent and treasure God has given me.
+   Lilies of the Field is inspired by a passage in Matthew. A reminder of God's
+   provision when we are tempted to be anxious. LOTF is working with my hands,
+   aiming to create beautiful things with the time, talent and treasure I have
+   been given, while trusting in God's provision.
   </p>
 
-  <section class="verse">
+  <section class="verse text-sm">
    <p>
-    26 Look at the birds of the air: they neither sow nor reap nor gather into
-    barns, and yet your heavenly Father feeds them. Are you not of more value
-    than they? 27 And which of you by being anxious can add a single hour to his
-    span of life?[a] 28 And why are you anxious about clothing? Consider the
-    lilies of the field, how they grow: they neither toil nor spin, 29 yet I
-    tell you, even Solomon in all his glory was not arrayed like one of these.
-    30 But if God so clothes the grass of the field, which today is alive and
-    tomorrow is thrown into the oven, will he not much more clothe you, O you of
-    little faith? 31 Therefore do not be anxious, saying, ‘What shall we eat?’
-    or ‘What shall we drink?’ or ‘What shall we wear?’ 32 For the Gentiles seek
-    after all these things, and your heavenly Father knows that you need them
-    all. 33 But seek first the kingdom of God and his righteousness, and all
-    these things will be added to you.
+    27 And which of you by being anxious can add a single hour to his span of
+    life?[a] 28 And why are you anxious about clothing? Consider the
+    <span class="font-display text-2xl bg-amber-200">lilies of the field</span>,
+    how they grow: they neither toil nor spin, 29 yet I tell you, even Solomon
+    in all his glory was not arrayed like one of these. 30 But if God so clothes
+    the grass of the field, which today is alive and tomorrow is thrown into the
+    oven, will he not much more clothe you, O you of little faith?
    </p>
-
-   <p>
-    34 “Therefore do not be anxious about tomorrow, for tomorrow will be anxious
-    for itself. Sufficient for the day is its own trouble.
-   </p>
+   <p class="font-black uppercase">Matthew 6:27-30</p>
   </section>
  </div>
- <div class="bg-stone-900">
+ <div>
   <div class="content-section">
    <div class="flex-1 object-cover">
     <video
@@ -39,33 +34,31 @@
      muted
      loop
      playsinline
-     class="w-full md:w-[300px] object-cover"
+     class="w-full object-cover"
     />
    </div>
    <div class="flex-1">
-    <div class="p-8">
+    <div class="p-8 block">
      <h2>Calligraphy</h2>
      <p>
-      As a child, our family hosted many Japanese exchange students in the
-      summer. They all were so talented, and many practiced calligraphy. I fell
-      in love with Japanese calligraphy - the smell of the ink, the crunch of
-      the paper, the meditative flow of emotion through bold brush strokes. I
-      create Japanese-inspired scrolls and artworks using traditional rice paper
-      and wet mounting techniques, as well as pointed pen calligraphy.
+      Our family hosted many Japanese exchange students in the summertime. They
+      all were so talented, and many practiced calligraphy. I fell in love with
+      calligraphy - the smell of the ink, the crunch of the paper, the
+      meditative flow of emotion through bold brush strokes. I create
+      Japanese-inspired scrolls and artworks using traditional rice paper and
+      wet mounting techniques, as well as pointed pen calligraphy.
      </p>
      <p>
       My love of calligraphy coupled with my desire to commit God's Word to
-      memory has led me to start creating calligraphy scrolls to get '<strong
-       class="font-bold"
-       >Words on the Wall</strong
-      >'.
+      memory has led me to start creating calligraphy scrolls and custom pieces
+      to get '<strong class="font-bold">Words on the Wall</strong>'.
      </p>
     </div>
    </div>
   </div>
 
   <div class="content-section flex flex-col-reverse md:block md:flex-row">
-   <div class="flex-1">
+   <div class="flex-1 bg-black text-white">
     <div class="p-8">
      <h2>Portraits</h2>
      <p>
@@ -103,14 +96,16 @@
     <div class="p-8">
      <h2>Florals</h2>
      <p>
-      Fresh or dried, flowers are God's way of smiling. Whether arranging or
-      painting, I will always hold flowers dear to my heart. Here I am making a
-      dried flower panel. What is your favorite flower?
+      Flowers are God's way of smiling. Flowers have been a life long passion
+      and a medium that I love to work in. I offer floral services for weddings,
+      corporate parties, milestones or just because.
      </p>
      <p></p>
     </div>
    </div>
   </div>
+
+  <InstagramFeed />
  </div>
 </template>
 
@@ -118,7 +113,7 @@
 @reference "#tailwind";
 
 .content-section {
- @apply md:flex justify-between border-b border-b-gray-300 mb-20 bg-white;
+ @apply md:flex justify-between border-b border-b-gray-300 bg-white;
 }
 .content-section div {
  @apply aspect-square flex flex-col justify-center;
