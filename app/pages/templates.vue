@@ -95,10 +95,16 @@ const groupHeight = computed(
 const writingAreaW = computed(() => PAGE_W - margin.value * 2);
 const writingAreaH = computed(() => PAGE_H - margin.value * 2);
 
+const FOOTER_STRIP = 12.7;
+const effectiveBottomMargin = computed(() =>
+ Math.max(margin.value, FOOTER_STRIP),
+);
+
 const maxLines = computed(() => {
  const denom = groupHeight.value + lineGap.value;
  if (groupHeight.value <= 0 || denom <= 0) return 1;
- return Math.max(1, Math.floor((writingAreaH.value + lineGap.value) / denom));
+ const usableH = PAGE_H - margin.value - effectiveBottomMargin.value;
+ return Math.max(1, Math.floor((usableH + lineGap.value) / denom));
 });
 
 watchEffect(() => {
@@ -113,7 +119,7 @@ const ruleGroups = computed(() => {
   bottom: number;
  }[] = [];
  if (groupHeight.value <= 0) return groups;
- const pageBottom = PAGE_H - margin.value;
+ const pageBottom = PAGE_H - effectiveBottomMargin.value;
  let y = margin.value;
  let count = 0;
  while (y + groupHeight.value <= pageBottom) {
@@ -215,10 +221,10 @@ const logoDataUrl = ref<string | null>(null);
 const LOGO_SIZE = 16;
 const LOGO_GAP = 1.2;
 
-const logoX = computed(() => PAGE_W - margin.value - LOGO_SIZE);
-const logoY = computed(() => PAGE_H - margin.value / 2 - LOGO_SIZE / 2 - 0.4);
+const logoX = computed(() => PAGE_W - FOOTER_STRIP - LOGO_SIZE);
+const logoY = computed(() => PAGE_H - FOOTER_STRIP / 2 - LOGO_SIZE / 2 - 0.4);
 const brandingTextX = computed(
- () => PAGE_W - margin.value - LOGO_SIZE - LOGO_GAP,
+ () => PAGE_W - FOOTER_STRIP - LOGO_SIZE - LOGO_GAP,
 );
 
 onMounted(() => {
@@ -554,13 +560,13 @@ async function handleDownloadPdf() {
        :x1="PAGE_W / 2"
        :y1="margin"
        :x2="PAGE_W / 2"
-       :y2="PAGE_H - margin"
+       :y2="PAGE_H - effectiveBottomMargin"
        stroke="#4b5563"
        stroke-width="0.25"
       />
       <text
-       :x="margin"
-       :y="PAGE_H - margin / 2"
+       :x="FOOTER_STRIP"
+       :y="PAGE_H - FOOTER_STRIP / 2"
        font-family="sans-serif"
        font-size="2.2"
        fill="#6b7280"
@@ -578,7 +584,7 @@ async function handleDownloadPdf() {
       />
       <text
        :x="brandingTextX"
-       :y="PAGE_H - margin / 2"
+       :y="PAGE_H - FOOTER_STRIP / 2"
        text-anchor="end"
        font-family="sans-serif"
        font-size="2.2"
@@ -654,13 +660,12 @@ input[type="range"] {
 }
 
 .preview-grid {
- display: grid;
- grid-template-columns: auto 1fr auto;
- grid-template-rows: auto auto auto;
+ position: relative;
+ padding: 22px;
 }
 
 .ruler {
- position: relative;
+ position: absolute;
 }
 
 .ruler > svg {
@@ -687,9 +692,9 @@ input[type="range"] {
 }
 
 .ruler-top {
- grid-column: 2;
- grid-row: 1;
- width: 100%;
+ top: 0;
+ left: 22px;
+ right: 22px;
  height: 22px;
 }
 .ruler-top .ruler-label-h {
@@ -697,9 +702,9 @@ input[type="range"] {
 }
 
 .ruler-bottom {
- grid-column: 2;
- grid-row: 3;
- width: 100%;
+ bottom: 0;
+ left: 22px;
+ right: 22px;
  height: 22px;
 }
 .ruler-bottom .ruler-label-h {
@@ -707,28 +712,27 @@ input[type="range"] {
 }
 
 .ruler-left {
- grid-column: 1;
- grid-row: 2;
+ top: 22px;
+ bottom: 22px;
+ left: 0;
  width: 22px;
- height: 100%;
 }
 .ruler-left .ruler-label-v {
  left: 2px;
 }
 
 .ruler-right {
- grid-column: 3;
- grid-row: 2;
+ top: 22px;
+ bottom: 22px;
+ right: 0;
  width: 22px;
- height: 100%;
 }
 .ruler-right .ruler-label-v {
  right: 2px;
 }
 
 .paper {
- grid-column: 2;
- grid-row: 2;
+ display: block;
 }
 </style>
 
@@ -770,6 +774,7 @@ input[type="range"] {
  }
  .preview-grid {
   display: block !important;
+  padding: 0 !important;
  }
 }
 </style>
