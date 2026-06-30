@@ -32,7 +32,7 @@ useHead({
 
 <template>
   <main>
-    <div class="container flex items-start gap-16" v-if="hasProducts">
+    <div class="container flex items-start gap-16 products" v-if="hasProducts">
       <Filters v-if="storeSettings.showFilters" />
 
       <div class="w-full">

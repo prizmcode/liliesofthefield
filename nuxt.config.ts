@@ -1,13 +1,23 @@
+import { createResolver } from "@nuxt/kit";
+
+const { resolve } = createResolver(import.meta.url);
+
 export default defineNuxtConfig({
  // Get all the pages, components, composables and plugins from the parent theme
  extends: ["./woonuxt_base"],
 
- components: [{ path: "./app/components", pathPrefix: false, priority: 10 }],
+ components: [
+  { path: resolve("./app/components"), pathPrefix: false, priority: 10 },
+ ],
 
  modules: ["nuxt-gtag"],
 
  gtag: {
   id: "G-L4PCRT3MWR",
+ },
+
+ runtimeConfig: {
+  instagramAccessToken: process.env.INSTAGRAM_ACCESS_TOKEN || "",
  },
 
  /**

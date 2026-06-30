@@ -10,7 +10,6 @@ const { wishlistLink } = useAuth();
         <div class="max-w-[300px] mx-auto"><Logo /></div>
         <div class="text-center"><WebsiteShortDescription /></div>
         <div class="flex gap-2 justify-center mt-8 mx-auto text-center">
-          <LangSwitcher />
           <ClientOnly>
             <ColorModeSwitcher />
           </ClientOnly>
@@ -54,6 +53,7 @@ const { wishlistLink } = useAuth();
               <a href="/products?orderby=rating&order=ASC&filter=rating[1]" class="py-1.5 block">{{ $t('shop.topRated') }}</a>
             </template>
           </ClientOnly>
+          <NuxtLink to="/templates" class="py-1.5 block">Calligraphy Template<br />Generator</NuxtLink>
         </div>
       </div>
       <div class="w-[42.857%] lg:w-auto">

@@ -40,8 +40,13 @@ nav {
 h1 {
   @apply text-4xl md:text-6xl font-display text-center md:text-left;
 }
+
 h2 {
-  @apply font-display text-3xl md:text-4xl;
+  @apply text-3xl font-display md:text-4xl;
+}
+.products h1,
+.products h2 {
+  @apply text-lg font-sans py-0;
 }
 a {
   @apply hover:font-bold text-primary no-underline;
