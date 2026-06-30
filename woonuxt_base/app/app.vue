@@ -53,6 +53,10 @@ useHead({
     <LazyInstagramFeed hydrate-on-visible />
 
     <LazyAppFooter hydrate-on-visible />
+
+    <ClientOnly>
+      <Toaster />
+    </ClientOnly>
   </div>
 </template>
 

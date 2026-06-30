@@ -1,12 +1,15 @@
 <template>
  <div class="relative mx-auto">
-  <video
+  <!-- <video
    src="https://res.cloudinary.com/dxy1zozat/video/upload/v1777412025/IMG_6155_eqbw0k.mov"
    autoplay
    muted
    loop
    playsinline
    class="object-cover w-full h-[420px] lg:h-[560px] xl:h-[640px]"
+  /> -->
+  <img
+   src="https://prizmstudio.com/wp-content/uploads/2025/07/Screenshot-2025-07-02-at-7.44.04 PM.png"
   />
   <div
    class="container absolute inset-0 flex flex-col items-start justify-center bg-linear-to-l from-gray-200 sm:bg-none dark:text-gray-700 text-white"

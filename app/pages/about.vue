@@ -7,9 +7,9 @@ import InstagramFeed from "~/components/InstagramFeed.vue";
   <h1>About Us.</h1>
   <p>
    Lilies of the Field is inspired by a passage in Matthew. A reminder of God's
-   provision when we are tempted to be anxious. LOTF is working with my hands,
-   aiming to create beautiful things with the time, talent and treasure I have
-   been given, while trusting in God's provision.
+   provision when we are tempted to be anxious. LOTF aims to create beautiful
+   things with the time, talent and treasure I have been given, while trusting
+   in God's provision.
   </p>
 
   <section class="verse text-sm">

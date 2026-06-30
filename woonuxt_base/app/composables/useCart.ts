@@ -262,6 +262,26 @@ export function useCart() {
     isShowingCart.value = state ?? !isShowingCart.value;
   }
 
+  function notifyAddedToCart(payload: OptimisticAddPayload | undefined, quantity: number): void {
+    if (!import.meta.client) return;
+    const product = payload?.product;
+    const variation = payload?.variation ?? null;
+    const name = variation?.name || product?.name || 'Item';
+    const image = variation?.image?.sourceUrl || product?.image?.sourceUrl || null;
+    const message = quantity > 1 ? `${quantity} × ${name} added to cart` : `${name} added to cart`;
+    const { push } = useToast();
+    push({
+      type: 'success',
+      title: 'Added to cart',
+      message,
+      image,
+      onClick: () => {
+        if (!isShowingCart.value) toggleCart(true);
+      },
+      action: { label: 'View cart', href: '/cart' },
+    });
+  }
+
   // add an item to the cart
   async function addToCart(input: AddToCartInput, optimistic?: OptimisticAddPayload): Promise<void> {
     isAddingToCart.value = true;
@@ -285,6 +305,7 @@ export function useCart() {
             return addToCart?.cart ?? null;
           },
         );
+        notifyAddedToCart(optimistic, quantity);
         return;
       }
 
@@ -292,6 +313,7 @@ export function useCart() {
         const { addToCart } = await GqlAddToCart({ input: { ...input, quantity } });
         return addToCart?.cart ?? null;
       }, false);
+      notifyAddedToCart(optimistic, quantity);
       // Auto open the cart when an item is added to the cart if the setting is enabled
       if (!canOptimistic && storeSettings.autoOpenCart && !isShowingCart.value) toggleCart(true);
     } catch (error: unknown) {

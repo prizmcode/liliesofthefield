@@ -95,8 +95,7 @@ const { wishlistLink } = useAuth();
         </div>
       </div>
     </div>
-    <div
-      class="bg-linear-to-b from-gray-200 to-gray-300 text-center p-4 my-4 text-gray-400 uppercase dark:text-white dark:from-gray-600 dark:to-gray-800 text-sm md:text-base">
+    <div class="bg-amber-900 text-center p-4 my-4 text-amber-300 uppercase text-sm md:text-base">
       10% of all proceeds donated to <a href="https://www.atlasfree.org/">Atlas Free</a>
     </div>
     <div class="container dark:border-gray-700 flex items-center justify-center mb-8">
