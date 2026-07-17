@@ -16,4 +16,15 @@ fragment ExternalProduct on ExternalProduct {
       databaseId
     }
   }
+  calligraphy {
+    enabled
+    rate
+    minimumCharge
+    paperSizes {
+      id
+      label
+      dimensions
+      multiplier
+    }
+  }
 }

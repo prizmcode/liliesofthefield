@@ -33,4 +33,15 @@ fragment SimpleProduct on SimpleProduct {
       databaseId
     }
   }
+  calligraphy {
+    enabled
+    rate
+    minimumCharge
+    paperSizes {
+      id
+      label
+      dimensions
+      multiplier
+    }
+  }
 }

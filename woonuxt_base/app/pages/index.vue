@@ -41,7 +41,7 @@ useSeoMeta({
       </div>
     </section>
 
-    <section class="container grid gap-4 my-24 md:grid-cols-3">
+    <!-- <section class="container grid gap-4 my-24 md:grid-cols-3">
       <div class="flex items-center gap-8 p-8 bg-white dark:bg-gray-800 rounded-lg">
         <img src="/icons/moneyback.svg" width="60" height="60" alt="Money Back" loading="lazy" />
         <div>
@@ -63,11 +63,11 @@ useSeoMeta({
           <p class="text-sm dark:text-gray-300">24/7 Online support</p>
         </div>
       </div>
-    </section>
+    </section> -->
 
     <section class="container my-16 products" v-if="popularProducts">
       <div class="flex items-end justify-between">
-        <h2 class="text-lg font-semibold md:text-2xl dark:text-white">{{ $t('shop.popularProducts') }}</h2>
+        <h2 class="font-display text-lg md:text-2xl dark:text-white">{{ $t('shop.popularProducts') }}</h2>
         <NuxtLink class="font-medium text-primary-dark dark:text-primary" to="/products">{{ $t('general.viewAll') }}</NuxtLink>
       </div>
       <ProductRow :products="popularProducts" class="grid-cols-2 md:grid-cols-4 lg:grid-cols-5 mt-8" />

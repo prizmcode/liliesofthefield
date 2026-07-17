@@ -43,4 +43,15 @@ fragment VariableProduct on VariableProduct {
       databaseId
     }
   }
+  calligraphy {
+    enabled
+    rate
+    minimumCharge
+    paperSizes {
+      id
+      label
+      dimensions
+      multiplier
+    }
+  }
 }

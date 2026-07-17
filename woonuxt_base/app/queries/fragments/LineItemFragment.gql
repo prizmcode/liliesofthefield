@@ -29,4 +29,13 @@ fragment LineItem on LineItem {
       ...LineItemVariation
     }
   }
+  calligraphy {
+    text
+    letters
+    sizeId
+    sizeLabel
+    sizeDims
+    notes
+    unitPrice
+  }
 }

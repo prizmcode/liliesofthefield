@@ -27,7 +27,7 @@ function captionPreview(c?: string) {
 </script>
 
 <template>
- <section class="bg-amber-900 text-white">
+ <section class="instagram-feed bg-amber-900 text-white">
   <section
    v-if="pending || data?.media?.length"
    class="container mt-8 mb-16 md:mt-16 md:mb-24"

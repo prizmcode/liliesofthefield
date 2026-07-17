@@ -34,6 +34,10 @@ useHead({
 <template>
   <NuxtLoadingIndicator />
   <div class="flex flex-col min-h-screen">
+    <section
+      class="right-8 bg-primary-dark dark:bg-primary-light p-4 md:p-8 text-white dark:text-gray-900 font-Inter uppercase text-center text-2xl md:text-4xl z-40 font-light no-print">
+      !! site under construction !!
+    </section>
     <AppHeader />
 
     <Transition name="slide-from-right">
@@ -60,7 +64,7 @@ useHead({
   </div>
 </template>
 
-<style lang="postcss">
+<style>
 @reference "#tailwind";
 
 html,

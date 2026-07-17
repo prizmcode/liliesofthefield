@@ -9,7 +9,7 @@ const ascenderH = ref(5);
 const xHeight = ref(5);
 const descenderH = ref(5);
 const lineGap = ref(10);
-const showSlant = ref(false);
+const showSlant = ref(true);
 const slantAngle = ref(20);
 const slantSpacing = ref(10);
 const showCenterLine = ref(false);
@@ -366,43 +366,43 @@ async function handleDownloadPdf() {
       <span>Page margin</span>
       <span class="text-gray-500">{{ margin }} mm</span>
      </label>
-     <input v-model.number="margin" type="range" min="5" max="60" step="0.5" />
+     <input v-model.number="margin" type="range" min="5" max="80" step="0.5" />
     </div>
+
+    <template v-if="showSlant">
+     <div>
+      <label class="flex justify-between text-sm font-medium">
+       <span>Slant angle</span>
+       <span class="text-gray-500">{{ slantAngle }}°</span>
+      </label>
+      <input
+       v-model.number="slantAngle"
+       type="range"
+       min="0"
+       max="55"
+       step="1"
+      />
+     </div>
+     <div>
+      <label class="flex justify-between text-sm font-medium">
+       <span>Slant spacing</span>
+       <span class="text-gray-500">{{ slantSpacing }} mm</span>
+      </label>
+      <input
+       v-model.number="slantSpacing"
+       type="range"
+       min="3"
+       max="30"
+       step="0.5"
+      />
+     </div>
+    </template>
 
     <div class="border-t border-gray-200 pt-5 space-y-4">
      <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
       <input v-model="showSlant" type="checkbox" class="accent-current" />
       <span>Show slant guides</span>
      </label>
-
-     <template v-if="showSlant">
-      <div>
-       <label class="flex justify-between text-sm font-medium">
-        <span>Slant angle</span>
-        <span class="text-gray-500">{{ slantAngle }}°</span>
-       </label>
-       <input
-        v-model.number="slantAngle"
-        type="range"
-        min="0"
-        max="55"
-        step="1"
-       />
-      </div>
-      <div>
-       <label class="flex justify-between text-sm font-medium">
-        <span>Slant spacing</span>
-        <span class="text-gray-500">{{ slantSpacing }} mm</span>
-       </label>
-       <input
-        v-model.number="slantSpacing"
-        type="range"
-        min="3"
-        max="30"
-        step="0.5"
-       />
-      </div>
-     </template>
 
      <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
       <input v-model="showCenterLine" type="checkbox" class="accent-current" />
@@ -762,8 +762,16 @@ input[type="range"] {
   padding: 0 !important;
   width: 8.5in !important;
   height: 11in !important;
+  background: #fff !important;
+  z-index: 10 !important;
   page-break-after: avoid !important;
   page-break-inside: avoid !important;
+ }
+ .instagram-feed {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: -1 !important;
  }
  .calligraphy-print-area svg {
   display: block !important;

@@ -104,8 +104,6 @@ import InstagramFeed from "~/components/InstagramFeed.vue";
     </div>
    </div>
   </div>
-
-  <InstagramFeed />
  </div>
 </template>
 
