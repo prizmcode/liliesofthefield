@@ -1,10 +1,16 @@
 <script setup lang="ts">
-const { wooNuxtVersionInfo } = useHelpers();
+import type { ProductCategory } from '#types/gql';
+
 const { wishlistLink } = useAuth();
 const runtimeConfig = useRuntimeConfig();
 const img = useImage();
 const logoUrl = runtimeConfig?.public?.LOGO ? img(runtimeConfig?.public?.LOGO) : null;
 const faviconUrl = '/liliesofthefield.webp';
+
+const { data } = await useAsyncGql('getProductCategories');
+const productCategories = ((data.value?.productCategories?.nodes as ProductCategory[]) || []).filter(
+  (category) => category.slug?.toLowerCase() !== 'uncategorized',
+);
 </script>
 
 <template>
@@ -47,21 +53,21 @@ const faviconUrl = '/liliesofthefield.webp';
         <div class="mb-1 font-semibold text-gray-900 dark:text-white">{{ $t('general.products') }}</div>
         <div class="text-sm text-gray-700 dark:text-gray-300">
           <ClientOnly>
-            <NuxtLink to="/products" class="py-1.5 block">{{ $t('shop.newArrivals') }}</NuxtLink>
+            <NuxtLink
+              v-for="category in productCategories"
+              :key="category.slug || ''"
+              :to="`/product-category/${decodeURIComponent(category.slug || '')}`"
+              class="py-1.5 block capitalize"
+              >{{ category.name }}</NuxtLink
+            >
             <template #fallback>
-              <a href="/products" class="py-1.5 block">{{ $t('shop.newArrivals') }}</a>
-            </template>
-          </ClientOnly>
-          <ClientOnly>
-            <NuxtLink to="/products?filter=sale[true]" class="py-1.5 block">{{ $t('shop.onSale') }}</NuxtLink>
-            <template #fallback>
-              <a href="/products?filter=sale[true]" class="py-1.5 block">{{ $t('shop.onSale') }}</a>
-            </template>
-          </ClientOnly>
-          <ClientOnly>
-            <NuxtLink to="/products?orderby=rating&order=ASC&filter=rating[1]" class="py-1.5 block">{{ $t('shop.topRated') }}</NuxtLink>
-            <template #fallback>
-              <a href="/products?orderby=rating&order=ASC&filter=rating[1]" class="py-1.5 block">{{ $t('shop.topRated') }}</a>
+              <a
+                v-for="category in productCategories"
+                :key="category.slug || ''"
+                :href="`/product-category/${decodeURIComponent(category.slug || '')}`"
+                class="py-1.5 block capitalize"
+                >{{ category.name }}</a
+              >
             </template>
           </ClientOnly>
           <NuxtLink to="/templates" class="py-1.5 block">Calligraphy Template<br />Generator</NuxtLink>

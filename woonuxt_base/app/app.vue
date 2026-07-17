@@ -44,11 +44,13 @@ useHead({
       <Cart v-if="isShowingCart" />
     </Transition>
 
-    <Transition name="slide-from-left">
+    <Transition name="slide-from-right">
       <MobileMenu v-if="isShowingMobileMenu" />
     </Transition>
 
-    <NuxtPage />
+    <section class="mt-24">
+      <NuxtPage />
+    </section>
 
     <Transition name="fade">
       <div v-if="isShowingCart || isShowingMobileMenu" class="bg-black opacity-25 inset-0 z-40 fixed" @click="closeCartAndMenu" />
@@ -71,10 +73,6 @@ html,
 body {
   @apply bg-gray-100 dark:bg-[#18202f] text-gray-900 dark:text-gray-100;
   scroll-behavior: smooth;
-}
-
-html {
-  scrollbar-gutter: stable both-edges;
 }
 
 img {

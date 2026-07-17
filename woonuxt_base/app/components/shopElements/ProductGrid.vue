@@ -22,7 +22,7 @@ const productsToShow = computed(() => products.value.slice((page.value - 1) * pr
 @reference "#tailwind";
 
 .product-grid {
-  @apply grid my-4 min-h-37.5 transition-all gap-8 lg:my-8;
+  @apply grid my-4 min-h-37.5 transition-all gap-2 md:gap-3 lg:my-8;
   grid-template-columns: repeat(2, 1fr);
 }
 

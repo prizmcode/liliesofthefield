@@ -32,7 +32,7 @@ useSeoMeta({
       <LazyCart v-if="isShowingCart" />
     </Transition>
 
-    <Transition name="slide-from-left">
+    <Transition name="slide-from-right">
       <LazyMobileMenu v-if="isShowingMobileMenu" />
     </Transition>
 
