@@ -20,7 +20,7 @@ From custom, hand-lettered commissions to watercolor portraits and original pain
     // cartMode: 'optimistic' updates UI immediately; 'safe' waits for the server response.
     cartMode: 'optimistic',
     showReviews: true,
-    showFilters: true,
+    showFilters: false,
     showOrderByDropdown: true,
     showSKU: true,
     showRelatedProducts: true,

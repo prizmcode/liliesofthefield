@@ -6,14 +6,15 @@ const props = defineProps({
 });
 
 const imgWidth = 220;
-const imgHeight = Math.round(imgWidth * 1.125);
+const imgHeight = 220;
+//const imgHeight = Math.round(imgWidth * 1.125);
 </script>
 
 <template>
   <NuxtLink
     v-if="node"
     :to="`/product-category/${decodeURIComponent(node.slug)}`"
-    class="relative flex justify-center overflow-hidden border border-white dark:border-gray-700 rounded-xl item snap-mandatory snap-x">
+    class="relative flex justify-center overflow-hidden border border-white dark:border-gray-700 rounded-xl item snap-mandatory snap-x aspect-square">
     <NuxtImg
       :width="imgWidth"
       :height="imgHeight"
@@ -34,6 +35,6 @@ const imgHeight = Math.round(imgWidth * 1.125);
 .item {
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1 / 1;
 }
 </style>

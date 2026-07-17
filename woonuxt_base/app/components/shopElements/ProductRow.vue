@@ -5,7 +5,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <div v-if="products" class="grid gap-8">
+  <div v-if="products" class="flex justify-center gap-8">
     <ProductCard
       v-for="(node, i) in products"
       :key="node.databaseId"

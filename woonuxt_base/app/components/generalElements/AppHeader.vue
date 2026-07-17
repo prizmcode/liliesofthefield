@@ -5,7 +5,6 @@ const { isShowingSearch } = useSearching();
 <template>
   <header class="sticky top-0 z-40 bg-white dark:bg-gray-800 shadow-sm shadow-gray-200 dark:shadow-gray-900 border-b border-transparent dark:border-gray-700">
     <div class="container flex items-center justify-center py-4">
-      <MenuTrigger class="lg:hidden" />
       <div class="flex items-center ml-14 sm:ml-0">
         <Logo class="w-40 md:w-50" />
       </div>
@@ -17,6 +16,7 @@ const { isShowingSearch } = useSearching();
           <SignInLink />
           <CartTrigger />
         </div>
+        <MenuTrigger class="lg:hidden" />
       </div>
     </div>
     <Transition name="scale-y" mode="out-in">

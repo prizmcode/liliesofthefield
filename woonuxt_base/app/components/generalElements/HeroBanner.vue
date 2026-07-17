@@ -3,8 +3,8 @@
     <NuxtImg
       width="1400"
       height="800"
-      class="object-cover w-full h-[420px] lg:h-[560px] xl:h-[640px]"
-      src="/images/hero-4.jpg"
+      class="object-cover w-full"
+      src="https://prizmstudio.com/wp-content/uploads/2023/10/IMG_1121-scaled.jpeg"
       alt="Hero image"
       loading="eager"
       sizes="sm:100vw md:1400px"

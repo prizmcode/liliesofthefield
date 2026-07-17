@@ -14,6 +14,7 @@ const slantAngle = ref(20);
 const slantSpacing = ref(10);
 const showCenterLine = ref(false);
 const showRulers = ref(true);
+const showCardOverlay = ref(false);
 
 type Preset = {
  name: string;
@@ -194,6 +195,15 @@ const slantLines = computed(() => {
  }
  return lines;
 });
+
+const CARD_W = 5 * MM_PER_INCH;
+const CARD_H = 7 * MM_PER_INCH;
+const cardOverlay = computed(() => ({
+ x: (PAGE_W - CARD_W) / 2,
+ y: (PAGE_H - CARD_H) / 2,
+ width: CARD_W,
+ height: CARD_H,
+}));
 
 const settingsLabel = computed(() => {
  const parts = [
@@ -413,6 +423,11 @@ async function handleDownloadPdf() {
       <input v-model="showRulers" type="checkbox" class="accent-current" />
       <span>Show rulers</span>
      </label>
+
+     <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+      <input v-model="showCardOverlay" type="checkbox" class="accent-current" />
+      <span>5"×7" overlay</span>
+     </label>
     </div>
 
     <button
@@ -563,6 +578,17 @@ async function handleDownloadPdf() {
        :y2="PAGE_H - effectiveBottomMargin"
        stroke="#4b5563"
        stroke-width="0.25"
+      />
+      <rect
+       v-if="showCardOverlay"
+       :x="cardOverlay.x"
+       :y="cardOverlay.y"
+       :width="cardOverlay.width"
+       :height="cardOverlay.height"
+       fill="none"
+       stroke="#111827"
+       stroke-width="0.35"
+       stroke-dasharray="1.5,1.2"
       />
       <text
        :x="FOOTER_STRIP"

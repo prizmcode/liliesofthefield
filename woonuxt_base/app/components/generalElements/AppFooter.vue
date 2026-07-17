@@ -1,13 +1,24 @@
 <script setup lang="ts">
 const { wooNuxtVersionInfo } = useHelpers();
 const { wishlistLink } = useAuth();
+const runtimeConfig = useRuntimeConfig();
+const img = useImage();
+const logoUrl = runtimeConfig?.public?.LOGO ? img(runtimeConfig?.public?.LOGO) : null;
+const faviconUrl = '/liliesofthefield.webp';
 </script>
 
 <template>
   <footer class="bg-white dark:bg-gray-800 order-last">
-    <div class="container flex flex-wrap justify-between gap-12 my-24 md:gap-24">
+    <div class="container flex flex-wrap lg:flex-nowrap justify-between gap-12 mt-12 mb-24 md:gap-24">
       <div class="mr-auto">
-        <div class="max-w-[300px] mx-auto"><Logo /></div>
+        <div class="max-w-[300px] mx-auto">
+          <NuxtLink to="/" class="flex h-full w-full items-center justify-center p-2">
+            <img v-if="logoUrl" :src="logoUrl" alt="Logo" class="" />
+            <div v-else class="flex items-center gap-2 text-lg font-bold">
+              <img :src="faviconUrl" alt="Logo" />
+            </div>
+          </NuxtLink>
+        </div>
         <div class="text-center"><WebsiteShortDescription /></div>
         <div class="flex gap-2 justify-center mt-8 mx-auto text-center">
           <ClientOnly>

@@ -36,7 +36,7 @@ useSeoMeta({
         <h2 class="text-lg font-semibold md:text-2xl dark:text-white">{{ $t('shop.shopByCategory') }}</h2>
         <NuxtLink class="text-primary-dark dark:text-primary" to="/categories">{{ $t('general.viewAll') }}</NuxtLink>
       </div>
-      <div class="grid justify-center grid-cols-2 gap-4 mt-8 md:grid-cols-3 lg:grid-cols-6">
+      <div class="flex justify-center gap-4 mt-8">
         <CategoryCard v-for="(category, i) in productCategories" :key="i" class="w-full" :node="category" />
       </div>
     </section>
@@ -67,7 +67,7 @@ useSeoMeta({
 
     <section class="container my-16 products" v-if="popularProducts">
       <div class="flex items-end justify-between">
-        <h2 class="font-display text-lg md:text-2xl dark:text-white">{{ $t('shop.popularProducts') }}</h2>
+        <h2 class="font-display! text-lg! md:text-4xl! dark:text-white">{{ $t('shop.popularProducts') }}</h2>
         <NuxtLink class="font-medium text-primary-dark dark:text-primary" to="/products">{{ $t('general.viewAll') }}</NuxtLink>
       </div>
       <ProductRow :products="popularProducts" class="grid-cols-2 md:grid-cols-4 lg:grid-cols-5 mt-8" />
