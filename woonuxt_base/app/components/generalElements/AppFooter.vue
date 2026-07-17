@@ -15,8 +15,8 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
 
 <template>
   <footer class="bg-white dark:bg-gray-800 order-last">
-    <div class="container flex flex-wrap lg:flex-nowrap justify-between gap-12 mt-12 mb-24 md:gap-24">
-      <div class="mr-auto">
+    <div class="container flex flex-wrap lg:flex-nowrap justify-between gap-2 mt-12 mb-24 md:gap-3">
+      <div class="mr-auto px-4">
         <div class="max-w-[300px] mx-auto">
           <NuxtLink to="/" class="flex h-full w-full items-center justify-center p-2">
             <img v-if="logoUrl" :src="logoUrl" alt="Logo" class="" />
@@ -26,13 +26,13 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
           </NuxtLink>
         </div>
         <div class="text-center"><WebsiteShortDescription /></div>
-        <div class="flex gap-2 justify-center mt-8 mx-auto text-center">
+        <div class="flex gap-2 justify-center my-8 mx-auto text-center">
           <ClientOnly>
             <ColorModeSwitcher />
           </ClientOnly>
         </div>
       </div>
-      <div class="w-[42.857%] lg:w-auto">
+      <div class="w-[45%] lg:w-auto mb-10 px-4">
         <div class="mb-1 font-semibold text-gray-900 dark:text-white">{{ $t('general.information') }}</div>
         <div class="text-sm text-gray-700 dark:text-gray-300">
           <ClientOnly>
@@ -49,7 +49,7 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
           </ClientOnly>
         </div>
       </div>
-      <div class="w-[42.857%] lg:w-auto">
+      <div class="w-[45%] lg:w-auto mb-10 px-4">
         <div class="mb-1 font-semibold text-gray-900 dark:text-white">{{ $t('general.products') }}</div>
         <div class="text-sm text-gray-700 dark:text-gray-300">
           <ClientOnly>
@@ -73,7 +73,7 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
           <NuxtLink to="/templates" class="py-1.5 block">Calligraphy Template<br />Generator</NuxtLink>
         </div>
       </div>
-      <div class="w-[42.857%] lg:w-auto">
+      <div class="w-[45%] lg:w-auto px-4">
         <div class="mb-1 font-semibold text-gray-900 dark:text-white">{{ $t('general.customerService') }}</div>
         <div class="text-sm text-gray-700 dark:text-gray-300">
           <ClientOnly>
@@ -87,7 +87,7 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
           <a href="/terms-conditions" class="py-1.5 block">{{ $t('general.termsConditions') }}</a>
         </div>
       </div>
-      <div class="w-[42.857%] lg:w-auto">
+      <div class="w-[45%] lg:w-auto px-4">
         <div class="mb-1 font-semibold text-gray-900 dark:text-white">{{ $t('account.myAccount') }}</div>
         <div class="text-sm text-gray-700 dark:text-gray-300">
           <ClientOnly>

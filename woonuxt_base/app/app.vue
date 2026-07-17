@@ -48,7 +48,7 @@ useHead({
       <MobileMenu v-if="isShowingMobileMenu" />
     </Transition>
 
-    <section class="mt-24">
+    <section class="mt-12 md:mt-24">
       <NuxtPage />
     </section>
 

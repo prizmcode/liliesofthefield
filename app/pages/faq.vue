@@ -42,7 +42,7 @@ useSeoMeta({
 </script>
 
 <template>
- <div class="container my-12 max-w-3xl">
+ <div class="container my-12 max-w-3xl" style="padding: 0 32px">
   <h1 class="mb-2 text-5xl font-display">Frequently Asked Questions</h1>
   <p class="mb-8 text-gray-600 dark:text-gray-300">
    Can't find what you're looking for?
