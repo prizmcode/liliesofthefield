@@ -126,8 +126,4 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
   </footer>
 </template>
 
-<style scoped>
-a:hover {
-  text-decoration: underline;
-}
-</style>
+<style scoped></style>

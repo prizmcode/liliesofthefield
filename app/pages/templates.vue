@@ -14,7 +14,6 @@ const slantAngle = ref(20);
 const slantSpacing = ref(10);
 const showCenterLine = ref(false);
 const showRulers = ref(true);
-const showCardOverlay = ref(false);
 
 type Preset = {
  name: string;
@@ -120,11 +119,22 @@ const ruleGroups = computed(() => {
   bottom: number;
  }[] = [];
  if (groupHeight.value <= 0) return groups;
- const pageBottom = PAGE_H - effectiveBottomMargin.value;
- let y = margin.value;
- let count = 0;
- while (y + groupHeight.value <= pageBottom) {
-  if (!autoFill.value && count >= numLines.value) break;
+ const topBound = margin.value;
+ const bottomBound = PAGE_H - effectiveBottomMargin.value;
+ const usableH = bottomBound - topBound;
+
+ // Determine how many groups fit within the usable vertical area.
+ const denom = groupHeight.value + lineGap.value;
+ let lineCount = Math.floor((usableH + lineGap.value) / denom);
+ if (lineCount < 0) lineCount = 0;
+ if (!autoFill.value) lineCount = Math.min(lineCount, numLines.value);
+ if (lineCount <= 0) return groups;
+
+ // Vertically center the whole block within the usable area.
+ const blockHeight = lineCount * groupHeight.value + (lineCount - 1) * lineGap.value;
+ let y = topBound + (usableH - blockHeight) / 2;
+
+ for (let count = 0; count < lineCount; count++) {
   groups.push({
    top: y,
    waist: y + ascenderH.value,
@@ -132,7 +142,6 @@ const ruleGroups = computed(() => {
    bottom: y + groupHeight.value,
   });
   y += groupHeight.value + lineGap.value;
-  count++;
  }
  return groups;
 });
@@ -196,14 +205,35 @@ const slantLines = computed(() => {
  return lines;
 });
 
-const CARD_W = 5 * MM_PER_INCH;
-const CARD_H = 7 * MM_PER_INCH;
-const cardOverlay = computed(() => ({
- x: (PAGE_W - CARD_W) / 2,
- y: (PAGE_H - CARD_H) / 2,
- width: CARD_W,
- height: CARD_H,
-}));
+const CUSTOM_MIN_IN = 2;
+const PAGE_W_IN = PAGE_W / MM_PER_INCH;
+const PAGE_H_IN = PAGE_H / MM_PER_INCH;
+const customWidthIn = ref<number | null>(null);
+const customHeightIn = ref<number | null>(null);
+
+const customOverlay = computed(() => {
+ const w = customWidthIn.value;
+ const h = customHeightIn.value;
+ if (
+  w === null ||
+  h === null ||
+  Number.isNaN(w) ||
+  Number.isNaN(h) ||
+  w < CUSTOM_MIN_IN ||
+  h < CUSTOM_MIN_IN ||
+  w > PAGE_W_IN ||
+  h > PAGE_H_IN
+ )
+  return null;
+ const width = w * MM_PER_INCH;
+ const height = h * MM_PER_INCH;
+ return {
+  x: (PAGE_W - width) / 2,
+  y: (PAGE_H - height) / 2,
+  width,
+  height,
+ };
+});
 
 const settingsLabel = computed(() => {
  const parts = [
@@ -423,11 +453,40 @@ async function handleDownloadPdf() {
       <input v-model="showRulers" type="checkbox" class="accent-current" />
       <span>Show rulers</span>
      </label>
+    </div>
 
-     <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
-      <input v-model="showCardOverlay" type="checkbox" class="accent-current" />
-      <span>5"×7" overlay</span>
-     </label>
+    <div class="border-t border-gray-200 pt-5 space-y-3">
+     <p class="text-sm font-medium">Custom overlay (inches)</p>
+     <div class="grid grid-cols-2 gap-3">
+      <label class="text-sm">
+       <span class="block mb-1 text-gray-600 dark:text-gray-300">Width</span>
+       <input
+        v-model.number="customWidthIn"
+        type="number"
+        :min="CUSTOM_MIN_IN"
+        :max="PAGE_W_IN"
+        step="0.25"
+        placeholder="in"
+        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600"
+       />
+      </label>
+      <label class="text-sm">
+       <span class="block mb-1 text-gray-600 dark:text-gray-300">Height</span>
+       <input
+        v-model.number="customHeightIn"
+        type="number"
+        :min="CUSTOM_MIN_IN"
+        :max="PAGE_H_IN"
+        step="0.25"
+        placeholder="in"
+        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600"
+       />
+      </label>
+     </div>
+     <p class="text-xs text-gray-500">
+      Min {{ CUSTOM_MIN_IN }}", max {{ PAGE_W_IN }}" × {{ PAGE_H_IN }}". Overlay
+      appears once both are set.
+     </p>
     </div>
 
     <button
@@ -580,11 +639,11 @@ async function handleDownloadPdf() {
        stroke-width="0.25"
       />
       <rect
-       v-if="showCardOverlay"
-       :x="cardOverlay.x"
-       :y="cardOverlay.y"
-       :width="cardOverlay.width"
-       :height="cardOverlay.height"
+       v-if="customOverlay"
+       :x="customOverlay.x"
+       :y="customOverlay.y"
+       :width="customOverlay.width"
+       :height="customOverlay.height"
        fill="none"
        stroke="#111827"
        stroke-width="0.35"
