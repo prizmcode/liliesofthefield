@@ -1,4 +1,5 @@
 fragment LineItemProduct on Product {
+  databaseId
   name
   slug
   image {
@@ -37,5 +38,6 @@ fragment LineItem on LineItem {
     sizeDims
     notes
     unitPrice
+    svg
   }
 }

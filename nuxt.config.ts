@@ -18,6 +18,11 @@ export default defineNuxtConfig({
 
  runtimeConfig: {
   instagramAccessToken: process.env.INSTAGRAM_ACCESS_TOKEN || "",
+  templateProductId: process.env.TEMPLATE_PRODUCT_ID || "",
+  templateAdminSecret: process.env.TEMPLATE_ADMIN_SECRET || "",
+  public: {
+   templateProductId: process.env.TEMPLATE_PRODUCT_ID || "",
+  },
  },
 
  /**

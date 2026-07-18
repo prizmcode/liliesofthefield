@@ -1,4 +1,13 @@
 <script setup lang="ts">
+import type { AddToCartInput } from "#types/gql";
+
+const appConfig = useAppConfig();
+const runtimeConfig = useRuntimeConfig();
+const router = useRouter();
+const { addToCart, cart } = useCart();
+
+const TEMPLATE_PRODUCT_ID = Number(runtimeConfig.public.templateProductId);
+
 const PAGE_W = 215.9;
 const PAGE_H = 279.4;
 
@@ -258,6 +267,7 @@ useSeoMeta({
 
 const svgEl = ref<SVGSVGElement | null>(null);
 const logoDataUrl = ref<string | null>(null);
+const showWatermark = ref(true);
 const LOGO_SIZE = 16;
 const LOGO_GAP = 1.2;
 
@@ -277,7 +287,7 @@ onMounted(() => {
   logoDataUrl.value = canvas.toDataURL("image/png");
  };
  // change when actual logo is done
- img.src = "/liliesofthefield.webp";
+ img.src = appConfig.logoUrl;
 });
 
 function handlePrint() {
@@ -307,6 +317,102 @@ async function handleDownloadPdf() {
  });
  await svg2pdf(svgEl.value, pdf, { x: 0, y: 0, width: PAGE_W, height: PAGE_H });
  pdf.save(buildFilename());
+}
+
+const cleanPdfMessage = ref("");
+
+// Serialize the current preview as a clean (unwatermarked) SVG string.
+function serializeCleanSvg(): string | null {
+ if (!svgEl.value) return null;
+ const clone = svgEl.value.cloneNode(true) as SVGSVGElement;
+ clone.querySelectorAll("[data-watermark]").forEach((n) => n.remove());
+ return new XMLSerializer().serializeToString(clone);
+}
+
+// The current template settings, persisted alongside the saved SVG.
+function currentSettings() {
+ return {
+  margin: margin.value,
+  autoFill: autoFill.value,
+  numLines: numLines.value,
+  ascenderH: ascenderH.value,
+  xHeight: xHeight.value,
+  descenderH: descenderH.value,
+  lineGap: lineGap.value,
+  showSlant: showSlant.value,
+  slantAngle: slantAngle.value,
+  slantSpacing: slantSpacing.value,
+  showCenterLine: showCenterLine.value,
+ };
+}
+
+async function requestCleanPdf() {
+ const svg = serializeCleanSvg();
+ if (!svg) return;
+ cleanPdfMessage.value = "";
+ // useGqlToken is a setter (returns void); read the stored token from its cookie.
+ const token = useCookie("gql:default").value;
+ const headers: Record<string, string> = {};
+ if (token) headers.Authorization = `Bearer ${token}`;
+ try {
+  const blob = await $fetch<Blob>("/api/generate-template-pdf", {
+   method: "POST",
+   headers,
+   responseType: "blob",
+   body: { svg, filename: buildFilename() },
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = buildFilename();
+  a.click();
+  URL.revokeObjectURL(url);
+ } catch (e: any) {
+  const code = e?.statusCode || e?.response?.status;
+  cleanPdfMessage.value =
+   code === 401 || code === 403
+    ? "Purchase required to download the clean PDF."
+    : "Could not generate the PDF. Please try again.";
+ }
+}
+
+const isAddingTemplate = ref(false);
+// Add the template product (with the saved SVG + settings) to the cart, then
+// send the customer to checkout. The SVG is stored so it stays in the cart on
+// return and is available on the resulting order.
+async function buyCleanTemplate() {
+ const svg = serializeCleanSvg();
+ if (!svg || isAddingTemplate.value) return;
+ cleanPdfMessage.value = "";
+ if (!Number.isFinite(TEMPLATE_PRODUCT_ID) || TEMPLATE_PRODUCT_ID <= 0) {
+  cleanPdfMessage.value = "Template product is not configured.";
+  return;
+ }
+ isAddingTemplate.value = true;
+ const beforeCount = cart.value?.contents?.itemCount ?? 0;
+ try {
+  const input: AddToCartInput = {
+   productId: TEMPLATE_PRODUCT_ID,
+   quantity: 1,
+   extraData: JSON.stringify({
+    calligraphy_text: settingsLabel.value,
+    calligraphy_notes: buildFilename(),
+    calligraphy_settings: JSON.stringify(currentSettings()),
+    calligraphy_svg: svg,
+   }),
+  };
+  await addToCart(input);
+  const afterCount = cart.value?.contents?.itemCount ?? 0;
+  if (afterCount <= beforeCount) {
+   cleanPdfMessage.value = "Could not add the template to your cart. Please try again.";
+   return;
+  }
+  await router.push("/checkout");
+ } catch {
+  cleanPdfMessage.value = "Could not add the template to your cart. Please try again.";
+ } finally {
+  isAddingTemplate.value = false;
+ }
 }
 </script>
 
@@ -502,8 +608,20 @@ async function handleDownloadPdf() {
      @click="handleDownloadPdf"
      class="w-full px-6 py-3 font-bold text-gray-800 bg-white border border-gray-800 hover:bg-gray-100 rounded-xl cursor-pointer"
     >
-     Download PDF
+     Download (watermarked)
     </button>
+
+    <button
+     type="button"
+     @click="buyCleanTemplate"
+     :disabled="isAddingTemplate"
+     class="w-full px-6 py-3 font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+    >
+     {{ isAddingTemplate ? "Adding to cart…" : "Download clean PDF" }}
+    </button>
+    <p v-if="cleanPdfMessage" class="text-sm text-red-600">
+     {{ cleanPdfMessage }}
+    </p>
    </aside>
 
    <div class="calligraphy-print-area">
@@ -568,6 +686,24 @@ async function handleDownloadPdf() {
       preserveAspectRatio="xMidYMid meet"
      >
       <defs>
+       <pattern
+        id="wmPattern"
+        patternUnits="userSpaceOnUse"
+        width="60"
+        height="60"
+        patternTransform="rotate(-30)"
+       >
+        <image
+         v-if="logoDataUrl"
+         :href="logoDataUrl"
+         x="0"
+         y="0"
+         width="40"
+         height="40"
+         opacity="0.14"
+         preserveAspectRatio="xMidYMid meet"
+        />
+       </pattern>
        <clipPath id="ruleGroupsClip">
         <rect
          v-for="(g, i) in ruleGroups"
@@ -579,6 +715,16 @@ async function handleDownloadPdf() {
         />
        </clipPath>
       </defs>
+      <rect
+       v-if="showWatermark && logoDataUrl"
+       data-watermark="true"
+       x="0"
+       y="0"
+       :width="PAGE_W"
+       :height="PAGE_H"
+       fill="url(#wmPattern)"
+       pointer-events="none"
+      />
       <g
        v-if="showSlant"
        clip-path="url(#ruleGroupsClip)"
