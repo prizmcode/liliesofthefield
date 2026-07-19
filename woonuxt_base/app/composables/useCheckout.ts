@@ -21,7 +21,12 @@ export function useCheckout() {
     const { username, password, shipToDifferentAddress } = orderInput.value;
     const shippingSource = customer.value?.shipping ?? customer.value?.billing;
     const billingSource = shipToDifferentAddress ? customer.value?.billing : shippingSource;
-    const billing = billingSource;
+    // The email is only ever captured on `customer.billing.email` (the contact
+    // field). When not shipping to a different address, `billingSource` is the
+    // shipping object, which has no email — so the order would be created with a
+    // null billing email and never link to the guest's session. Always carry the
+    // billing email through so the order is associated with the customer.
+    const billing = { ...billingSource, email: customer.value?.billing?.email ?? billingSource?.email ?? null };
     const shipping = shipToDifferentAddress ? shippingSource : billingSource;
 
     const payload: CheckoutInput = {
@@ -158,14 +163,40 @@ export function useCheckout() {
       // Build checkout payload
       const checkoutPayload = buildCheckoutPayload(isPaid);
 
+      // WooGraphQL only exposes a guest's order through `customer.orders` when the
+      // billing email is set on the WooCommerce session AT THE TIME THE ORDER IS
+      // CREATED. Set it BEFORE checkout so the order is linked to this session at
+      // creation, making it readable on the order-received page. (Setting it after
+      // checkout rotates the session to a new one that never owned the order.)
+      // Skipped when an account is being created (order links to the account).
+      const billingEmail = customer.value?.billing?.email;
+      if (billingEmail && !orderInput.value.createAccount) {
+        try {
+          await GqlUpdateCustomer({ input: { billing: { email: billingEmail } } as UpdateCustomerInput });
+        } catch (e) {
+          console.warn('[checkout] failed to set billing email on session:', e);
+        }
+      }
+
       // Process the checkout
       const { checkout } = await GqlCheckout(checkoutPayload);
 
       // Handle account creation if requested
       await handleAccountCreation();
 
-      const orderId = checkout?.order?.databaseId as number | undefined;
-      const orderKey = checkout?.order?.orderKey as string | undefined;
+      let orderId = checkout?.order?.databaseId as number | string | undefined;
+      let orderKey = checkout?.order?.orderKey as string | undefined;
+
+      // WooGraphQL returns null for databaseId/orderKey on orders that complete
+      // immediately (needsPayment=false, needsProcessing=false), but the redirect
+      // URL still contains them: .../order-received/{id}/?key={key}
+      if ((!orderId || !orderKey) && checkout?.redirect) {
+        const redirectMatch = String(checkout.redirect).match(/order-received\/(\d+)\/?\?[^#]*\bkey=([^&#]+)/i);
+        if (redirectMatch) {
+          if (!orderId) orderId = redirectMatch[1];
+          if (!orderKey) orderKey = decodeURIComponent(redirectMatch[2]);
+        }
+      }
 
       // Ensure we have required order details
       if (!orderId || !orderKey) {

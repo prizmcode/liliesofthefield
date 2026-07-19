@@ -1,0 +1,5 @@
+query getOrderByKey($key: ID!) {
+  order(id: $key, idType: ORDER_KEY) {
+    ...OrderFragment
+  }
+}

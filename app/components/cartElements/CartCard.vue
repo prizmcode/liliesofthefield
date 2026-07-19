@@ -40,6 +40,15 @@ const isOptimisticItem = computed(() =>
  String(item.key || "").startsWith("optimistic:"),
 );
 
+// The customer's saved template design travels on the cart item's extraData
+// (calligraphy_svg). When present, it is shown as the line-item thumbnail in
+// place of the generic product image.
+const designSvg = computed(() => {
+ const entry = item.extraData?.find((d) => d.key === "calligraphy_svg");
+ const svg = entry?.value;
+ return typeof svg === "string" && svg.trim().startsWith("<svg") ? svg : null;
+});
+
 const removeItem = () => {
  if (isOptimisticItem.value) return;
  updateItemQuantity(item.key, 0);
@@ -55,7 +64,14 @@ const moveToWishList = () => {
  <SwipeCard :disabled="isOptimisticItem" @remove="removeItem">
   <div v-if="productType" class="flex items-center gap-3 group">
    <NuxtLink :to="productSlug">
+    <div
+     v-if="designSvg"
+     class="w-16 h-16 rounded-md bg-white p-1 border border-gray-200 dark:border-gray-700 overflow-hidden [&>svg]:w-full [&>svg]:h-full"
+     :title="productType.name"
+     v-html="designSvg"
+    />
     <NuxtImg
+     v-else
      width="64"
      height="64"
      class="w-16 h-16 rounded-md skeleton"

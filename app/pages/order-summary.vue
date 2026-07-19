@@ -27,6 +27,41 @@ const downloadableItems = computed(
  () => order.value?.downloadableItems?.nodes || [],
 );
 
+// Resolve the calligraphy design for a line item. Prefer the structured
+// `calligraphy` GraphQL field; when the backend leaves it null, reconstruct it
+// from the raw line-item metaData (persisted at checkout as `_calligraphy_*`),
+// so the "Download design (PDF)" button still works.
+function lineItemCalligraphy(item: any) {
+ if (item?.calligraphy) return item.calligraphy;
+ const meta = item?.metaData;
+ if (!Array.isArray(meta) || !meta.length) return null;
+ const get = (key: string) =>
+  meta.find((m: any) => m?.key === `_${key}` || m?.key === key)?.value ?? null;
+ const svg = get("calligraphy_svg");
+ const text = get("calligraphy_text");
+ const notes = get("calligraphy_notes");
+ if (!svg && !text && !notes) return null;
+ let parsed: Record<string, unknown> = {};
+ const settings = get("calligraphy_settings");
+ if (typeof settings === "string") {
+  try {
+   parsed = JSON.parse(settings) || {};
+  } catch {
+   parsed = {};
+  }
+ }
+ return {
+  text,
+  notes,
+  svg,
+  letters: parsed.letters ?? null,
+  sizeId: parsed.sizeId ?? null,
+  sizeLabel: parsed.sizeLabel ?? null,
+  sizeDims: parsed.sizeDims ?? null,
+  unitPrice: parsed.unitPrice ?? null,
+ };
+}
+
 onBeforeMount(() => {
  /**
   * This is to close the child PayPal window we open on the checkout page.
@@ -68,9 +103,22 @@ onMounted(async () => {
 });
 
 async function getOrder() {
+ const orderKey = typeof query.key === "string" ? query.key : "";
  try {
   const { customer } = await GqlGetOrder({ id: params.orderId as string });
-  const fetchedOrder = customer?.orders?.nodes?.[0];
+  let fetchedOrder = customer?.orders?.nodes?.[0];
+
+  // Guest checkouts (and freshly-placed orders not yet linked to a logged-in
+  // customer) won't appear under customer.orders. Fall back to the root order
+  // query authorized by the order key from the URL.
+  if (!fetchedOrder && orderKey) {
+   try {
+    const { order: orderByKey } = await GqlGetOrderByKey({ key: orderKey });
+    if (orderByKey) fetchedOrder = orderByKey;
+   } catch (keyErr: unknown) {
+    console.error("[order-summary] getOrderByKey failed:", getErrorMessage(keyErr));
+   }
+  }
 
   if (fetchedOrder) {
    order.value = fetchedOrder;
@@ -215,8 +263,8 @@ useSeoMeta({
          }}
         </div>
         <CalligraphyLineItemMeta
-         v-if="(item as any).calligraphy"
-         :calligraphy="(item as any).calligraphy"
+         v-if="lineItemCalligraphy(item)"
+         :calligraphy="lineItemCalligraphy(item)"
         />
        </div>
        <div class="text-sm text-gray-600 dark:text-gray-400">

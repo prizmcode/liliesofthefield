@@ -40,4 +40,11 @@ fragment LineItem on LineItem {
     unitPrice
     svg
   }
+  metaData(
+    keysIn: ["_calligraphy_svg", "_calligraphy_text", "_calligraphy_notes", "_calligraphy_settings", "calligraphy_svg", "calligraphy_text", "calligraphy_notes", "calligraphy_settings"]
+    multiple: true
+  ) {
+    key
+    value
+  }
 }
