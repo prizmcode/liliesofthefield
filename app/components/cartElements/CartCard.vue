@@ -49,6 +49,49 @@ const designSvg = computed(() => {
  return typeof svg === "string" && svg.trim().startsWith("<svg") ? svg : null;
 });
 
+// When the item carries saved template settings, link back to the generator so
+// the customer can reopen and re-edit their design instead of the product page.
+const restoreLink = computed(() => {
+ const entry = item.extraData?.find((d) => d.key === "calligraphy_settings");
+ const settings = entry?.value;
+ if (typeof settings !== "string" || !settings.trim()) return null;
+ return `/templates?restore=${encodeURIComponent(settings)}`;
+});
+const itemLink = computed(() => restoreLink.value || productSlug.value);
+
+// A readable summary of the template settings the customer chose, parsed from
+// the cart item's extraData (calligraphy_settings). Shown below the product
+// name so the cart reflects the specific design that was added.
+const customizations = computed(() => {
+ const entry = item.extraData?.find((d) => d.key === "calligraphy_settings");
+ const raw = entry?.value;
+ if (typeof raw !== "string" || !raw.trim()) return [];
+ let s;
+ try {
+  s = JSON.parse(raw);
+ } catch {
+  return [];
+ }
+ if (!s || typeof s !== "object") return [];
+ const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+ const list = [];
+ const push = (label, value) => {
+  if (value !== null && value !== undefined && value !== "") list.push({ label, value });
+ };
+ push("Margin", num(s.margin) !== null ? `${s.margin}mm` : null);
+ push("Lines", s.autoFill ? "Auto-fill" : num(s.numLines));
+ push("Ascender", num(s.ascenderH) !== null ? `${s.ascenderH}mm` : null);
+ push("x-height", num(s.xHeight) !== null ? `${s.xHeight}mm` : null);
+ push("Descender", num(s.descenderH) !== null ? `${s.descenderH}mm` : null);
+ push("Line gap", num(s.lineGap) !== null ? `${s.lineGap}mm` : null);
+ if (s.showSlant) {
+  push("Slant", num(s.slantAngle) !== null ? `${s.slantAngle}°` : "On");
+  push("Slant spacing", num(s.slantSpacing) !== null ? `${s.slantSpacing}mm` : null);
+ }
+ push("Center line", s.showCenterLine ? "On" : null);
+ return list;
+});
+
 const removeItem = () => {
  if (isOptimisticItem.value) return;
  updateItemQuantity(item.key, 0);
@@ -63,7 +106,7 @@ const moveToWishList = () => {
 <template>
  <SwipeCard :disabled="isOptimisticItem" @remove="removeItem">
   <div v-if="productType" class="flex items-center gap-3 group">
-   <NuxtLink :to="productSlug">
+   <NuxtLink :to="itemLink">
     <div
      v-if="designSvg"
      class="w-16 h-16 rounded-md bg-white p-1 border border-gray-200 dark:border-gray-700 overflow-hidden [&>svg]:w-full [&>svg]:h-full"
@@ -85,7 +128,7 @@ const moveToWishList = () => {
     <div class="flex gap-x-2 gap-y-1 flex-wrap items-center">
      <NuxtLink
       class="leading-tight line-clamp-2 text-gray-900 dark:text-gray-100 hover:text-primary dark:hover:text-primary"
-      :to="productSlug"
+      :to="itemLink"
       >{{ productType.name }}</NuxtLink
      >
      <span
@@ -101,6 +144,15 @@ const moveToWishList = () => {
       Low Stock
      </span>
     </div>
+    <ul
+     v-if="customizations.length"
+     class="mt-0.5 text-[11px] leading-tight text-gray-500 dark:text-gray-400"
+    >
+     <li v-for="c in customizations" :key="c.label" class="flex gap-1">
+      <span class="text-gray-400 dark:text-gray-500">{{ c.label }}:</span>
+      <span class="text-gray-600 dark:text-gray-300">{{ c.value }}</span>
+     </li>
+    </ul>
     <ProductPrice
      class="mt-1 text-xs"
      :sale-price="productType.salePrice"

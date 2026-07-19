@@ -55,6 +55,24 @@ function lineItemCalligraphy(item: any) {
   };
 }
 
+// When a line item carries a saved calligraphy design, use it as the thumbnail
+// (rendered as an inline SVG data URL) instead of the default product image.
+function lineItemThumbnail(item: any): string | null {
+  const svg = lineItemCalligraphy(item)?.svg;
+  if (typeof svg !== 'string' || !svg.trim().startsWith('<svg')) return null;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+// Build a link to the template generator that restores the saved guide settings,
+// so a customer can reopen and re-edit the exact design they created.
+function lineItemRestoreLink(item: any): string | null {
+  const meta = item?.metaData;
+  if (!Array.isArray(meta) || !meta.length) return null;
+  const settings = meta.find((m: any) => m?.key === '_calligraphy_settings' || m?.key === 'calligraphy_settings')?.value;
+  if (typeof settings !== 'string' || !settings.trim()) return null;
+  return `/templates?restore=${encodeURIComponent(settings)}`;
+}
+
 onBeforeMount(() => {
   /**
    * This is to close the child PayPal window we open on the checkout page.
@@ -188,8 +206,18 @@ useSeoMeta({
 
           <div class="grid gap-2">
             <div v-for="item in order.lineItems.nodes" :key="item.id" class="flex items-center justify-between gap-8">
-              <NuxtLink v-if="item.product?.node" :to="`/product/${item.product.node.slug}`">
+              <NuxtLink v-if="item.product?.node" :to="lineItemRestoreLink(item) || `/product/${item.product.node.slug}`">
+                <img
+                  v-if="lineItemThumbnail(item)"
+                  class="object-contain w-16 h-16 bg-white border border-gray-200 rounded-xl dark:border-gray-700"
+                  :src="lineItemThumbnail(item)!"
+                  alt="Custom calligraphy template"
+                  title="Custom calligraphy template"
+                  width="64"
+                  height="64"
+                  loading="lazy" />
                 <NuxtImg
+                  v-else
                   class="w-16 h-16 rounded-xl"
                   :src="item.variation?.node?.image?.sourceUrl || item.product.node?.image?.sourceUrl || '/images/placeholder.png'"
                   :alt="item.variation?.node?.image?.altText || item.product.node?.image?.altText || 'Product image'"
@@ -199,7 +227,13 @@ useSeoMeta({
                   loading="lazy" />
               </NuxtLink>
               <div class="flex-1 leading-tight text-gray-900 dark:text-white">
-                <div>{{ item.variation ? item.variation?.node?.name : item.product?.node.name! }}</div>
+                <NuxtLink
+                  v-if="item.product?.node"
+                  :to="lineItemRestoreLink(item) || `/product/${item.product.node.slug}`"
+                  class="hover:underline">
+                  {{ item.variation ? item.variation?.node?.name : item.product?.node.name! }}
+                </NuxtLink>
+                <div v-else>{{ item.variation ? item.variation?.node?.name : item.product?.node.name! }}</div>
                 <CalligraphyLineItemMeta v-if="lineItemCalligraphy(item)" :calligraphy="lineItemCalligraphy(item)" />
               </div>
               <div class="text-sm text-gray-600 dark:text-gray-400">Qty. {{ item.quantity }}</div>

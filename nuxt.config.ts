@@ -5,11 +5,11 @@ const { resolve } = createResolver(import.meta.url);
 export default defineNuxtConfig({
  // Get all the pages, components, composables and plugins from the parent theme
  extends: ["./woonuxt_base"],
- //  routeRules: {
- //   "/product/custom-calligraphy-template-download": {
- //    redirect: { to: "/templates", statusCode: 301 },
- //   },
- //  },
+ routeRules: {
+  "/product/custom-calligraphy-template-download": {
+   redirect: { to: "/templates", statusCode: 301 },
+  },
+ },
 
  components: [
   { path: resolve("./app/components"), pathPrefix: false, priority: 10 },

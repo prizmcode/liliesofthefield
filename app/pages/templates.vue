@@ -4,6 +4,7 @@ import type { AddToCartInput } from "#types/gql";
 const appConfig = useAppConfig();
 const runtimeConfig = useRuntimeConfig();
 const router = useRouter();
+const route = useRoute();
 const { addToCart, cart } = useCart();
 
 const TEMPLATE_PRODUCT_ID = Number(runtimeConfig.public.templateProductId);
@@ -140,7 +141,8 @@ const ruleGroups = computed(() => {
  if (lineCount <= 0) return groups;
 
  // Vertically center the whole block within the usable area.
- const blockHeight = lineCount * groupHeight.value + (lineCount - 1) * lineGap.value;
+ const blockHeight =
+  lineCount * groupHeight.value + (lineCount - 1) * lineGap.value;
  let y = topBound + (usableH - blockHeight) / 2;
 
  for (let count = 0; count < lineCount; count++) {
@@ -277,7 +279,44 @@ const brandingTextX = computed(
  () => PAGE_W - FOOTER_STRIP - LOGO_SIZE - LOGO_GAP,
 );
 
+// Restore a previously saved design from a `?restore=<settings JSON>` query,
+// e.g. when a customer reopens the template from a past order. Only known,
+// correctly-typed keys are applied so a malformed URL can't break the page.
+function restoreFromQuery() {
+ const raw = route.query.restore;
+ if (typeof raw !== "string" || !raw.trim()) return;
+ let parsed: Record<string, unknown>;
+ try {
+  parsed = JSON.parse(raw);
+ } catch {
+  return;
+ }
+ if (!parsed || typeof parsed !== "object") return;
+ const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+ const bool = (v: unknown) => (typeof v === "boolean" ? v : null);
+ const apply = (r: { value: number }, v: unknown) => {
+  const n = num(v);
+  if (n !== null) r.value = n;
+ };
+ const applyBool = (r: { value: boolean }, v: unknown) => {
+  const b = bool(v);
+  if (b !== null) r.value = b;
+ };
+ apply(margin, parsed.margin);
+ applyBool(autoFill, parsed.autoFill);
+ apply(numLines, parsed.numLines);
+ apply(ascenderH, parsed.ascenderH);
+ apply(xHeight, parsed.xHeight);
+ apply(descenderH, parsed.descenderH);
+ apply(lineGap, parsed.lineGap);
+ applyBool(showSlant, parsed.showSlant);
+ apply(slantAngle, parsed.slantAngle);
+ apply(slantSpacing, parsed.slantSpacing);
+ applyBool(showCenterLine, parsed.showCenterLine);
+}
+
 onMounted(() => {
+ restoreFromQuery();
  const img = new Image();
  img.onload = () => {
   const canvas = document.createElement("canvas");
@@ -404,12 +443,14 @@ async function buyCleanTemplate() {
   await addToCart(input);
   const afterCount = cart.value?.contents?.itemCount ?? 0;
   if (afterCount <= beforeCount) {
-   cleanPdfMessage.value = "Could not add the template to your cart. Please try again.";
+   cleanPdfMessage.value =
+    "Could not add the template to your cart. Please try again.";
    return;
   }
   await router.push("/checkout");
  } catch {
-  cleanPdfMessage.value = "Could not add the template to your cart. Please try again.";
+  cleanPdfMessage.value =
+   "Could not add the template to your cart. Please try again.";
  } finally {
   isAddingTemplate.value = false;
  }
@@ -617,7 +658,7 @@ async function buyCleanTemplate() {
      :disabled="isAddingTemplate"
      class="w-full px-6 py-3 font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
     >
-     {{ isAddingTemplate ? "Adding to cart…" : "Download clean PDF" }}
+     {{ isAddingTemplate ? "Adding to cart…" : "Download Clean PDF $1.99" }}
     </button>
     <p v-if="cleanPdfMessage" class="text-sm text-red-600">
      {{ cleanPdfMessage }}
@@ -698,9 +739,9 @@ async function buyCleanTemplate() {
          :href="logoDataUrl"
          x="0"
          y="0"
-         width="40"
-         height="40"
-         opacity="0.14"
+         width="48"
+         height="48"
+         opacity="0.4"
          preserveAspectRatio="xMidYMid meet"
         />
        </pattern>

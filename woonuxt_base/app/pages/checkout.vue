@@ -14,6 +14,19 @@ const stripeKey = runtimeConfig.public?.STRIPE_PUBLISHABLE_KEY || null;
 const buttonText = ref<string>(isProcessingOrder.value ? t('general.processing') : t('shop.checkoutButton'));
 const isStripeElementReady = ref<boolean>(false);
 const stripeClientSecret = ref<string>('');
+// The amount (in minor units, e.g. cents) the current PaymentIntent was created
+// for. Kept so we can verify it still matches the cart total before charging —
+// guarding against a stale intent (e.g. created before a coupon was applied).
+const stripeIntentAmount = ref<number | null>(null);
+
+// The current cart total in minor units, used both to (re)create the Stripe
+// PaymentIntent and to validate it before payment.
+const cartTotalMinor = computed<number | null>(() => {
+  const raw = cart.value?.rawTotal;
+  if (raw === null || raw === undefined || raw === '') return null;
+  const parsed = parseFloat(raw as string);
+  return Number.isFinite(parsed) ? Math.round(parsed * 100) : null;
+});
 
 const isCheckoutDisabled = computed<boolean>(() => {
   if (isProcessingOrder.value || isCartMutating.value || !orderInput.value.paymentMethod) return true;
@@ -94,9 +107,47 @@ const payNow = async () => {
       const paymentMethodType = appConfig.stripePaymentMethod || 'payment';
 
       if (paymentMethodType === 'payment') {
-        // Modern Payment Element - use confirmPayment
+        // Modern Payment Element - use confirmPayment.
+        //
+        // Fetch a fresh PaymentIntent right before charging rather than trusting
+        // a value cached by the watcher. The watcher can race with cart mutations
+        // (optimistic updates, shipping/coupon changes) and briefly leave the
+        // cached clientSecret empty or tied to a stale amount. Re-fetching here
+        // guarantees the intent reflects the current server-side cart total, which
+        // also prevents charging the pre-discount amount after a coupon is applied.
+        let intentBackendError = '';
+        try {
+          const { stripePaymentIntent } = await GqlGetStripePaymentIntent({
+            stripePaymentMethod: 'PAYMENT' as any,
+          });
+          console.log('[stripe] PaymentIntent response:', stripePaymentIntent);
+          stripeClientSecret.value = stripePaymentIntent?.clientSecret || '';
+          stripeIntentAmount.value =
+            typeof stripePaymentIntent?.amount === 'number' ? stripePaymentIntent.amount : null;
+          intentBackendError = stripePaymentIntent?.error || '';
+        } catch (intentError) {
+          console.error('Failed to refresh Stripe PaymentIntent before charging:', intentError);
+          intentBackendError = intentError instanceof Error ? intentError.message : String(intentError);
+        }
+
         if (!stripeClientSecret.value) {
-          throw new Error('Payment intent not available. Please refresh and try again.');
+          throw new Error(
+            intentBackendError
+              ? `Payment intent not available: ${intentBackendError}`
+              : 'Payment intent not available. Please refresh and try again.',
+          );
+        }
+
+        // Guard against a stale PaymentIntent: if the amount it was created for
+        // no longer matches the current cart total (e.g. a coupon was applied
+        // after the intent was created), refuse to charge and force a refresh so
+        // the customer is billed the correct, discounted amount.
+        if (
+          stripeIntentAmount.value !== null &&
+          cartTotalMinor.value !== null &&
+          stripeIntentAmount.value !== cartTotalMinor.value
+        ) {
+          throw new Error('Your order total changed. Please review your cart and try again.');
         }
 
         // First, submit the elements to validate the form
@@ -205,6 +256,23 @@ const payNow = async () => {
   await processCheckout(isPaid.value);
 };
 
+// Dev-only shortcut to exercise the order/design-download pipeline without going
+// through Stripe. Marks the order as paid and runs the normal checkout mutation.
+// Guarded by import.meta.dev so it never ships to production builds.
+const isDev = import.meta.dev;
+const placeOrderWithoutPayment = async () => {
+  if (!isDev) return;
+  buttonText.value = t('general.processing');
+  try {
+    isPaid.value = true;
+    orderInput.value.transactionId = `dev-bypass-${Date.now()}`;
+    await processCheckout(true);
+  } catch (error) {
+    console.error('Dev bypass checkout error:', error);
+    buttonText.value = t('shop.placeOrder');
+  }
+};
+
 const handleStripeElement = (stripeElements: StripeElements): void => {
   elements.value = stripeElements;
 
@@ -243,22 +311,34 @@ const checkEmailOnInput = (email?: string | null): void => {
   if (email && isInvalidEmail.value) isInvalidEmail.value = false;
 };
 
-// Watch for Stripe payment method selection to get client secret for Payment Element
+// Pre-warm the Stripe PaymentIntent when Stripe is selected and whenever the cart
+// total changes (e.g. a coupon is applied). This keeps a usable clientSecret ready
+// so the Payment Element can confirm quickly; payNow always re-fetches a fresh
+// intent immediately before charging, so this is only an optimisation and a stale
+// or missing value here is not fatal. A sequence token ensures a slower, earlier
+// fetch can never overwrite the result of a later one.
+let stripeIntentFetchSeq = 0;
 watch(
-  () => orderInput.value.paymentMethod?.id,
-  async (paymentMethodId) => {
+  () => [orderInput.value.paymentMethod?.id, cartTotalMinor.value] as const,
+  async ([paymentMethodId]) => {
     if (paymentMethodId === 'stripe' && appConfig.stripePaymentMethod === 'payment') {
+      const seq = ++stripeIntentFetchSeq;
       try {
         const { stripePaymentIntent } = await GqlGetStripePaymentIntent({
           stripePaymentMethod: 'PAYMENT' as any,
         });
+        if (seq !== stripeIntentFetchSeq) return; // a newer fetch superseded this one
         stripeClientSecret.value = stripePaymentIntent?.clientSecret || '';
+        stripeIntentAmount.value =
+          typeof stripePaymentIntent?.amount === 'number' ? stripePaymentIntent.amount : null;
       } catch (error) {
         console.error('Failed to get client secret for Payment Element:', error);
-        stripeClientSecret.value = '';
+        // Leave any existing secret in place; payNow will re-fetch before charging.
       }
     } else {
+      stripeIntentFetchSeq++;
       stripeClientSecret.value = '';
+      stripeIntentAmount.value = null;
     }
   },
   { immediate: true },
@@ -390,16 +470,13 @@ useSeoMeta({
               :active-option="cart.chosenShippingMethods[0]" />
           </div>
 
-          <hr class="border-gray-300 dark:border-gray-600" />
-
           <!-- Pay methods -->
           <div v-if="paymentGateways?.nodes.length" class="mt-2 col-span-full">
+            <hr class="border-gray-300 dark:border-gray-600" />
             <h2 class="mb-4 text-xl font-semibold leading-none dark:text-white">{{ $t('billing.paymentOptions') }}</h2>
             <PaymentOptions v-model="orderInput.paymentMethod" class="mb-4" :paymentGateways />
             <StripeElement v-if="stripe" v-show="orderInput.paymentMethod.id == 'stripe'" :stripe @updateElement="handleStripeElement" />
           </div>
-
-          <hr class="border-gray-300 dark:border-gray-600" />
 
           <!-- Order note -->
           <div>
@@ -419,6 +496,14 @@ useSeoMeta({
           <Button :loading="isProcessingOrder" :disabled="isCheckoutDisabled" size="lg" type="submit" class="w-full mt-4">
             {{ buttonText }}
           </Button>
+          <button
+            v-if="isDev"
+            type="button"
+            :disabled="isProcessingOrder"
+            class="w-full mt-2 py-2 text-sm font-medium text-amber-700 border border-amber-400 rounded-lg bg-amber-50 hover:bg-amber-100 disabled:opacity-50 dark:text-amber-300 dark:bg-amber-900/20 dark:border-amber-700"
+            @click="placeOrderWithoutPayment">
+            Dev: place order without paying
+          </button>
         </OrderSummary>
       </form>
     </template>
