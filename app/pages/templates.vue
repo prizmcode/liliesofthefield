@@ -9,8 +9,12 @@ const { addToCart, cart } = useCart();
 
 const TEMPLATE_PRODUCT_ID = Number(runtimeConfig.public.templateProductId);
 
-const PAGE_W = 215.9;
-const PAGE_H = 279.4;
+const LETTER_W = 215.9; // 8.5" in mm
+const LETTER_H = 279.4; // 11" in mm
+const orientation = ref<"portrait" | "landscape">("portrait");
+const isLandscape = computed(() => orientation.value === "landscape");
+const PAGE_W = computed(() => (isLandscape.value ? LETTER_H : LETTER_W));
+const PAGE_H = computed(() => (isLandscape.value ? LETTER_W : LETTER_H));
 
 const margin = ref(12.7);
 const autoFill = ref(true);
@@ -102,8 +106,8 @@ function applyPreset(p: Preset) {
 const groupHeight = computed(
  () => ascenderH.value + xHeight.value + descenderH.value,
 );
-const writingAreaW = computed(() => PAGE_W - margin.value * 2);
-const writingAreaH = computed(() => PAGE_H - margin.value * 2);
+const writingAreaW = computed(() => PAGE_W.value - margin.value * 2);
+const writingAreaH = computed(() => PAGE_H.value - margin.value * 2);
 
 const FOOTER_STRIP = 12.7;
 const effectiveBottomMargin = computed(() =>
@@ -113,7 +117,7 @@ const effectiveBottomMargin = computed(() =>
 const maxLines = computed(() => {
  const denom = groupHeight.value + lineGap.value;
  if (groupHeight.value <= 0 || denom <= 0) return 1;
- const usableH = PAGE_H - margin.value - effectiveBottomMargin.value;
+ const usableH = PAGE_H.value - margin.value - effectiveBottomMargin.value;
  return Math.max(1, Math.floor((usableH + lineGap.value) / denom));
 });
 
@@ -130,7 +134,7 @@ const ruleGroups = computed(() => {
  }[] = [];
  if (groupHeight.value <= 0) return groups;
  const topBound = margin.value;
- const bottomBound = PAGE_H - effectiveBottomMargin.value;
+ const bottomBound = PAGE_H.value - effectiveBottomMargin.value;
  const usableH = bottomBound - topBound;
 
  // Determine how many groups fit within the usable vertical area.
@@ -167,7 +171,7 @@ type Tick = { pos: number; major: boolean; label?: number };
 
 const horizontalTicks = computed<Tick[]>(() => {
  const ticks: Tick[] = [];
- for (let i = 0; i * TICK_STEP <= PAGE_W + 0.001; i++) {
+ for (let i = 0; i * TICK_STEP <= PAGE_W.value + 0.001; i++) {
   const major = i % 4 === 0;
   ticks.push({
    pos: i * TICK_STEP,
@@ -180,7 +184,7 @@ const horizontalTicks = computed<Tick[]>(() => {
 
 const verticalTicks = computed<Tick[]>(() => {
  const ticks: Tick[] = [];
- for (let i = 0; i * TICK_STEP <= PAGE_H + 0.001; i++) {
+ for (let i = 0; i * TICK_STEP <= PAGE_H.value + 0.001; i++) {
   const major = i % 4 === 0;
   ticks.push({
    pos: i * TICK_STEP,
@@ -217,8 +221,8 @@ const slantLines = computed(() => {
 });
 
 const CUSTOM_MIN_IN = 2;
-const PAGE_W_IN = PAGE_W / MM_PER_INCH;
-const PAGE_H_IN = PAGE_H / MM_PER_INCH;
+const PAGE_W_IN = computed(() => PAGE_W.value / MM_PER_INCH);
+const PAGE_H_IN = computed(() => PAGE_H.value / MM_PER_INCH);
 const customWidthIn = ref<number | null>(null);
 const customHeightIn = ref<number | null>(null);
 
@@ -232,15 +236,15 @@ const customOverlay = computed(() => {
   Number.isNaN(h) ||
   w < CUSTOM_MIN_IN ||
   h < CUSTOM_MIN_IN ||
-  w > PAGE_W_IN ||
-  h > PAGE_H_IN
+  w > PAGE_W_IN.value ||
+  h > PAGE_H_IN.value
  )
   return null;
  const width = w * MM_PER_INCH;
  const height = h * MM_PER_INCH;
  return {
-  x: (PAGE_W - width) / 2,
-  y: (PAGE_H - height) / 2,
+  x: (PAGE_W.value - width) / 2,
+  y: (PAGE_H.value - height) / 2,
   width,
   height,
  };
@@ -248,6 +252,7 @@ const customOverlay = computed(() => {
 
 const settingsLabel = computed(() => {
  const parts = [
+  orientation.value === "landscape" ? "Landscape" : "Portrait",
   `A ${ascenderH.value}mm`,
   `X ${xHeight.value}mm`,
   `D ${descenderH.value}mm`,
@@ -267,16 +272,28 @@ useSeoMeta({
   "Design and print custom calligraphy practice sheets with adjustable x-height, ascender, descender, line spacing, and slant guides.",
 });
 
+// Inject the dynamic @page rule and print dimensions so the browser's
+// print dialog uses the correct letter orientation (portrait/landscape).
+useHead(() => ({
+ style: [
+  {
+   innerHTML: `@page { size: letter ${orientation.value}; margin: 0; } @media print { .calligraphy-print-area { width: ${PAGE_W_IN.value}in !important; height: ${PAGE_H_IN.value}in !important; } .calligraphy-print-area svg { width: ${PAGE_W_IN.value}in !important; height: ${PAGE_H_IN.value}in !important; } }`,
+  },
+ ],
+}));
+
 const svgEl = ref<SVGSVGElement | null>(null);
 const logoDataUrl = ref<string | null>(null);
 const showWatermark = ref(true);
 const LOGO_SIZE = 16;
 const LOGO_GAP = 1.2;
 
-const logoX = computed(() => PAGE_W - FOOTER_STRIP - LOGO_SIZE);
-const logoY = computed(() => PAGE_H - FOOTER_STRIP / 2 - LOGO_SIZE / 2 - 0.4);
+const logoX = computed(() => PAGE_W.value - FOOTER_STRIP - LOGO_SIZE);
+const logoY = computed(
+ () => PAGE_H.value - FOOTER_STRIP / 2 - LOGO_SIZE / 2 - 0.4,
+);
 const brandingTextX = computed(
- () => PAGE_W - FOOTER_STRIP - LOGO_SIZE - LOGO_GAP,
+ () => PAGE_W.value - FOOTER_STRIP - LOGO_SIZE - LOGO_GAP,
 );
 
 // Restore a previously saved design from a `?restore=<settings JSON>` query,
@@ -292,7 +309,8 @@ function restoreFromQuery() {
   return;
  }
  if (!parsed || typeof parsed !== "object") return;
- const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+ const num = (v: unknown) =>
+  typeof v === "number" && Number.isFinite(v) ? v : null;
  const bool = (v: unknown) => (typeof v === "boolean" ? v : null);
  const apply = (r: { value: number }, v: unknown) => {
   const n = num(v);
@@ -313,6 +331,8 @@ function restoreFromQuery() {
  apply(slantAngle, parsed.slantAngle);
  apply(slantSpacing, parsed.slantSpacing);
  applyBool(showCenterLine, parsed.showCenterLine);
+ const o = parsed.orientation;
+ if (o === "portrait" || o === "landscape") orientation.value = o;
 }
 
 onMounted(() => {
@@ -350,11 +370,16 @@ async function handleDownloadPdf() {
   import("svg2pdf.js"),
  ]);
  const pdf = new jsPDF({
-  orientation: "portrait",
+  orientation: orientation.value,
   unit: "mm",
   format: "letter",
  });
- await svg2pdf(svgEl.value, pdf, { x: 0, y: 0, width: PAGE_W, height: PAGE_H });
+ await svg2pdf(svgEl.value, pdf, {
+  x: 0,
+  y: 0,
+  width: PAGE_W.value,
+  height: PAGE_H.value,
+ });
  pdf.save(buildFilename());
 }
 
@@ -371,6 +396,7 @@ function serializeCleanSvg(): string | null {
 // The current template settings, persisted alongside the saved SVG.
 function currentSettings() {
  return {
+  orientation: orientation.value,
   margin: margin.value,
   autoFill: autoFill.value,
   numLines: numLines.value,
@@ -398,7 +424,7 @@ async function requestCleanPdf() {
    method: "POST",
    headers,
    responseType: "blob",
-   body: { svg, filename: buildFilename() },
+   body: { svg, filename: buildFilename(), orientation: orientation.value },
   });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -484,14 +510,44 @@ async function buyCleanTemplate() {
      </div>
     </div>
 
+    <div class="border-t border-gray-200 pt-5">
+     <p class="text-sm font-medium mb-2">Orientation</p>
+     <div class="grid grid-cols-2 gap-2">
+      <button
+       type="button"
+       @click="orientation = 'portrait'"
+       :class="[
+        'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+        orientation === 'portrait'
+         ? 'bg-gray-800 text-white border-gray-800'
+         : 'border-gray-300 hover:bg-gray-100',
+       ]"
+      >
+       Portrait
+      </button>
+      <button
+       type="button"
+       @click="orientation = 'landscape'"
+       :class="[
+        'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+        orientation === 'landscape'
+         ? 'bg-gray-800 text-white border-gray-800'
+         : 'border-gray-300 hover:bg-gray-100',
+       ]"
+      >
+       Landscape
+      </button>
+     </div>
+    </div>
+
     <div class="space-y-3 border-t border-gray-200 pt-5">
      <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+      <span>Number of lines</span>
       <input v-model="autoFill" type="checkbox" />
       <span>Auto-fill page</span>
      </label>
      <div v-if="!autoFill">
       <label class="flex justify-between text-sm font-medium">
-       <span>Number of lines</span>
        <span class="text-gray-500">{{ numLines }} / {{ maxLines }}</span>
       </label>
       <input
@@ -1009,11 +1065,6 @@ input[type="range"] {
 </style>
 
 <style>
-@page {
- size: letter portrait;
- margin: 0;
-}
-
 @media print {
  header,
  footer,
@@ -1032,8 +1083,6 @@ input[type="range"] {
   left: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
-  width: 8.5in !important;
-  height: 11in !important;
   background: #fff !important;
   z-index: 10 !important;
   page-break-after: avoid !important;
@@ -1047,8 +1096,6 @@ input[type="range"] {
  }
  .calligraphy-print-area svg {
   display: block !important;
-  width: 8.5in !important;
-  height: 11in !important;
   border: none !important;
   box-shadow: none !important;
  }

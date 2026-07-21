@@ -3,6 +3,7 @@ import { JSDOM } from "jsdom";
 interface Body {
  svg: string;
  filename?: string;
+ orientation?: "portrait" | "landscape";
 }
 
 const ORDERS_QUERY = `query TplOrders {
@@ -88,14 +89,20 @@ export default defineEventHandler(async (event) => {
    return { x: 0, y: 0, width: text.length * fontSize * 0.5, height: fontSize };
   };
  }
- const svgEl = dom.window.document.querySelector("svg") as unknown as SVGSVGElement;
+ const svgEl = dom.window.document.querySelector(
+  "svg",
+ ) as unknown as SVGSVGElement;
  const g = globalThis as any;
  const prev = { document: g.document, window: g.window };
  g.document = dom.window.document;
  g.window = dom.window; // svg2pdf DOM shim
- const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
+ const orientation =
+  body.orientation === "landscape" ? "landscape" : "portrait";
+ const pageW = orientation === "landscape" ? 279.4 : 215.9;
+ const pageH = orientation === "landscape" ? 215.9 : 279.4;
+ const pdf = new jsPDF({ orientation, unit: "mm", format: "letter" });
  try {
-  await pdf.svg(svgEl, { x: 0, y: 0, width: 215.9, height: 279.4 });
+  await pdf.svg(svgEl, { x: 0, y: 0, width: pageW, height: pageH });
  } finally {
   g.document = prev.document;
   g.window = prev.window;
