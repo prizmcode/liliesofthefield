@@ -71,7 +71,7 @@ h2 {
 }
 .products h1,
 .products h2 {
-  @apply text-lg font-sans py-0;
+  @apply text-base font-sans py-0;
 }
 header a {
   @apply text-primary no-underline dark:text-amber-100;
@@ -84,7 +84,10 @@ header a {
   --color-primary-dark: oklch(from var(--color-primary) calc(l - 0.15) c h);
 
   --font-sans: 'Inter', sans-serif;
-  --font-display: 'Mr Dafoe', serif; /* example for a brand site */
+  --font-script: 'Pinyon Script', cursive; /* example for a brand site */
+  --font-display: 'Mr Dafoe', cursive; /* example for a brand site */
+  --font-blackletter: 'Manufacturing Consent', cursive; /* example for a brand site */
+  /* --font-display: 'Great Vibes', cursive; /* example for a brand site */
 
   /* Breakpoints */
   --breakpoint-2xl: 1400px;

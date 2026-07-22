@@ -1,14 +1,17 @@
 import { JSDOM } from "jsdom";
+import sharp from "sharp";
+import { ZipArchive } from "archiver";
 
 interface Body {
  svg: string;
  filename?: string;
  orientation?: "portrait" | "landscape";
+ includePng?: boolean;
 }
 
 const ORDERS_QUERY = `query TplOrders {
- viewer { roles { nodes { name } } }
- customer { orders(first: 100) { nodes { status lineItems { nodes { product { node { ... on Product { databaseId } } } } } } } }
+  viewer { roles { nodes { name } } }
+  customer { orders(first: 100) { nodes { status lineItems { nodes { product { node { ... on Product { databaseId } } } variation { node { databaseId } } } } } } }
 }`;
 
 export default defineEventHandler(async (event) => {
@@ -48,13 +51,17 @@ export default defineEventHandler(async (event) => {
    if (roles.includes("administrator")) allowed = true;
    const paid = ["COMPLETED", "PROCESSING"];
    const pid = String(config.templateProductId);
+   const pdfPngVariationId = String(config.templateVariationPdfAndPng);
    const orders = res?.data?.customer?.orders?.nodes ?? [];
    if (!allowed && pid) {
     allowed = orders.some(
      (o: any) =>
       paid.includes(o?.status) &&
       (o?.lineItems?.nodes ?? []).some(
-       (li: any) => String(li?.product?.node?.databaseId) === pid,
+       (li: any) =>
+        String(li?.product?.node?.databaseId) === pid ||
+        String(li?.variation?.node?.databaseId) === pid ||
+        String(li?.variation?.node?.databaseId) === pdfPngVariationId,
       ),
     );
    }
@@ -108,12 +115,55 @@ export default defineEventHandler(async (event) => {
   g.window = prev.window;
  }
 
- const filename = (body.filename || "Calligraphy-Template.pdf").replace(
+ const baseFilename = (body.filename || "Calligraphy-Template.pdf").replace(
   /[^a-zA-Z0-9._-]+/g,
   "-",
  );
- const buffer = new Uint8Array(pdf.output("arraybuffer"));
- setHeader(event, "Content-Type", "application/pdf");
- setHeader(event, "Content-Disposition", `attachment; filename="${filename}"`);
- return buffer;
+ const pdfBuffer = Buffer.from(pdf.output("arraybuffer"));
+
+ // If PNG is not requested, return the PDF directly (original behavior).
+ if (!body.includePng) {
+  setHeader(event, "Content-Type", "application/pdf");
+  setHeader(
+   event,
+   "Content-Disposition",
+   `attachment; filename="${baseFilename}"`,
+  );
+  return pdfBuffer;
+ }
+
+ // Generate a transparent PNG from the SVG using sharp.
+ // The SVG has no background rect (the white bg is a CSS class in the browser),
+ // so the PNG will naturally have a transparent background.
+ const pngFilename = baseFilename.replace(/\.pdf$/i, "") + ".png";
+ const pngBuffer = await sharp(Buffer.from(svg))
+  .resize({
+   width: 2550, // 300 DPI at 8.5"
+   height: 3300, // 300 DPI at 11"
+   fit: "contain",
+   background: { r: 0, g: 0, b: 0, alpha: 0 },
+  })
+  .png()
+  .toBuffer();
+
+ // Create a zip archive containing both the PDF and PNG.
+ const zipFilename = baseFilename.replace(/\.pdf$/i, "") + ".zip";
+ const zipBuffer = await new Promise<Buffer>((resolve, reject) => {
+  const archive = new ZipArchive({ zlib: { level: 9 } });
+  const chunks: Buffer[] = [];
+  archive.on("data", (chunk: Buffer) => chunks.push(chunk));
+  archive.on("end", () => resolve(Buffer.concat(chunks)));
+  archive.on("error", reject);
+  archive.append(pdfBuffer, { name: baseFilename });
+  archive.append(pngBuffer, { name: pngFilename });
+  archive.finalize();
+ });
+
+ setHeader(event, "Content-Type", "application/zip");
+ setHeader(
+  event,
+  "Content-Disposition",
+  `attachment; filename="${zipFilename}"`,
+ );
+ return zipBuffer;
 });

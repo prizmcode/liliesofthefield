@@ -8,6 +8,12 @@ const route = useRoute();
 const { addToCart, cart } = useCart();
 
 const TEMPLATE_PRODUCT_ID = Number(runtimeConfig.public.templateProductId);
+const TEMPLATE_VARIATION_PDF_ONLY = Number(
+ runtimeConfig.public.templateVariationPdfOnly,
+);
+const TEMPLATE_VARIATION_PDF_AND_PNG = Number(
+ runtimeConfig.public.templateVariationPdfAndPng,
+);
 
 const LETTER_W = 215.9; // 8.5" in mm
 const LETTER_H = 279.4; // 11" in mm
@@ -421,7 +427,7 @@ function currentSettings() {
  };
 }
 
-async function requestCleanPdf() {
+async function requestCleanPdf(includePng = false) {
  const svg = serializeCleanSvg();
  if (!svg) return;
  cleanPdfMessage.value = "";
@@ -434,20 +440,29 @@ async function requestCleanPdf() {
    method: "POST",
    headers,
    responseType: "blob",
-   body: { svg, filename: buildFilename(), orientation: orientation.value },
+   body: {
+    svg,
+    filename: buildFilename(),
+    orientation: orientation.value,
+    includePng,
+   },
   });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = buildFilename();
+  // If a zip was returned, use .zip extension
+  const isZip = includePng;
+  a.download = isZip
+   ? buildFilename().replace(/\.pdf$/i, "") + ".zip"
+   : buildFilename();
   a.click();
   URL.revokeObjectURL(url);
  } catch (e: any) {
   const code = e?.statusCode || e?.response?.status;
   cleanPdfMessage.value =
    code === 401 || code === 403
-    ? "Purchase required to download the clean PDF."
-    : "Could not generate the PDF. Please try again.";
+    ? "Purchase required to download the clean template."
+    : "Could not generate the file. Please try again.";
  }
 }
 
@@ -455,12 +470,19 @@ const isAddingTemplate = ref(false);
 // Add the template product (with the saved SVG + settings) to the cart, then
 // send the customer to checkout. The SVG is stored so it stays in the cart on
 // return and is available on the resulting order.
-async function buyCleanTemplate() {
+async function buyCleanTemplate(includePng = false) {
  const svg = serializeCleanSvg();
  if (!svg || isAddingTemplate.value) return;
  cleanPdfMessage.value = "";
  if (!Number.isFinite(TEMPLATE_PRODUCT_ID) || TEMPLATE_PRODUCT_ID <= 0) {
   cleanPdfMessage.value = "Template product is not configured.";
+  return;
+ }
+ const variationId = includePng
+  ? TEMPLATE_VARIATION_PDF_AND_PNG
+  : TEMPLATE_VARIATION_PDF_ONLY;
+ if (!variationId) {
+  cleanPdfMessage.value = "Template variation is not configured.";
   return;
  }
  isAddingTemplate.value = true;
@@ -469,11 +491,28 @@ async function buyCleanTemplate() {
   const input: AddToCartInput = {
    productId: TEMPLATE_PRODUCT_ID,
    quantity: 1,
+   variationId,
+   variation: [
+    {
+     attributeName: "pdf-download",
+     attributeValue: "PDF Printable Download",
+    },
+    ...(includePng
+     ? [
+        {
+         attributeName: "pdf-download-transparent-png",
+         attributeValue:
+          "Both a PDF Printable Download and transparent PNG file for working with digital assets.",
+        },
+       ]
+     : []),
+   ],
    extraData: JSON.stringify({
     calligraphy_text: settingsLabel.value,
     calligraphy_notes: buildFilename(),
     calligraphy_settings: JSON.stringify(currentSettings()),
     calligraphy_svg: svg,
+    calligraphy_include_png: includePng,
    }),
   };
   await addToCart(input);
@@ -718,14 +757,31 @@ async function buyCleanTemplate() {
      Download (watermarked)
     </button>
 
-    <button
-     type="button"
-     @click="buyCleanTemplate"
-     :disabled="isAddingTemplate"
-     class="w-full px-6 py-3 font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-    >
-     {{ isAddingTemplate ? "Adding to cart…" : "Download Clean PDF $1.99" }}
-    </button>
+    <div class="border-t border-gray-200 pt-5 space-y-3">
+     <p class="text-sm font-medium">Download Clean Template</p>
+     <button
+      type="button"
+      @click="buyCleanTemplate(false)"
+      :disabled="isAddingTemplate"
+      class="w-full px-6 py-3 font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+     >
+      {{ isAddingTemplate ? "Adding to cart…" : "PDF Only — $1.99" }}
+     </button>
+     <button
+      type="button"
+      @click="buyCleanTemplate(true)"
+      :disabled="isAddingTemplate"
+      class="w-full px-6 py-3 font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+     >
+      {{
+       isAddingTemplate ? "Adding to cart…" : "PDF + Transparent PNG — $2.99"
+      }}
+     </button>
+     <p class="text-xs text-gray-500">
+      The PDF+PNG option includes a high-resolution transparent PNG file for use
+      with digital design tools, bundled together in a zip archive.
+     </p>
+    </div>
     <p v-if="cleanPdfMessage" class="text-sm text-red-600">
      {{ cleanPdfMessage }}
     </p>
@@ -1092,16 +1148,12 @@ input[type="range"] {
 </style>
 
 <style>
-/* Static @page rules with named pages so the browser's print engine picks
-   up the correct orientation. Dynamically injected @page rules are often
-   ignored by print engines, but named pages selected via the `page` property
-   on an element are reliably honored. */
+/* A single portrait named page is used for both orientations. Print engines
+   often ignore `@page { size: letter landscape }`, so landscape content is
+   instead rotated 90° to fit this portrait sheet (see the print rules below).
+   Named pages selected via the `page` property are reliably honored. */
 @page portrait-page {
  size: letter portrait;
- margin: 0;
-}
-@page landscape-page {
- size: letter landscape;
  margin: 0;
 }
 
@@ -1131,8 +1183,15 @@ input[type="range"] {
  .calligraphy-print-area.orientation-portrait {
   page: portrait-page;
  }
+ /* Print engines frequently ignore `@page { size: letter landscape }`, so the
+     landscape sheet comes out portrait with the content squished. Instead we
+     keep the paper portrait and rotate the landscape content 90° so it fills
+     the page. The area is 11in × 8.5in, so rotating it about the top-left and
+     shifting up by its own height lands it exactly on the 8.5in × 11in sheet. */
  .calligraphy-print-area.orientation-landscape {
-  page: landscape-page;
+  page: portrait-page;
+  transform-origin: top left;
+  transform: rotate(90deg) translateY(-100%);
  }
  .instagram-feed {
   position: absolute !important;

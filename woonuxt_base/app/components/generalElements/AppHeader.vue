@@ -3,7 +3,7 @@ const { isShowingSearch } = useSearching();
 </script>
 
 <template>
-  <header class="sticky top-0 z-40 bg-amber-50 dark:bg-gray-800 shadow-sm shadow-gray-200 dark:shadow-gray-900 border-b border-amber-900 dark:border-gray-700">
+  <header class="sticky top-0 z-40 bg-amber-50 dark:bg-gray-700 shadow-sm shadow-gray-200 dark:shadow-gray-900 border-b border-amber-900 dark:border-gray-700">
     <div class="container flex items-center justify-center py-4">
       <Logo />
       <MainMenu id="main-nav" class="justify-items-end hidden gap-6 text-sm text-gray-500 dark:text-gray-400 lg:flex flex-1 justify-end lg:px-4 ml-auto" />

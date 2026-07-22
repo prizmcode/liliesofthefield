@@ -24,9 +24,13 @@ export default defineNuxtConfig({
  runtimeConfig: {
   instagramAccessToken: process.env.INSTAGRAM_ACCESS_TOKEN || "",
   templateProductId: process.env.TEMPLATE_PRODUCT_ID || "",
+  templateVariationPdfOnly: process.env.TEMPLATE_VARIATION_PDF_ONLY || "",
+  templateVariationPdfAndPng: process.env.TEMPLATE_VARIATION_PDF_AND_PNG || "",
   templateAdminSecret: process.env.TEMPLATE_ADMIN_SECRET || "",
   public: {
    templateProductId: process.env.TEMPLATE_PRODUCT_ID || "",
+   templateVariationPdfOnly: process.env.TEMPLATE_VARIATION_PDF_ONLY || "",
+   templateVariationPdfAndPng: process.env.TEMPLATE_VARIATION_PDF_AND_PNG || "",
   },
  },
 

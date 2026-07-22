@@ -121,7 +121,7 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
       10% of all proceeds donated to <a href="https://www.atlasfree.org/" class="text-white!">Atlas Free</a>
     </div>
     <!-- plug ;) -->
-    <section class="bg-amber-50 py-2">
+    <section class="bg-amber-50 dark:bg-gray-900 py-2">
       <div class="container dark:border-gray-700 flex items-center justify-center mb-8">
         <div class="copywrite">
           <p class="py-4 text-xs text-center text-gray-400 dark:text-gray-400">
