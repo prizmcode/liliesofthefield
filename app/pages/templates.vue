@@ -272,12 +272,13 @@ useSeoMeta({
   "Design and print custom calligraphy practice sheets with adjustable x-height, ascender, descender, line spacing, and slant guides.",
 });
 
-// Inject the dynamic @page rule and print dimensions so the browser's
-// print dialog uses the correct letter orientation (portrait/landscape).
+// Inject print dimensions so the SVG fills the page correctly when printing.
+// The @page rules (named pages) handle the page orientation; these styles
+// ensure the print area and SVG match the page dimensions.
 useHead(() => ({
  style: [
   {
-   innerHTML: `@page { size: letter ${orientation.value}; margin: 0; } @media print { .calligraphy-print-area { width: ${PAGE_W_IN.value}in !important; height: ${PAGE_H_IN.value}in !important; } .calligraphy-print-area svg { width: ${PAGE_W_IN.value}in !important; height: ${PAGE_H_IN.value}in !important; } }`,
+   innerHTML: `@media print { .calligraphy-print-area { width: ${PAGE_W_IN.value}in; height: ${PAGE_H_IN.value}in; } .calligraphy-print-area svg { width: ${PAGE_W_IN.value}in; height: ${PAGE_H_IN.value}in; } }`,
   },
  ],
 }));
@@ -338,14 +339,23 @@ function restoreFromQuery() {
 onMounted(() => {
  restoreFromQuery();
  const img = new Image();
+ // Set crossOrigin so the canvas doesn't get tainted (which would
+ // cause toDataURL to throw a security error and silently fail).
+ img.crossOrigin = "anonymous";
  img.onload = () => {
-  const canvas = document.createElement("canvas");
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
-  canvas.getContext("2d")?.drawImage(img, 0, 0);
-  logoDataUrl.value = canvas.toDataURL("image/png");
+  try {
+   const canvas = document.createElement("canvas");
+   canvas.width = img.naturalWidth;
+   canvas.height = img.naturalHeight;
+   canvas.getContext("2d")?.drawImage(img, 0, 0);
+   logoDataUrl.value = canvas.toDataURL("image/png");
+  } catch (e) {
+   console.error("[templates] Failed to convert logo to data URL:", e);
+  }
  };
- // change when actual logo is done
+ img.onerror = (e) => {
+  console.error("[templates] Failed to load logo image:", appConfig.logoUrl, e);
+ };
  img.src = appConfig.logoUrl;
 });
 
@@ -721,7 +731,14 @@ async function buyCleanTemplate() {
     </p>
    </aside>
 
-   <div class="calligraphy-print-area">
+   <div
+    :class="[
+     'calligraphy-print-area',
+     orientation === 'portrait'
+      ? 'orientation-portrait'
+      : 'orientation-landscape',
+    ]"
+   >
     <div class="preview-grid">
      <div v-if="showRulers" class="ruler ruler-top no-print">
       <svg
@@ -780,7 +797,7 @@ async function buyCleanTemplate() {
       :viewBox="`0 0 ${PAGE_W} ${PAGE_H}`"
       xmlns="http://www.w3.org/2000/svg"
       class="paper w-full h-auto bg-white border border-gray-300 shadow-sm"
-      preserveAspectRatio="xMidYMid meet"
+      preserveAspectRatio="none"
      >
       <defs>
        <pattern
@@ -798,7 +815,7 @@ async function buyCleanTemplate() {
          width="48"
          height="48"
          opacity="0.4"
-         preserveAspectRatio="xMidYMid meet"
+         preserveAspectRatio="none"
         />
        </pattern>
        <clipPath id="ruleGroupsClip">
@@ -809,6 +826,14 @@ async function buyCleanTemplate() {
          :y="g.top"
          :width="writingAreaW"
          :height="g.bottom - g.top"
+        />
+       </clipPath>
+       <clipPath v-if="customOverlay" id="overlayClip">
+        <rect
+         :x="customOverlay.x"
+         :y="customOverlay.y"
+         :width="customOverlay.width"
+         :height="customOverlay.height"
         />
        </clipPath>
       </defs>
@@ -822,65 +847,67 @@ async function buyCleanTemplate() {
        fill="url(#wmPattern)"
        pointer-events="none"
       />
-      <g
-       v-if="showSlant"
-       clip-path="url(#ruleGroupsClip)"
-       stroke="#6b7280"
-       stroke-width="0.2"
-       stroke-dasharray="0.8,0.6"
-      >
+      <g :clip-path="customOverlay ? 'url(#overlayClip)' : undefined">
+       <g
+        v-if="showSlant"
+        clip-path="url(#ruleGroupsClip)"
+        stroke="#6b7280"
+        stroke-width="0.2"
+        stroke-dasharray="0.8,0.6"
+       >
+        <line
+         v-for="(l, i) in slantLines"
+         :key="`s-${i}`"
+         :x1="l.x1"
+         :y1="l.y1"
+         :x2="l.x2"
+         :y2="l.y2"
+        />
+       </g>
+       <g v-for="(g, i) in ruleGroups" :key="`g-${i}`">
+        <line
+         :x1="margin"
+         :y1="g.top"
+         :x2="PAGE_W - margin"
+         :y2="g.top"
+         stroke="#4b5563"
+         stroke-width="0.25"
+        />
+        <line
+         :x1="margin"
+         :y1="g.waist"
+         :x2="PAGE_W - margin"
+         :y2="g.waist"
+         stroke="#374151"
+         stroke-width="0.3"
+        />
+        <line
+         :x1="margin"
+         :y1="g.baseline"
+         :x2="PAGE_W - margin"
+         :y2="g.baseline"
+         stroke="#111827"
+         stroke-width="0.4"
+        />
+        <line
+         :x1="margin"
+         :y1="g.bottom"
+         :x2="PAGE_W - margin"
+         :y2="g.bottom"
+         stroke="#4b5563"
+         stroke-width="0.25"
+        />
+       </g>
        <line
-        v-for="(l, i) in slantLines"
-        :key="`s-${i}`"
-        :x1="l.x1"
-        :y1="l.y1"
-        :x2="l.x2"
-        :y2="l.y2"
-       />
-      </g>
-      <g v-for="(g, i) in ruleGroups" :key="`g-${i}`">
-       <line
-        :x1="margin"
-        :y1="g.top"
-        :x2="PAGE_W - margin"
-        :y2="g.top"
+        v-if="showCenterLine"
+        :x1="PAGE_W / 2"
+        :y1="margin"
+        :x2="PAGE_W / 2"
+        :y2="PAGE_H - effectiveBottomMargin"
         stroke="#4b5563"
         stroke-width="0.25"
        />
-       <line
-        :x1="margin"
-        :y1="g.waist"
-        :x2="PAGE_W - margin"
-        :y2="g.waist"
-        stroke="#374151"
-        stroke-width="0.3"
-       />
-       <line
-        :x1="margin"
-        :y1="g.baseline"
-        :x2="PAGE_W - margin"
-        :y2="g.baseline"
-        stroke="#111827"
-        stroke-width="0.4"
-       />
-       <line
-        :x1="margin"
-        :y1="g.bottom"
-        :x2="PAGE_W - margin"
-        :y2="g.bottom"
-        stroke="#4b5563"
-        stroke-width="0.25"
-       />
       </g>
-      <line
-       v-if="showCenterLine"
-       :x1="PAGE_W / 2"
-       :y1="margin"
-       :x2="PAGE_W / 2"
-       :y2="PAGE_H - effectiveBottomMargin"
-       stroke="#4b5563"
-       stroke-width="0.25"
-      />
       <rect
        v-if="customOverlay"
        :x="customOverlay.x"
@@ -908,7 +935,7 @@ async function buyCleanTemplate() {
        :y="logoY"
        :width="LOGO_SIZE"
        :height="LOGO_SIZE"
-       preserveAspectRatio="xMidYMid meet"
+       preserveAspectRatio="none"
       />
       <text
        :x="brandingTextX"
@@ -1065,6 +1092,19 @@ input[type="range"] {
 </style>
 
 <style>
+/* Static @page rules with named pages so the browser's print engine picks
+   up the correct orientation. Dynamically injected @page rules are often
+   ignored by print engines, but named pages selected via the `page` property
+   on an element are reliably honored. */
+@page portrait-page {
+ size: letter portrait;
+ margin: 0;
+}
+@page landscape-page {
+ size: letter landscape;
+ margin: 0;
+}
+
 @media print {
  header,
  footer,
@@ -1087,6 +1127,12 @@ input[type="range"] {
   z-index: 10 !important;
   page-break-after: avoid !important;
   page-break-inside: avoid !important;
+ }
+ .calligraphy-print-area.orientation-portrait {
+  page: portrait-page;
+ }
+ .calligraphy-print-area.orientation-landscape {
+  page: landscape-page;
  }
  .instagram-feed {
   position: absolute !important;

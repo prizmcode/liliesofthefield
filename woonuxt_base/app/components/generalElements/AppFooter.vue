@@ -2,9 +2,14 @@
 import type { ProductCategory } from '#types/gql';
 
 const { wishlistLink } = useAuth();
-const runtimeConfig = useRuntimeConfig();
+const appConfig = useAppConfig();
 const img = useImage();
-const logoUrl = runtimeConfig?.public?.LOGO ? img(runtimeConfig?.public?.LOGO) : null;
+const runtimeConfig = useRuntimeConfig();
+const colorMode = useColorMode();
+const logoUrl = computed(() => {
+  const source = colorMode.value === 'dark' && appConfig.darkLogoUrl ? appConfig.darkLogoUrl : appConfig.logoUrl;
+  return `${runtimeConfig.app.baseURL}${source}`.replace(/\/+/g, '/');
+});
 const faviconUrl = '/liliesofthefield.webp';
 
 const { data } = await useAsyncGql('getProductCategories');
@@ -14,11 +19,11 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
 </script>
 
 <template>
-  <footer class="bg-white dark:bg-gray-800 order-last">
+  <footer class="bg-stone-50 dark:bg-gray-800 order-last">
     <div class="container flex flex-wrap lg:flex-nowrap justify-between gap-2 mt-12 mb-24 md:gap-3">
       <div class="mr-auto px-4">
-        <div class="max-w-[300px] mx-auto">
-          <NuxtLink to="/" class="flex h-full w-full items-center justify-center p-2">
+        <div class="max-w-[400px] mx-auto">
+          <NuxtLink id="footer-logo" to="/" class="flex h-full w-full items-center justify-center p-2">
             <img v-if="logoUrl" :src="logoUrl" alt="Logo" class="" />
             <div v-else class="flex items-center gap-2 text-lg font-bold">
               <img :src="faviconUrl" alt="Logo" />
@@ -112,17 +117,20 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
         </div>
       </div>
     </div>
-    <div class="bg-amber-900 text-center p-4 my-4 text-amber-300 uppercase text-xs">
+    <div class="bg-amber-900 text-center p-4 text-amber-300 uppercase text-xs">
       10% of all proceeds donated to <a href="https://www.atlasfree.org/" class="text-white!">Atlas Free</a>
     </div>
-    <div class="container dark:border-gray-700 flex items-center justify-center mb-8">
-      <div class="copywrite">
-        <p class="py-4 text-xs text-center text-gray-400 dark:text-gray-400">
-          Website Design & Development by <a href="https://prizmstudio.com" title="Prizm Studio">Prizm Studio</a>
-        </p>
+    <!-- plug ;) -->
+    <section class="bg-amber-50 py-2">
+      <div class="container dark:border-gray-700 flex items-center justify-center mb-8">
+        <div class="copywrite">
+          <p class="py-4 text-xs text-center text-gray-400 dark:text-gray-400">
+            Website Design & Development by <a href="https://prizmstudio.com" title="Prizm Studio">Prizm Studio</a>
+          </p>
+        </div>
+        <SocialIcons class="ml-auto" />
       </div>
-      <SocialIcons class="ml-auto" />
-    </div>
+    </section>
   </footer>
 </template>
 

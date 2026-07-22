@@ -4,7 +4,9 @@
  * Only specify the keys you want to change.
  */
 export default defineAppConfig({
- logoUrl: "/liliesofthefield.webp",
+ logoUrl: "/images/lilies-logov11.png",
+ darkLogoUrl: "/images/lilies-logo-dark.png",
+ //logoUrl: "/images/liliesofthefield.webp",
  storeSettings: {
   // Set to `true` to re-enable star ratings, the reviews tab, the rating filter,
   // and the "Sort by rating" option site-wide.

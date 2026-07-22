@@ -34,10 +34,12 @@ useHead({
 <template>
   <NuxtLoadingIndicator />
   <div class="flex flex-col min-h-screen">
+    <!-- SITE UNDER CONSTRUCTION 
+    
     <section
       class="right-8 bg-primary-dark dark:bg-primary-light p-4 text-white dark:text-gray-900 font-Inter uppercase text-center text-xl md:text-2xl z-40 font-light no-print sticky">
       !! site under construction !!
-    </section>
+    </section> -->
     <AppHeader />
 
     <Transition name="slide-from-right">
