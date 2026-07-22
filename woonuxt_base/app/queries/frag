@@ -9,7 +9,6 @@ fragment LineItemProduct on Product {
   }
 }
 fragment LineItemVariation on ProductVariation {
-  databaseId
   name
   image {
     sourceUrl(size: THUMBNAIL)
@@ -42,7 +41,7 @@ fragment LineItem on LineItem {
     svg
   }
   metaData(
-    keysIn: ["_calligraphy_svg", "_calligraphy_text", "_calligraphy_notes", "_calligraphy_settings", "_calligraphy_include_png", "calligraphy_svg", "calligraphy_text", "calligraphy_notes", "calligraphy_settings", "calligraphy_include_png"]
+    keysIn: ["_calligraphy_svg", "_calligraphy_text", "_calligraphy_notes", "_calligraphy_settings", "calligraphy_svg", "calligraphy_text", "calligraphy_notes", "calligraphy_settings", "calligraphy_include_png"]
     multiple: true
   ) {
     key

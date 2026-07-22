@@ -103,8 +103,17 @@ export default defineEventHandler(async (event) => {
  const prev = { document: g.document, window: g.window };
  g.document = dom.window.document;
  g.window = dom.window; // svg2pdf DOM shim
- const orientation =
+ // Orientation is encoded in the saved SVG's viewBox (landscape => width > height).
+ // Trust it over the request body so the PDF and PNG match the design as designed.
+ let orientation: "portrait" | "landscape" =
   body.orientation === "landscape" ? "landscape" : "portrait";
+ const viewBox = svgEl?.getAttribute?.("viewBox");
+ if (viewBox) {
+  const parts = viewBox.split(/[\s,]+/).map(Number);
+  const vbW = parts[2];
+  const vbH = parts[3];
+  if (vbW && vbH) orientation = vbW > vbH ? "landscape" : "portrait";
+ }
  const pageW = orientation === "landscape" ? 279.4 : 215.9;
  const pageH = orientation === "landscape" ? 215.9 : 279.4;
  const pdf = new jsPDF({ orientation, unit: "mm", format: "letter" });
@@ -136,10 +145,15 @@ export default defineEventHandler(async (event) => {
  // The SVG has no background rect (the white bg is a CSS class in the browser),
  // so the PNG will naturally have a transparent background.
  const pngFilename = baseFilename.replace(/\.pdf$/i, "") + ".png";
+ // 300 DPI US Letter, matching the page orientation so landscape designs are not
+ // squeezed into a portrait canvas. The transparent background is preserved
+ // because the SVG paints no page fill (the white paper is a CSS-only class).
+ const pngWidth = orientation === "landscape" ? 3300 : 2550;
+ const pngHeight = orientation === "landscape" ? 2550 : 3300;
  const pngBuffer = await sharp(Buffer.from(svg))
   .resize({
-   width: 2550, // 300 DPI at 8.5"
-   height: 3300, // 300 DPI at 11"
+   width: pngWidth,
+   height: pngHeight,
    fit: "contain",
    background: { r: 0, g: 0, b: 0, alpha: 0 },
   })

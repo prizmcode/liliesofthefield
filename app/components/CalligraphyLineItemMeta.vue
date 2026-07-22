@@ -8,6 +8,7 @@ export interface CalligraphyLineItem {
  notes?: string | null;
  unitPrice?: number | string | null;
  svg?: string | null;
+ includePng?: boolean | null;
 }
 
 const props = defineProps<{
@@ -41,6 +42,10 @@ const savedSvg = computed<string | null>(() => {
 const isDownloading = ref(false);
 const downloadError = ref("");
 
+// When the purchased variation bundled a transparent PNG, the saved design must
+// be delivered as a zip archive (PDF + PNG) rather than a lone PDF.
+const includePng = computed<boolean>(() => !!props.calligraphy?.includePng);
+
 function designFilename() {
  const label = (props.calligraphy?.notes || props.calligraphy?.text || "Calligraphy-Template")
   .replace(/[^a-zA-Z0-9._-]+/g, "-")
@@ -49,10 +54,20 @@ function designFilename() {
  return `${label || "Calligraphy-Template"}.pdf`.replace(/\.pdf\.pdf$/i, ".pdf");
 }
 
-async function downloadDesign() {
- if (!savedSvg.value || isDownloading.value) return;
- downloadError.value = "";
- isDownloading.value = true;
+// The saved SVG's viewBox encodes the page orientation (landscape => width > height),
+// so the PDF/PNG are generated to match rather than defaulting to portrait.
+function svgOrientation(): "portrait" | "landscape" {
+ const match = (savedSvg.value || "").match(/viewBox\s*=\s*["']\s*[\d.]+\s+[\d.]+\s+([\d.]+)\s+([\d.]+)/i);
+ if (match) {
+  const w = parseFloat(match[1]);
+  const h = parseFloat(match[2]);
+  if (w && h) return w > h ? "landscape" : "portrait";
+ }
+ return "portrait";
+}
+
+// Generate the PDF entirely in the browser (no PNG requested).
+async function downloadPdf() {
  // svg2pdf relies on getBBox(), which only works for elements attached to the
  // document, so the parsed SVG is mounted off-screen for the render.
  let host: HTMLDivElement | null = null;
@@ -61,19 +76,70 @@ async function downloadDesign() {
    import("jspdf"),
    import("svg2pdf.js"),
   ]);
-  const doc = new DOMParser().parseFromString(savedSvg.value, "image/svg+xml");
+  const doc = new DOMParser().parseFromString(savedSvg.value!, "image/svg+xml");
   const svgEl = doc.documentElement as unknown as SVGSVGElement;
   host = document.createElement("div");
   host.style.cssText = "position:fixed;left:-99999px;top:0;width:0;height:0;overflow:hidden;";
   host.appendChild(svgEl);
   document.body.appendChild(host);
-  const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
-  await svg2pdf(svgEl, pdf, { x: 0, y: 0, width: 215.9, height: 279.4 });
+  const orientation = svgOrientation();
+  const isLandscape = orientation === "landscape";
+  const pdf = new jsPDF({ orientation, unit: "mm", format: "letter" });
+  await svg2pdf(svgEl, pdf, {
+   x: 0,
+   y: 0,
+   width: isLandscape ? 279.4 : 215.9,
+   height: isLandscape ? 215.9 : 279.4,
+  });
   pdf.save(designFilename());
- } catch {
-  downloadError.value = "Could not generate the PDF. Please try again.";
  } finally {
   if (host) host.remove();
+ }
+}
+
+// Request the zip archive (PDF + transparent PNG) from the server, which renders
+// the PNG with sharp and bundles both files.
+async function downloadArchive() {
+ // useGqlToken is a setter (returns void); read the stored token from its cookie.
+ const token = useCookie("gql:default").value;
+ const headers: Record<string, string> = {};
+ if (token) headers.Authorization = `Bearer ${token}`;
+ const blob = await $fetch<Blob>("/api/generate-template-pdf", {
+  method: "POST",
+  headers,
+  responseType: "blob",
+  body: {
+   svg: savedSvg.value,
+   filename: designFilename(),
+   orientation: svgOrientation(),
+   includePng: true,
+  },
+ });
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement("a");
+ a.href = url;
+ a.download = designFilename().replace(/\.pdf$/i, "") + ".zip";
+ a.click();
+ URL.revokeObjectURL(url);
+}
+
+async function downloadDesign() {
+ if (!savedSvg.value || isDownloading.value) return;
+ downloadError.value = "";
+ isDownloading.value = true;
+ try {
+  if (includePng.value) {
+   await downloadArchive();
+  } else {
+   await downloadPdf();
+  }
+ } catch (e: any) {
+  const code = e?.statusCode || e?.response?.status;
+  downloadError.value =
+   code === 401 || code === 403
+    ? "Purchase required to download this file."
+    : "Could not generate the file. Please try again.";
+ } finally {
   isDownloading.value = false;
  }
 }
@@ -124,7 +190,13 @@ async function downloadDesign() {
     @click="downloadDesign"
    >
     <Icon name="ion:download-outline" />
-    <span>{{ isDownloading ? "Preparing…" : "Download design (PDF)" }}</span>
+    <span>{{
+     isDownloading
+      ? "Preparing…"
+      : includePng
+       ? "Download design (PDF + PNG)"
+       : "Download design (PDF)"
+    }}</span>
    </button>
    <p v-if="downloadError" class="mt-1 text-red-500 dark:text-red-400">
     {{ downloadError }}

@@ -7,6 +7,12 @@ const { customer } = useAuth();
 const { formatDate, formatPrice, getErrorMessage } = useHelpers();
 const { t } = useI18n();
 const { cart, emptyCart, refreshCart } = useCart();
+const runtimeConfig = useRuntimeConfig();
+
+// The variation the customer bought is the source of truth for whether the saved
+// design should be delivered as a zip (PDF + transparent PNG) rather than a lone
+// PDF. This works even when the backend does not persist a per-item meta flag.
+const PDF_AND_PNG_VARIATION_ID = Number(runtimeConfig.public.templateVariationPdfAndPng);
 
 const order = ref<Order | null>(null);
 const fetchDelay = ref<boolean>(query.fetch_delay === 'true');
@@ -26,10 +32,18 @@ const downloadableItems = computed(() => order.value?.downloadableItems?.nodes |
 // from the raw line-item metaData (persisted at checkout as `_calligraphy_*`),
 // so the "Download design (PDF)" button still works.
 function lineItemCalligraphy(item: any) {
-  if (item?.calligraphy) return item.calligraphy;
-  const meta = item?.metaData;
-  if (!Array.isArray(meta) || !meta.length) return null;
+  const meta = Array.isArray(item?.metaData) ? item.metaData : [];
   const get = (key: string) => meta.find((m: any) => m?.key === `_${key}` || m?.key === key)?.value ?? null;
+  // Prefer the purchased variation as the signal for the "PDF + PNG" bundle; fall
+  // back to a per-item meta flag if the backend happens to persist one. When set,
+  // the saved design must be downloaded as a zip archive (PDF + transparent PNG).
+  const variationId = Number(item?.variation?.node?.databaseId);
+  const includePng =
+    (!!PDF_AND_PNG_VARIATION_ID && variationId === PDF_AND_PNG_VARIATION_ID) ||
+    ['1', 'true', 'yes'].includes(String(get('calligraphy_include_png') ?? '').trim().toLowerCase());
+
+  if (item?.calligraphy) return { ...item.calligraphy, includePng };
+  if (!meta.length) return null;
   const svg = get('calligraphy_svg');
   const text = get('calligraphy_text');
   const notes = get('calligraphy_notes');
@@ -47,6 +61,7 @@ function lineItemCalligraphy(item: any) {
     text,
     notes,
     svg,
+    includePng,
     letters: parsed.letters ?? null,
     sizeId: parsed.sizeId ?? null,
     sizeLabel: parsed.sizeLabel ?? null,

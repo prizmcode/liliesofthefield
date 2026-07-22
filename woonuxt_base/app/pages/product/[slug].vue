@@ -405,7 +405,7 @@ const addToCartLoading = computed(() => (isOptimisticCartMode.value ? false : is
           </div>
         </div>
       </div>
-      <div v-if="product.description || product.reviews">
+      <div v-if="product.description || product.reviews" class="pt-8">
         <ProductTabs :product />
       </div>
       <div v-if="product.related && storeSettings.showRelatedProducts">

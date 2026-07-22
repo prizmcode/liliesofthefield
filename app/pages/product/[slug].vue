@@ -608,7 +608,7 @@ const addToCartLoading = computed(() =>
      </div>
     </div>
    </div>
-   <div v-if="product.description || product.reviews">
+   <div v-if="product.description || product.reviews" class="pt-8">
     <ProductTabs :product />
    </div>
    <div
