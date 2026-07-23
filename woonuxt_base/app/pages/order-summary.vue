@@ -63,10 +63,6 @@ function lineItemCalligraphy(item: any) {
     svg,
     includePng,
     letters: parsed.letters ?? null,
-    sizeId: parsed.sizeId ?? null,
-    sizeLabel: parsed.sizeLabel ?? null,
-    sizeDims: parsed.sizeDims ?? null,
-    unitPrice: parsed.unitPrice ?? null,
   };
 }
 

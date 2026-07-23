@@ -48,11 +48,7 @@ export function useCart() {
  type OptimisticCalligraphy = {
   text?: string | null;
   letters?: number | null;
-  sizeId?: string | null;
-  sizeLabel?: string | null;
-  sizeDims?: string | null;
   notes?: string | null;
-  unitPrice?: number | string | null;
  };
  type OptimisticAddPayload = {
   product: ProductDetail;

@@ -18,13 +18,5 @@ fragment ExternalProduct on ExternalProduct {
   }
   calligraphy {
     enabled
-    rate
-    minimumCharge
-    paperSizes {
-      id
-      label
-      dimensions
-      multiplier
-    }
   }
 }

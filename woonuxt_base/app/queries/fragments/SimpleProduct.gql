@@ -35,13 +35,5 @@ fragment SimpleProduct on SimpleProduct {
   }
   calligraphy {
     enabled
-    rate
-    minimumCharge
-    paperSizes {
-      id
-      label
-      dimensions
-      multiplier
-    }
   }
 }

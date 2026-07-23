@@ -2,11 +2,7 @@
 export interface CalligraphyLineItem {
  text?: string | null;
  letters?: number | null;
- sizeId?: string | null;
- sizeLabel?: string | null;
- sizeDims?: string | null;
  notes?: string | null;
- unitPrice?: number | string | null;
  svg?: string | null;
  includePng?: boolean | null;
 }
@@ -16,21 +12,10 @@ const props = defineProps<{
  compact?: boolean;
 }>();
 
-const { formatPrice } = useHelpers();
-
 const hasData = computed(
  () =>
-  !!props.calligraphy &&
-  (props.calligraphy.text ||
-   props.calligraphy.sizeLabel ||
-   props.calligraphy.notes),
+  !!props.calligraphy && (props.calligraphy.text || props.calligraphy.notes),
 );
-
-const unitPriceDisplay = computed<string | null>(() => {
- const raw = props.calligraphy?.unitPrice;
- if (raw === null || raw === undefined || raw === "") return null;
- return formatPrice(String(raw));
-});
 
 // The saved design is only offered as a download in full (non-compact) views,
 // e.g. the order summary, where a customer returns to retrieve their PDF.
@@ -160,15 +145,6 @@ async function downloadDesign() {
     &ldquo;{{ calligraphy.text }}&rdquo;
    </span>
   </div>
-  <div v-if="calligraphy?.sizeLabel" class="flex gap-1">
-   <span class="text-gray-400 dark:text-gray-500 shrink-0">Size:</span>
-   <span>
-    {{ calligraphy.sizeLabel }}
-    <span v-if="calligraphy.sizeDims" class="text-gray-400 dark:text-gray-500">
-     ({{ calligraphy.sizeDims }})
-    </span>
-   </span>
-  </div>
   <div v-if="calligraphy?.notes" class="flex gap-1">
    <span class="text-gray-400 dark:text-gray-500 shrink-0">Notes:</span>
    <span
@@ -177,10 +153,6 @@ async function downloadDesign() {
    >
     {{ calligraphy.notes }}
    </span>
-  </div>
-  <div v-if="unitPriceDisplay" class="flex gap-1">
-   <span class="text-gray-400 dark:text-gray-500 shrink-0"> Calligraphy: </span>
-   <span class="tabular-nums">{{ unitPriceDisplay }}</span>
   </div>
   <div v-if="!compact && savedSvg" class="pt-1">
    <button

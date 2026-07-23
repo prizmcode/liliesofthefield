@@ -240,7 +240,6 @@ const isCalligraphyProduct = computed<boolean>(() => !!calligraphyConfig.value);
 
 const calligraphy = ref<CalligraphyInputValue>({
  text: "",
- sizeId: null,
  notes: "",
 });
 const isCalligraphyValid = ref<boolean>(false);
@@ -253,7 +252,6 @@ const selectProductInput = computed<any>(() => {
  if (isCalligraphyProduct.value) {
   base.extraData = JSON.stringify({
    calligraphy_text: calligraphy.value.text,
-   calligraphy_size: calligraphy.value.sizeId,
    calligraphy_notes: calligraphy.value.notes,
   });
  }
@@ -261,22 +259,12 @@ const selectProductInput = computed<any>(() => {
 }) as ComputedRef<AddToCartInput>;
 
 const buildOptimisticCalligraphy = () => {
- const cfg = calligraphyConfig.value;
- if (!cfg) return undefined;
- const size =
-  cfg.paperSizes.find((s) => s.id === calligraphy.value.sizeId) ?? null;
+ if (!calligraphyConfig.value) return undefined;
  const letters = calligraphy.value.text.match(/\p{L}/gu)?.length ?? 0;
- const unit = size
-  ? Math.max(letters * cfg.rate * size.multiplier, cfg.minimumCharge)
-  : null;
  return {
   text: calligraphy.value.text,
   letters,
-  sizeId: calligraphy.value.sizeId,
-  sizeLabel: size?.label ?? null,
-  sizeDims: size?.dimensions ?? null,
   notes: calligraphy.value.notes,
-  unitPrice: unit,
  };
 };
 

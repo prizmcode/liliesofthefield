@@ -34,11 +34,7 @@ fragment LineItem on LineItem {
   calligraphy {
     text
     letters
-    sizeId
-    sizeLabel
-    sizeDims
     notes
-    unitPrice
     svg
   }
   metaData(
