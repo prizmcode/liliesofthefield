@@ -3,10 +3,18 @@ const { updateItemQuantity } = useCart();
 const { addToWishlist } = useWishlist();
 const { FALLBACK_IMG } = useHelpers();
 const { storeSettings } = useAppConfig();
+const runtimeConfig = useRuntimeConfig();
 
 const { item } = defineProps({
  item: { type: Object, required: true },
 });
+
+const TEMPLATE_VARIATION_PDF_ONLY = Number(
+ runtimeConfig.public.templateVariationPdfOnly,
+);
+const TEMPLATE_VARIATION_PDF_AND_PNG = Number(
+ runtimeConfig.public.templateVariationPdfAndPng,
+);
 
 const productType = computed(() =>
  item.variation ? item.variation?.node : item.product?.node,
@@ -92,6 +100,22 @@ const customizations = computed(() => {
  return list;
 });
 
+// Which download variant was purchased — the purchased variation id is the
+// source of truth, falling back to the extraData flag in case the variation
+// id is ever unavailable (e.g. the parent product ID was passed instead).
+const templateVariantLabel = computed(() => {
+ const variationId = Number(item.variation?.node?.databaseId);
+ if (variationId === TEMPLATE_VARIATION_PDF_AND_PNG) return "PDF + Transparent PNG";
+ if (variationId === TEMPLATE_VARIATION_PDF_ONLY) return "PDF Only";
+ const flag = item.extraData?.find((d) => d.key === "calligraphy_include_png");
+ if (!flag) return null;
+ return ["1", "true", "yes"].includes(
+  String(flag.value ?? "").trim().toLowerCase(),
+ )
+  ? "PDF + Transparent PNG"
+  : "PDF Only";
+});
+
 const removeItem = () => {
  if (isOptimisticItem.value) return;
  updateItemQuantity(item.key, 0);
@@ -144,6 +168,12 @@ const moveToWishList = () => {
       Low Stock
      </span>
     </div>
+    <p
+     v-if="templateVariantLabel"
+     class="text-xs font-bold leading-tight text-gray-600 dark:text-gray-300"
+    >
+     {{ templateVariantLabel }}
+    </p>
     <ul
      v-if="customizations.length"
      class="mt-0.5 text-[11px] leading-tight text-gray-500 dark:text-gray-400"

@@ -342,6 +342,14 @@ function restoreFromQuery() {
  if (o === "portrait" || o === "landscape") orientation.value = o;
 }
 
+// Vue Router reuses this component instance for query-only navigations (e.g.
+// clicking a different cart item's restore link while already on this page),
+// so onMounted alone won't re-apply a new ?restore= value — watch it instead.
+watch(
+ () => route.query.restore,
+ () => restoreFromQuery(),
+);
+
 onMounted(() => {
  restoreFromQuery();
  const img = new Image();
@@ -466,7 +474,10 @@ async function requestCleanPdf(includePng = false) {
  }
 }
 
-const isAddingTemplate = ref(false);
+// Tracks which specific variant is in flight so only the clicked button shows
+// the "Adding to cart…" state; the other stays untouched.
+const addingVariant = ref<"pdf" | "pdf-png" | null>(null);
+const isAddingTemplate = computed(() => addingVariant.value !== null);
 // Add the template product (with the saved SVG + settings) to the cart, then
 // send the customer to checkout. The SVG is stored so it stays in the cart on
 // return and is available on the resulting order.
@@ -485,7 +496,7 @@ async function buyCleanTemplate(includePng = false) {
   cleanPdfMessage.value = "Template variation is not configured.";
   return;
  }
- isAddingTemplate.value = true;
+ addingVariant.value = includePng ? "pdf-png" : "pdf";
  const beforeCount = cart.value?.contents?.itemCount ?? 0;
  try {
   const input: AddToCartInput = {
@@ -497,15 +508,14 @@ async function buyCleanTemplate(includePng = false) {
      attributeName: "pdf-download",
      attributeValue: "PDF Printable Download",
     },
-    ...(includePng
-     ? [
-        {
-         attributeName: "pdf-download-transparent-png",
-         attributeValue:
-          "Both a PDF Printable Download and transparent PNG file for working with digital assets.",
-        },
-       ]
-     : []),
+    {
+     // WooCommerce only defines one term for this attribute, so it must always
+     // be sent (even for the PDF-only variation, which has it set to "Any") —
+     // an empty value is rejected as a required field.
+     attributeName: "pdf-download-transparent-png",
+     attributeValue:
+      "Both a PDF Printable Download and transparent PNG file for working with digital assets.",
+    },
    ],
    extraData: JSON.stringify({
     calligraphy_text: settingsLabel.value,
@@ -527,7 +537,7 @@ async function buyCleanTemplate(includePng = false) {
   cleanPdfMessage.value =
    "Could not add the template to your cart. Please try again.";
  } finally {
-  isAddingTemplate.value = false;
+  addingVariant.value = null;
  }
 }
 </script>
@@ -765,7 +775,7 @@ async function buyCleanTemplate(includePng = false) {
       :disabled="isAddingTemplate"
       class="w-full px-6 py-3 font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
      >
-      {{ isAddingTemplate ? "Adding to cart…" : "PDF Only — $1.99" }}
+      {{ addingVariant === "pdf" ? "Adding to cart…" : "PDF Only — $1.99" }}
      </button>
      <button
       type="button"
@@ -774,7 +784,9 @@ async function buyCleanTemplate(includePng = false) {
       class="w-full px-6 py-3 font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
      >
       {{
-       isAddingTemplate ? "Adding to cart…" : "PDF + Transparent PNG — $2.99"
+       addingVariant === "pdf-png"
+        ? "Adding to cart…"
+        : "PDF + Transparent PNG — $2.99"
       }}
      </button>
      <p class="text-xs text-gray-500">
