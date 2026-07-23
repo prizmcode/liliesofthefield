@@ -29,9 +29,16 @@ const notes = computed({
   emit("update:modelValue", { ...props.modelValue, notes: v }),
 });
 
-const letters = computed(() => text.value.match(/\p{L}/gu)?.length ?? 0);
+const MAX_WORDS = 300;
 
-const isValid = computed<boolean>(() => letters.value >= 1);
+const words = computed(
+ () => text.value.trim().split(/\s+/).filter(Boolean).length,
+);
+const isOverWordLimit = computed(() => words.value > MAX_WORDS);
+
+const isValid = computed<boolean>(
+ () => words.value >= 1 && !isOverWordLimit.value,
+);
 
 watch(isValid, (v) => emit("update:isValid", v), { immediate: true });
 </script>
@@ -52,10 +59,15 @@ watch(isValid, (v) => emit("update:isValid", v), { immediate: true });
     class="w-full p-2 bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
     placeholder="Enter the exact wording you'd like calligraphed"
    />
-   <div class="mt-1 flex justify-between text-xs text-gray-500 dark:text-gray-400">
-    <span>{{ letters }} letter{{ letters === 1 ? "" : "s" }} counted</span>
-    <span>{{ text.length }} / 1000</span>
+   <div
+    class="mt-1 text-right text-xs text-gray-500 dark:text-gray-400"
+    :class="{ 'text-red-500 dark:text-red-400': isOverWordLimit }"
+   >
+    {{ words }} / {{ MAX_WORDS }} words counted
    </div>
+   <p v-if="isOverWordLimit" class="mt-1 text-xs text-red-500 dark:text-red-400">
+    Please limit your text to {{ MAX_WORDS }} words or fewer.
+   </p>
   </div>
 
   <div>

@@ -198,12 +198,27 @@ if (variationFromQuery?.attributes?.nodes?.length) {
 
 const defaultAttributes = computed<{ nodes: VariationAttribute[] } | null>(
  () => {
-  if (variation.value.length > 0) {
-   return { nodes: variation.value };
+  const base: VariationAttribute[] =
+   variation.value.length > 0
+    ? variation.value
+    : (product.value?.defaultAttributes?.nodes ?? []);
+
+  const attrName = wordCountAttribute.value?.name;
+  const bucket = calligraphyWordCountBucket.value;
+  if (!attrName || !bucket) {
+   return base.length > 0 || product.value?.defaultAttributes
+    ? { nodes: base }
+    : null;
   }
-  return product.value?.defaultAttributes
-   ? { nodes: product.value.defaultAttributes.nodes ?? [] }
-   : null;
+
+  return {
+   nodes: [
+    ...base.filter(
+     (attr) => normalizeMatchKey(attr.name) !== normalizeMatchKey(attrName),
+    ),
+    { name: attrName, value: bucket },
+   ],
+  };
  },
 );
 
@@ -243,6 +258,34 @@ const calligraphy = ref<CalligraphyInputValue>({
  notes: "",
 });
 const isCalligraphyValid = ref<boolean>(false);
+
+// The "Word Count" variation attribute is a normal WooCommerce product
+// variation (added by the shop owner), but it should track what the
+// customer actually types instead of requiring a separate manual pick.
+const wordCountAttribute = computed(
+ () =>
+  product.value?.attributes?.nodes?.find(
+   (attr) => normalizeMatchKey(attr?.name) === "wordcount",
+  ) ?? null,
+);
+const calligraphyWordCount = computed(
+ () => calligraphy.value.text.trim().split(/\s+/).filter(Boolean).length,
+);
+const WORD_COUNT_BUCKETS = [
+ { max: 50, value: "0-50" },
+ { max: 100, value: "51-100" },
+ { max: 150, value: "101-150" },
+ { max: 200, value: "151-200" },
+ { max: 250, value: "201-250" },
+ { max: Infinity, value: "251-300" },
+];
+const calligraphyWordCountBucket = computed<string | null>(() => {
+ if (calligraphyWordCount.value < 1) return null;
+ return (
+  WORD_COUNT_BUCKETS.find((b) => calligraphyWordCount.value <= b.max)
+   ?.value ?? null
+ );
+});
 
 const selectProductInput = computed<any>(() => {
  const base: any = {

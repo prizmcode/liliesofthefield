@@ -339,6 +339,7 @@ watch(
                 :name="attr.name || ''"
                 :value="option"
                 v-model="selections[attr.name || '']"
+                :disabled="!isOptionEnabled(attr.name || '', option)"
                 :aria-disabled="!isOptionEnabled(attr.name || '', option)"
                 @change="handleSelectionChange(attr.name || '')" />
               <span
@@ -375,6 +376,7 @@ watch(
                   :name="attr.name || ''"
                   :value="term.slug || ''"
                   v-model="selections[attr.name || '']"
+                  :disabled="!isOptionEnabled(attr.name || '', term.slug || '')"
                   :aria-disabled="!isOptionEnabled(attr.name || '', term.slug || '')"
                   @change="handleSelectionChange(attr.name || '')" />
                 <span
@@ -408,6 +410,7 @@ watch(
             v-for="(term, dropdownIndex) in 'terms' in attr && attr.terms?.nodes ? attr.terms.nodes.filter((term) => term?.slug) : []"
             :key="term.slug || dropdownIndex"
             :value="term.slug || ''"
+            :disabled="!isOptionEnabled(attr.name || '', term.slug || '')"
             :aria-disabled="!isOptionEnabled(attr.name || '', term.slug || '')"
             v-html="term.name" />
         </select>
@@ -433,6 +436,7 @@ watch(
                 :name="attr.name || ''"
                 :value="term.slug || ''"
                 v-model="selections[attr.name || '']"
+                :disabled="!isOptionEnabled(attr.name || '', term.slug || '')"
                 :aria-disabled="!isOptionEnabled(attr.name || '', term.slug || '')"
                 @change="handleSelectionChange(attr.name || '')" />
               <span
