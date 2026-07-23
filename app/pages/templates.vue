@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { AddToCartInput } from "#types/gql";
 
-const appConfig = useAppConfig();
 const runtimeConfig = useRuntimeConfig();
 const router = useRouter();
 const route = useRoute();
@@ -290,18 +289,9 @@ useHead(() => ({
 }));
 
 const svgEl = ref<SVGSVGElement | null>(null);
-const logoDataUrl = ref<string | null>(null);
 const showWatermark = ref(true);
-const LOGO_SIZE = 16;
-const LOGO_GAP = 1.2;
 
-const logoX = computed(() => PAGE_W.value - FOOTER_STRIP - LOGO_SIZE);
-const logoY = computed(
- () => PAGE_H.value - FOOTER_STRIP / 2 - LOGO_SIZE / 2 - 0.4,
-);
-const brandingTextX = computed(
- () => PAGE_W.value - FOOTER_STRIP - LOGO_SIZE - LOGO_GAP,
-);
+const brandingTextX = computed(() => PAGE_W.value - FOOTER_STRIP);
 
 // Restore a previously saved design from a `?restore=<settings JSON>` query,
 // e.g. when a customer reopens the template from a past order. Only known,
@@ -352,25 +342,6 @@ watch(
 
 onMounted(() => {
  restoreFromQuery();
- const img = new Image();
- // Set crossOrigin so the canvas doesn't get tainted (which would
- // cause toDataURL to throw a security error and silently fail).
- img.crossOrigin = "anonymous";
- img.onload = () => {
-  try {
-   const canvas = document.createElement("canvas");
-   canvas.width = img.naturalWidth;
-   canvas.height = img.naturalHeight;
-   canvas.getContext("2d")?.drawImage(img, 0, 0);
-   logoDataUrl.value = canvas.toDataURL("image/png");
-  } catch (e) {
-   console.error("[templates] Failed to convert logo to data URL:", e);
-  }
- };
- img.onerror = (e) => {
-  console.error("[templates] Failed to load logo image:", appConfig.logoUrl, e);
- };
- img.src = appConfig.logoUrl;
 });
 
 function handlePrint() {
@@ -871,20 +842,20 @@ async function buyCleanTemplate(includePng = false) {
        <pattern
         id="wmPattern"
         patternUnits="userSpaceOnUse"
-        width="60"
-        height="60"
+        width="135"
+        height="56"
         patternTransform="rotate(-30)"
        >
-        <image
-         v-if="logoDataUrl"
-         :href="logoDataUrl"
+        <text
          x="0"
-         y="0"
-         width="48"
-         height="48"
-         opacity="0.4"
-         preserveAspectRatio="none"
-        />
+         y="34"
+         font-family="Inter, sans-serif"
+         font-size="7"
+         fill="#111827"
+         opacity="0.15"
+        >
+         liliesofthefield.co/templates
+        </text>
        </pattern>
        <clipPath id="ruleGroupsClip">
         <rect
@@ -906,7 +877,7 @@ async function buyCleanTemplate(includePng = false) {
        </clipPath>
       </defs>
       <rect
-       v-if="showWatermark && logoDataUrl"
+       v-if="showWatermark"
        data-watermark="true"
        x="0"
        y="0"
@@ -996,15 +967,6 @@ async function buyCleanTemplate(includePng = false) {
       >
        {{ settingsLabel }}
       </text>
-      <image
-       v-if="logoDataUrl"
-       :href="logoDataUrl"
-       :x="logoX"
-       :y="logoY"
-       :width="LOGO_SIZE"
-       :height="LOGO_SIZE"
-       preserveAspectRatio="none"
-      />
       <text
        :x="brandingTextX"
        :y="PAGE_H - FOOTER_STRIP / 2"
