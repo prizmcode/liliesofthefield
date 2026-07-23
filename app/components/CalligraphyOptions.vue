@@ -44,11 +44,23 @@ watch(isValid, (v) => emit("update:isValid", v), { immediate: true });
 </script>
 
 <template>
- <fieldset class="mt-6 mb-8 grid gap-4 border-t border-gray-300 dark:border-gray-600 pt-6">
+ <fieldset
+  class="mt-6 mb-8 grid gap-4 border-t border-gray-300 dark:border-gray-600 pt-6"
+ >
   <legend class="sr-only">Calligraphy options</legend>
 
   <div>
-   <label for="calligraphy-text" class="block text-sm font-medium mb-1 dark:text-gray-200">
+   
+   <p>
+    Enter the exact wording you'd like calligraphed.
+    <p class="mt-4 text-xs"
+     >(I will contact you to confirm layout before beginning).</p
+    >
+   </p>
+   <label
+    for="calligraphy-text"
+    class="block text-sm font-medium mb-1 dark:text-gray-200"
+   >
     Your text <span class="text-red-500">*</span>
    </label>
    <textarea
@@ -57,7 +69,7 @@ watch(isValid, (v) => emit("update:isValid", v), { immediate: true });
     maxlength="1000"
     rows="3"
     class="w-full p-2 bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-    placeholder="Enter the exact wording you'd like calligraphed"
+    placeholder="Exact wording you'd like calligraphed."
    />
    <div
     class="mt-1 text-right text-xs text-gray-500 dark:text-gray-400"
@@ -65,14 +77,21 @@ watch(isValid, (v) => emit("update:isValid", v), { immediate: true });
    >
     {{ words }} / {{ MAX_WORDS }} words counted
    </div>
-   <p v-if="isOverWordLimit" class="mt-1 text-xs text-red-500 dark:text-red-400">
+   <p
+    v-if="isOverWordLimit"
+    class="mt-1 text-xs text-red-500 dark:text-red-400"
+   >
     Please limit your text to {{ MAX_WORDS }} words or fewer.
    </p>
   </div>
 
   <div>
-   <label for="calligraphy-notes" class="block text-sm font-medium mb-1 dark:text-gray-200">
-    Special instructions <span class="text-gray-400 font-normal">(optional)</span>
+   <label
+    for="calligraphy-notes"
+    class="block text-sm font-medium mb-1 dark:text-gray-200"
+   >
+    Special instructions
+    <span class="text-gray-400 font-normal">(optional)</span>
    </label>
    <textarea
     id="calligraphy-notes"
@@ -80,9 +99,11 @@ watch(isValid, (v) => emit("update:isValid", v), { immediate: true });
     maxlength="2000"
     rows="2"
     class="w-full p-2 bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-    placeholder="Ink color, style preferences, delivery timing, etc."
+    placeholder=""
    />
-   <div class="mt-1 text-right text-xs text-gray-500 dark:text-gray-400">{{ notes.length }} / 2000</div>
+   <div class="mt-1 text-right text-xs text-gray-500 dark:text-gray-400">
+    {{ notes.length }} / 2000
+   </div>
   </div>
  </fieldset>
 </template>

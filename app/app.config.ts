@@ -4,7 +4,7 @@
  * Only specify the keys you want to change.
  */
 export default defineAppConfig({
- logoUrl: "/images/lilies-logov11.png",
+ logoUrl: "/images/lilies-logo-colored.png",
  darkLogoUrl: "/images/lilies-logo-dark.png",
  //logoUrl: "/images/liliesofthefield.webp",
  storeSettings: {

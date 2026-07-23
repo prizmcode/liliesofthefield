@@ -506,31 +506,29 @@ const addToCartLoading = computed(() =>
     />
 
     <div class="w-full lg:max-w-md xl:max-w-lg md:py-2">
-     <div class="flex justify-between mb-4">
-      <div class="flex-1">
-       <h1
-        class="flex flex-wrap items-center gap-2 mb-2 text-2xl font-sesmibold dark:text-white"
+     <div class="mb-4">
+      <h1
+       class="flex flex-wrap items-center gap-2 mb-2 text-2xl font-sesmibold dark:text-white"
+      >
+       {{ displayProduct.name }}
+       <LazyWPAdminLink
+        :link="`/wp-admin/post.php?post=${product.databaseId}&action=edit`"
+        >Edit</LazyWPAdminLink
        >
-        {{ displayProduct.name }}
-        <LazyWPAdminLink
-         :link="`/wp-admin/post.php?post=${product.databaseId}&action=edit`"
-         >Edit</LazyWPAdminLink
-        >
-       </h1>
-       <StarRating
-        :rating="averageRating"
-        :count="reviewCount"
-        v-if="storeSettings.showReviews"
-       />
-      </div>
+      </h1>
       <ProductPrice
-       class="text-xl"
+       class="text-2xl font-bold! mb-2"
        :sale-price="priceTarget?.salePrice"
        :regular-price="priceTarget?.regularPrice"
       />
+      <StarRating
+       :rating="averageRating"
+       :count="reviewCount"
+       v-if="storeSettings.showReviews"
+      />
      </div>
 
-     <div class="grid gap-2 my-8 text-sm empty:hidden">
+     <div class="grid gap-2 my-4 text-sm empty:hidden">
       <div v-if="!isExternalProduct" class="flex items-center gap-2">
        <span class="text-gray-400 dark:text-gray-500"
         >{{ $t("shop.availability") }}:
@@ -552,20 +550,27 @@ const addToCartLoading = computed(() =>
      </div>
 
      <div
-      class="mb-8 font-light prose dark:prose-invert"
+      class="mb-4 font-light prose dark:prose-invert"
       v-html="product.shortDescription || product.description"
      />
 
      <hr class="border-gray-300 dark:border-gray-600" />
 
      <form @submit.prevent="handleAddToCart">
+      <p
+       v-if="isCalligraphyProduct && wordCountAttribute"
+       class="mt-4 text-xs text-gray-500 dark:text-gray-400"
+      >
+       Word count is calculated automatically based on the text you enter
+       below.
+      </p>
       <AttributeSelections
        v-if="
         isVariableProduct &&
         product?.attributes?.nodes?.length &&
         product?.variations
        "
-       class="mt-4 mb-8"
+       class="mt-4 mb-4"
        :attributes="product.attributes.nodes"
        :defaultAttributes="defaultAttributes"
        :variations="product.variations.nodes"
@@ -613,7 +618,7 @@ const addToCartLoading = computed(() =>
        product.productCategories
       "
      >
-      <div class="grid gap-2 my-8 text-sm">
+      <div class="grid gap-2 my-4 text-sm">
        <div class="flex items-center gap-2">
         <span class="text-gray-400 dark:text-gray-500"
          >{{ $t("shop.category", 2) }}:</span
@@ -639,7 +644,7 @@ const addToCartLoading = computed(() =>
      </div>
     </div>
    </div>
-   <div v-if="product.description || product.reviews" class="pt-8">
+   <div v-if="product.description || product.reviews" class="pt-4">
     <ProductTabs :product />
    </div>
    <div

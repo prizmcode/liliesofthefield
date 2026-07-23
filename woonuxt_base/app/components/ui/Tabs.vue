@@ -30,7 +30,7 @@ const selectTab = (index: number) => {
         type="button"
         :disabled="tab.disabled"
         :class="[
-          'border-transparent border-b-2 text-lg pb-8 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200',
+          'border-transparent border-b-2 text-lg pb-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200',
           modelValue === index ? 'active border-primary text-primary' : '',
           tab.disabled ? 'opacity-50 cursor-not-allowed' : '',
         ]"
@@ -60,7 +60,7 @@ const selectTab = (index: number) => {
 }
 
 .tabs button {
-  @apply border-transparent border-b-2 text-lg pb-8 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200;
+  @apply border-transparent border-b-2 text-lg pb-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200;
   margin-bottom: -1px;
 }
 

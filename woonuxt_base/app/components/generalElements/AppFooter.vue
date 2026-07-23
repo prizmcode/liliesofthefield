@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ProductCategory } from '#types/gql';
+import { YearPicker } from 'reka-ui/namespaced';
 
 const { wishlistLink } = useAuth();
 const appConfig = useAppConfig();
@@ -125,7 +126,9 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
       <div class="container dark:border-gray-700 flex items-center justify-center mb-8">
         <div class="copywrite">
           <p class="py-4 text-xs text-center text-gray-400 dark:text-gray-400">
-            Website Design & Development by <a href="https://prizmstudio.com" title="Prizm Studio">Prizm Studio</a>
+            Lilies of the Field is a DBA of <a href="https://prizmstudio.com" title="Prizm Studio">Prizm Studio, LLC.</a> &copy;
+            {{ new Date().getFullYear() }} | Website Design & Development by
+            <a href="https://prizmstudio.com" title="Prizm Studio">Prizm Studio</a>
           </p>
         </div>
         <SocialIcons class="ml-auto" />

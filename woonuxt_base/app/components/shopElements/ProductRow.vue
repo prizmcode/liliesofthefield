@@ -5,11 +5,10 @@ const props = defineProps({
 </script>
 
 <template>
-  <div v-if="products" class="flex justify-center gap-2 md:gap-3">
+  <div v-if="products" class="grid gap-2 md:gap-3">
     <ProductCard
       v-for="(node, i) in products"
       :key="node.databaseId"
-      class="flex-1 min-w-0"
       :node="node"
       :index="i"
       :class="{
