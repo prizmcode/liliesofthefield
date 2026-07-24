@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import type { AddToCartInput } from "#types/gql";
 import { GOOGLE_FONTS, type GuideFont } from "../../shared/utils/guideFonts";
+import {
+ AccordionContent,
+ AccordionHeader,
+ AccordionItem,
+ AccordionRoot,
+ AccordionTrigger,
+} from "reka-ui";
 
 const runtimeConfig = useRuntimeConfig();
 const router = useRouter();
@@ -676,293 +683,464 @@ async function buyCleanTemplate(includePng = false) {
 
   <div class="grid gap-8 lg:grid-cols-[320px_1fr]">
    <aside class="space-y-5 no-print">
-    <div>
-     <p class="text-sm font-medium mb-2">Presets</p>
-     <div class="grid grid-cols-2 gap-2">
-      <button
-       v-for="p in presets"
-       :key="p.name"
-       type="button"
-       @click="applyPreset(p)"
-       class="px-3 py-1.5 text-sm border border-gray-300 hover:bg-gray-100 rounded-lg cursor-pointer"
-      >
-       {{ p.name }}
-      </button>
-     </div>
-    </div>
-
-    <div class="border-t border-gray-200 pt-5">
-     <p class="text-sm font-medium mb-2">Orientation</p>
-     <div class="grid grid-cols-2 gap-2">
-      <button
-       type="button"
-       @click="orientation = 'portrait'"
-       :class="[
-        'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
-        orientation === 'portrait'
-         ? 'bg-gray-800 text-white border-gray-800'
-         : 'border-gray-300 hover:bg-gray-100',
-       ]"
-      >
-       Portrait
-      </button>
-      <button
-       type="button"
-       @click="orientation = 'landscape'"
-       :class="[
-        'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
-        orientation === 'landscape'
-         ? 'bg-gray-800 text-white border-gray-800'
-         : 'border-gray-300 hover:bg-gray-100',
-       ]"
-      >
-       Landscape
-      </button>
-     </div>
-    </div>
-
-    <div class="space-y-3 border-t border-gray-200 pt-5">
-     <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
-      <span>Number of lines</span>
-      <input v-model="autoFill" type="checkbox" />
-      <span>Auto-fill page</span>
-     </label>
-     <div v-if="!autoFill">
-      <label class="flex justify-between text-sm font-medium">
-       <span class="text-gray-500">{{ numLines }} / {{ maxLines }}</span>
-      </label>
-      <input
-       v-model.number="numLines"
-       type="range"
-       min="1"
-       :max="maxLines"
-       step="1"
-      />
-     </div>
-    </div>
-
-    <div>
-     <label class="flex justify-between text-sm font-medium">
-      <span>Ascender height</span>
-      <span class="text-gray-500">{{ ascenderH }} mm</span>
-     </label>
-     <input
-      v-model.number="ascenderH"
-      type="range"
-      min="0"
-      max="40"
-      step="0.5"
-     />
-    </div>
-
-    <div>
-     <label class="flex justify-between text-sm font-medium">
-      <span>X-height</span>
-      <span class="text-gray-500">{{ xHeight }} mm</span>
-     </label>
-     <input v-model.number="xHeight" type="range" min="2" max="50" step="0.5" />
-    </div>
-
-    <div>
-     <label class="flex justify-between text-sm font-medium">
-      <span>Descender height</span>
-      <span class="text-gray-500">{{ descenderH }} mm</span>
-     </label>
-     <input
-      v-model.number="descenderH"
-      type="range"
-      min="0"
-      max="40"
-      step="0.5"
-     />
-    </div>
-
-    <div>
-     <label class="flex justify-between text-sm font-medium">
-      <span>Space between lines</span>
-      <span class="text-gray-500">{{ lineGap }} mm</span>
-     </label>
-     <input v-model.number="lineGap" type="range" min="0" max="80" step="0.5" />
-    </div>
-
-    <div>
-     <label class="flex justify-between text-sm font-medium">
-      <span>Page margin</span>
-      <span class="text-gray-500">{{ margin }} mm</span>
-     </label>
-     <input v-model.number="margin" type="range" min="5" max="80" step="0.5" />
-    </div>
-
-    <template v-if="showSlant">
-     <div>
-      <label class="flex justify-between text-sm font-medium">
-       <span>Slant angle</span>
-       <span class="text-gray-500">{{ slantAngle }}°</span>
-      </label>
-      <input
-       v-model.number="slantAngle"
-       type="range"
-       min="0"
-       max="55"
-       step="1"
-      />
-     </div>
-     <div>
-      <label class="flex justify-between text-sm font-medium">
-       <span>Slant spacing</span>
-       <span class="text-gray-500">{{ slantSpacing }} mm</span>
-      </label>
-      <input
-       v-model.number="slantSpacing"
-       type="range"
-       min="3"
-       max="30"
-       step="0.5"
-      />
-     </div>
-    </template>
-
-    <div class="border-t border-gray-200 pt-5 space-y-4">
-     <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
-      <input v-model="showSlant" type="checkbox" class="accent-current" />
-      <span>Show slant guides</span>
-     </label>
-
-     <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
-      <input v-model="showCenterLine" type="checkbox" class="accent-current" />
-      <span>Show center line</span>
-     </label>
-
-     <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
-      <input v-model="showRulers" type="checkbox" class="accent-current" />
-      <span>Show rulers</span>
-     </label>
-    </div>
-
-    <div class="border-t border-gray-200 pt-5 space-y-3">
-     <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
-      <input v-model="showGuideText" type="checkbox" class="accent-current" />
-      <span>Show guide text</span>
-     </label>
-     <template v-if="showGuideText">
-      <div>
-       <label class="block mb-1 text-sm font-medium">Guide text</label>
-       <textarea
-        v-model="guideText"
-        rows="4"
-        placeholder="Type your wording, one line per ruled line…"
-        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600"
-       />
-       <p class="mt-1 text-xs text-gray-500">
-        Each line break lands on the next ruled line. Shown at 50% opacity as
-        a layout guide only — it's left out of your printed sheet and any
-        downloaded or purchased file unless you check the boxes below.
-       </p>
-      </div>
-      <div>
-       <label class="block mb-1 text-sm font-medium">Guide font</label>
-       <select
-        v-model="guideFontId"
-        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600"
+    <AccordionRoot
+     type="multiple"
+     :default-value="['presets', 'page-setup']"
+     class="space-y-3"
+    >
+     <AccordionItem
+      value="presets"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+     >
+      <AccordionHeader>
+       <AccordionTrigger
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
        >
-        <option v-for="f in GOOGLE_FONTS" :key="f.id" :value="f.id">
-         {{ f.label }}
-        </option>
-       </select>
-      </div>
-      <div>
-       <label class="block mb-1 text-sm font-medium">Text alignment</label>
-       <div class="grid grid-cols-3 gap-2">
+        <span>Presets</span>
+        <Icon
+         name="ion:chevron-down"
+         size="18"
+         class="shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+        />
+       </AccordionTrigger>
+      </AccordionHeader>
+      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+       <div class="grid grid-cols-2 gap-2 px-4 pt-3 pb-4">
         <button
+         v-for="p in presets"
+         :key="p.name"
          type="button"
-         @click="guideTextAlign = 'left'"
-         :class="[
-          'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
-          guideTextAlign === 'left'
-           ? 'bg-gray-800 text-white border-gray-800'
-           : 'border-gray-300 hover:bg-gray-100',
-         ]"
+         @click="applyPreset(p)"
+         class="px-3 py-1.5 text-sm border border-gray-400 hover:bg-gray-100 rounded-lg cursor-pointer"
         >
-         Left
-        </button>
-        <button
-         type="button"
-         @click="guideTextAlign = 'center'"
-         :class="[
-          'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
-          guideTextAlign === 'center'
-           ? 'bg-gray-800 text-white border-gray-800'
-           : 'border-gray-300 hover:bg-gray-100',
-         ]"
-        >
-         Center
-        </button>
-        <button
-         type="button"
-         @click="guideTextAlign = 'right'"
-         :class="[
-          'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
-          guideTextAlign === 'right'
-           ? 'bg-gray-800 text-white border-gray-800'
-           : 'border-gray-300 hover:bg-gray-100',
-         ]"
-        >
-         Right
+         {{ p.name }}
         </button>
        </div>
-      </div>
-      <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
-       <input
-        v-model="printGuideText"
-        type="checkbox"
-        class="accent-current"
-       />
-       <span>Print guide text</span>
-      </label>
-      <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
-       <input
-        v-model="includeGuideTextInDownload"
-        type="checkbox"
-        class="accent-current"
-       />
-       <span>Include guide text in download</span>
-      </label>
-     </template>
-    </div>
+      </AccordionContent>
+     </AccordionItem>
 
-    <div class="border-t border-gray-200 pt-5 space-y-3">
-     <p class="text-sm font-medium">Custom overlay (inches)</p>
-     <div class="grid grid-cols-2 gap-3">
-      <label class="text-sm">
-       <span class="block mb-1 text-gray-600 dark:text-gray-300">Width</span>
-       <input
-        v-model.number="customWidthIn"
-        type="number"
-        :min="CUSTOM_MIN_IN"
-        :max="PAGE_W_IN"
-        step="0.25"
-        placeholder="in"
-        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600"
-       />
-      </label>
-      <label class="text-sm">
-       <span class="block mb-1 text-gray-600 dark:text-gray-300">Height</span>
-       <input
-        v-model.number="customHeightIn"
-        type="number"
-        :min="CUSTOM_MIN_IN"
-        :max="PAGE_H_IN"
-        step="0.25"
-        placeholder="in"
-        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600"
-       />
-      </label>
-     </div>
-     <p class="text-xs text-gray-500">
-      Min {{ CUSTOM_MIN_IN }}", max {{ PAGE_W_IN }}" × {{ PAGE_H_IN }}". Overlay
-      appears once both are set.
-     </p>
-    </div>
+     <AccordionItem
+      value="page-setup"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+     >
+      <AccordionHeader>
+       <AccordionTrigger
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
+       >
+        <span>Page Setup</span>
+        <Icon
+         name="ion:chevron-down"
+         size="18"
+         class="shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+        />
+       </AccordionTrigger>
+      </AccordionHeader>
+      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+       <div class="space-y-4 px-4 pt-3 pb-4">
+        <div>
+         <p class="text-sm font-medium mb-2">Orientation</p>
+         <div class="grid grid-cols-2 gap-2">
+          <button
+           type="button"
+           @click="orientation = 'portrait'"
+           :class="[
+            'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+            orientation === 'portrait'
+             ? 'bg-gray-800 text-white border-gray-800'
+             : 'border-gray-400 hover:bg-gray-100',
+           ]"
+          >
+           Portrait
+          </button>
+          <button
+           type="button"
+           @click="orientation = 'landscape'"
+           :class="[
+            'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+            orientation === 'landscape'
+             ? 'bg-gray-800 text-white border-gray-800'
+             : 'border-gray-400 hover:bg-gray-100',
+           ]"
+          >
+           Landscape
+          </button>
+         </div>
+        </div>
+
+        <div class="space-y-3">
+         <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+          <span>Number of lines</span>
+          <input v-model="autoFill" type="checkbox" />
+          <span>Auto-fill page</span>
+         </label>
+         <div v-if="!autoFill">
+          <label class="flex justify-between text-sm font-medium">
+           <span class="text-gray-500">{{ numLines }} / {{ maxLines }}</span>
+          </label>
+          <input
+           v-model.number="numLines"
+           type="range"
+           min="1"
+           :max="maxLines"
+           step="1"
+          />
+         </div>
+        </div>
+
+        <div>
+         <label class="flex justify-between text-sm font-medium">
+          <span>Page margin</span>
+          <span class="text-gray-500">{{ margin }} mm</span>
+         </label>
+         <input
+          v-model.number="margin"
+          type="range"
+          min="5"
+          max="80"
+          step="0.5"
+         />
+        </div>
+       </div>
+      </AccordionContent>
+     </AccordionItem>
+
+     <AccordionItem
+      value="lettering"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+     >
+      <AccordionHeader>
+       <AccordionTrigger
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
+       >
+        <span>Lettering Guides</span>
+        <Icon
+         name="ion:chevron-down"
+         size="18"
+         class="shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+        />
+       </AccordionTrigger>
+      </AccordionHeader>
+      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+       <div class="space-y-4 px-4 pt-3 pb-4">
+        <div>
+         <label class="flex justify-between text-sm font-medium">
+          <span>Ascender height</span>
+          <span class="text-gray-500">{{ ascenderH }} mm</span>
+         </label>
+         <input
+          v-model.number="ascenderH"
+          type="range"
+          min="0"
+          max="40"
+          step="0.5"
+         />
+        </div>
+
+        <div>
+         <label class="flex justify-between text-sm font-medium">
+          <span>X-height</span>
+          <span class="text-gray-500">{{ xHeight }} mm</span>
+         </label>
+         <input
+          v-model.number="xHeight"
+          type="range"
+          min="2"
+          max="50"
+          step="0.5"
+         />
+        </div>
+
+        <div>
+         <label class="flex justify-between text-sm font-medium">
+          <span>Descender height</span>
+          <span class="text-gray-500">{{ descenderH }} mm</span>
+         </label>
+         <input
+          v-model.number="descenderH"
+          type="range"
+          min="0"
+          max="40"
+          step="0.5"
+         />
+        </div>
+
+        <div>
+         <label class="flex justify-between text-sm font-medium">
+          <span>Space between lines</span>
+          <span class="text-gray-500">{{ lineGap }} mm</span>
+         </label>
+         <input
+          v-model.number="lineGap"
+          type="range"
+          min="0"
+          max="80"
+          step="0.5"
+         />
+        </div>
+       </div>
+      </AccordionContent>
+     </AccordionItem>
+
+     <AccordionItem
+      value="slant"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+     >
+      <AccordionHeader>
+       <AccordionTrigger
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
+       >
+        <span>Slant Guides</span>
+        <Icon
+         name="ion:chevron-down"
+         size="18"
+         class="shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+        />
+       </AccordionTrigger>
+      </AccordionHeader>
+      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+       <div class="space-y-4 px-4 pt-3 pb-4">
+        <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+         <input v-model="showSlant" type="checkbox" class="accent-current" />
+         <span>Show slant guides</span>
+        </label>
+        <template v-if="showSlant">
+         <div>
+          <label class="flex justify-between text-sm font-medium">
+           <span>Slant angle</span>
+           <span class="text-gray-500">{{ slantAngle }}°</span>
+          </label>
+          <input
+           v-model.number="slantAngle"
+           type="range"
+           min="0"
+           max="55"
+           step="1"
+          />
+         </div>
+         <div>
+          <label class="flex justify-between text-sm font-medium">
+           <span>Slant spacing</span>
+           <span class="text-gray-500">{{ slantSpacing }} mm</span>
+          </label>
+          <input
+           v-model.number="slantSpacing"
+           type="range"
+           min="3"
+           max="30"
+           step="0.5"
+          />
+         </div>
+        </template>
+       </div>
+      </AccordionContent>
+     </AccordionItem>
+
+     <AccordionItem
+      value="display"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+     >
+      <AccordionHeader>
+       <AccordionTrigger
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
+       >
+        <span>Display Options</span>
+        <Icon
+         name="ion:chevron-down"
+         size="18"
+         class="shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+        />
+       </AccordionTrigger>
+      </AccordionHeader>
+      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+       <div class="space-y-4 px-4 pt-3 pb-4">
+        <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+         <input
+          v-model="showCenterLine"
+          type="checkbox"
+          class="accent-current"
+         />
+         <span>Show center line</span>
+        </label>
+
+        <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+         <input v-model="showRulers" type="checkbox" class="accent-current" />
+         <span>Show rulers</span>
+        </label>
+       </div>
+      </AccordionContent>
+     </AccordionItem>
+
+     <AccordionItem
+      value="guide-text"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+     >
+      <AccordionHeader>
+       <AccordionTrigger
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
+       >
+        <span>Guide Text</span>
+        <Icon
+         name="ion:chevron-down"
+         size="18"
+         class="shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+        />
+       </AccordionTrigger>
+      </AccordionHeader>
+      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+       <div class="space-y-3 px-4 pt-3 pb-4">
+        <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+         <input
+          v-model="showGuideText"
+          type="checkbox"
+          class="accent-current"
+         />
+         <span>Show guide text</span>
+        </label>
+        <template v-if="showGuideText">
+         <div>
+          <label class="block mb-1 text-sm font-medium">Guide text</label>
+          <textarea
+           v-model="guideText"
+           rows="4"
+           placeholder="Type your wording, one line per ruled line…"
+           class="w-full px-3 py-2 text-sm border border-gray-400 rounded-lg dark:bg-gray-700 dark:border-gray-600"
+          />
+          <p class="mt-1 text-xs text-gray-500">
+           Each line break lands on the next ruled line. Shown at 50% opacity
+           as a layout guide only — it's left out of your printed sheet and
+           any downloaded or purchased file unless you check the boxes
+           below.
+          </p>
+         </div>
+         <div>
+          <label class="block mb-1 text-sm font-medium">Guide font</label>
+          <select
+           v-model="guideFontId"
+           class="w-full px-3 py-2 text-sm border border-gray-400 rounded-lg dark:bg-gray-700 dark:border-gray-600"
+          >
+           <option v-for="f in GOOGLE_FONTS" :key="f.id" :value="f.id">
+            {{ f.label }}
+           </option>
+          </select>
+         </div>
+         <div>
+          <label class="block mb-1 text-sm font-medium">Text alignment</label>
+          <div class="grid grid-cols-3 gap-2">
+           <button
+            type="button"
+            @click="guideTextAlign = 'left'"
+            :class="[
+             'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+             guideTextAlign === 'left'
+              ? 'bg-gray-800 text-white border-gray-800'
+              : 'border-gray-400 hover:bg-gray-100',
+            ]"
+           >
+            Left
+           </button>
+           <button
+            type="button"
+            @click="guideTextAlign = 'center'"
+            :class="[
+             'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+             guideTextAlign === 'center'
+              ? 'bg-gray-800 text-white border-gray-800'
+              : 'border-gray-400 hover:bg-gray-100',
+            ]"
+           >
+            Center
+           </button>
+           <button
+            type="button"
+            @click="guideTextAlign = 'right'"
+            :class="[
+             'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+             guideTextAlign === 'right'
+              ? 'bg-gray-800 text-white border-gray-800'
+              : 'border-gray-400 hover:bg-gray-100',
+            ]"
+           >
+            Right
+           </button>
+          </div>
+         </div>
+         <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+          <input
+           v-model="printGuideText"
+           type="checkbox"
+           class="accent-current"
+          />
+          <span>Print guide text</span>
+         </label>
+         <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+          <input
+           v-model="includeGuideTextInDownload"
+           type="checkbox"
+           class="accent-current"
+          />
+          <span>Include guide text in download</span>
+         </label>
+        </template>
+       </div>
+      </AccordionContent>
+     </AccordionItem>
+
+     <AccordionItem
+      value="overlay"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+     >
+      <AccordionHeader>
+       <AccordionTrigger
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
+       >
+        <span>Custom Overlay</span>
+        <Icon
+         name="ion:chevron-down"
+         size="18"
+         class="shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+        />
+       </AccordionTrigger>
+      </AccordionHeader>
+      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+       <div class="space-y-3 px-4 pt-3 pb-4">
+        <div class="grid grid-cols-2 gap-3">
+         <label class="text-sm">
+          <span class="block mb-1 text-gray-600 dark:text-gray-300"
+           >Width</span
+          >
+          <input
+           v-model.number="customWidthIn"
+           type="number"
+           :min="CUSTOM_MIN_IN"
+           :max="PAGE_W_IN"
+           step="0.25"
+           placeholder="in"
+           class="w-full px-3 py-2 text-sm border border-gray-400 rounded-lg dark:bg-gray-700 dark:border-gray-600"
+          />
+         </label>
+         <label class="text-sm">
+          <span class="block mb-1 text-gray-600 dark:text-gray-300"
+           >Height</span
+          >
+          <input
+           v-model.number="customHeightIn"
+           type="number"
+           :min="CUSTOM_MIN_IN"
+           :max="PAGE_H_IN"
+           step="0.25"
+           placeholder="in"
+           class="w-full px-3 py-2 text-sm border border-gray-400 rounded-lg dark:bg-gray-700 dark:border-gray-600"
+          />
+         </label>
+        </div>
+        <p class="text-xs text-gray-500">
+         Min {{ CUSTOM_MIN_IN }}", max {{ PAGE_W_IN }}" × {{ PAGE_H_IN }}".
+         Overlay appears once both are set.
+        </p>
+       </div>
+      </AccordionContent>
+     </AccordionItem>
+    </AccordionRoot>
 
     <button
      type="button"
@@ -1194,7 +1372,7 @@ async function buyCleanTemplate(includePng = false) {
          :text-anchor="guideTextAnchor"
          :font-family="guideFontFamilyCss"
          :font-size="groupHeight"
-         fill="#1e3a8a"
+         fill="#78350f"
          opacity="0.5"
         >{{ line.text }}</text>
        </g>
@@ -1301,7 +1479,7 @@ async function buyCleanTemplate(includePng = false) {
 @reference "#tailwind";
 
 input[type="range"] {
- @apply w-full h-2 mt-2 bg-gray-200 rounded-lg appearance-none cursor-pointer;
+ @apply w-full h-2 mt-2 bg-gray-300 rounded-lg appearance-none cursor-pointer;
  accent-color: var(--color-primary);
 }
 
@@ -1383,6 +1561,31 @@ input[type="range"] {
 </style>
 
 <style>
+.accordion-content[data-state="open"] {
+ animation: accordion-down 200ms ease-out;
+}
+.accordion-content[data-state="closed"] {
+ animation: accordion-up 200ms ease-out;
+}
+
+@keyframes accordion-down {
+ from {
+  height: 0;
+ }
+ to {
+  height: var(--reka-accordion-content-height);
+ }
+}
+
+@keyframes accordion-up {
+ from {
+  height: var(--reka-accordion-content-height);
+ }
+ to {
+  height: 0;
+ }
+}
+
 /* A single portrait named page is used for both orientations. Print engines
    often ignore `@page { size: letter landscape }`, so landscape content is
    instead rotated 90° to fit this portrait sheet (see the print rules below).
