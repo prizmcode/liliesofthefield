@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AddToCartInput } from "#types/gql";
+import { GOOGLE_FONTS, type GuideFont } from "../../shared/utils/guideFonts";
 
 const runtimeConfig = useRuntimeConfig();
 const router = useRouter();
@@ -33,6 +34,32 @@ const slantAngle = ref(20);
 const slantSpacing = ref(10);
 const showCenterLine = ref(false);
 const showRulers = ref(true);
+
+// GOOGLE_FONTS / GuideFont come from shared/utils/guideFonts.ts (auto-imported)
+// so the client page and the server PDF endpoint stay in sync on what's
+// offered — add, remove, or swap fonts there, not here.
+const showGuideText = ref(true);
+const guideText = ref("");
+const guideFontId = ref(GOOGLE_FONTS[0]!.id);
+const guideFont = computed(
+ () =>
+  GOOGLE_FONTS.find((f) => f.id === guideFontId.value) ?? GOOGLE_FONTS[0]!,
+);
+const guideFontFamilyCss = computed(() => `'${guideFont.value.family}', cursive`);
+const guideTextAlign = ref<"left" | "center" | "right">("left");
+const printGuideText = ref(false);
+const includeGuideTextInDownload = ref(false);
+const guideTextX = computed(() => {
+ if (guideTextAlign.value === "center")
+  return margin.value + writingAreaW.value / 2;
+ if (guideTextAlign.value === "right") return PAGE_W.value - margin.value;
+ return margin.value;
+});
+const guideTextAnchor = computed(() => {
+ if (guideTextAlign.value === "center") return "middle";
+ if (guideTextAlign.value === "right") return "end";
+ return "start";
+});
 
 type Preset = {
  name: string;
@@ -166,6 +193,82 @@ const ruleGroups = computed(() => {
  return groups;
 });
 
+// Bumped once the browser finishes loading the guide fonts, so the wrap
+// below (which measures text with the canvas API) re-runs with accurate
+// metrics instead of whatever fallback font was available immediately.
+const fontsReadyTick = ref(0);
+onMounted(() => {
+ if (typeof document === "undefined" || !("fonts" in document)) return;
+ document.fonts.ready.then(() => {
+  fontsReadyTick.value++;
+ });
+});
+
+let measureCtx: CanvasRenderingContext2D | null | undefined;
+function getMeasureCtx(): CanvasRenderingContext2D | null {
+ if (measureCtx !== undefined) return measureCtx;
+ measureCtx =
+  typeof document === "undefined"
+   ? null
+   : (document.createElement("canvas").getContext("2d") ?? null);
+ return measureCtx;
+}
+
+// Greedy word-wrap: fits as many words per line as `maxWidth` allows.
+function wrapWords(
+ text: string,
+ maxWidth: number,
+ measure: (s: string) => number,
+): string[] {
+ const words = text.split(/\s+/).filter(Boolean);
+ const lines: string[] = [];
+ let current = "";
+ for (const word of words) {
+  const candidate = current ? `${current} ${word}` : word;
+  if (!current || measure(candidate) <= maxWidth) {
+   current = candidate;
+  } else {
+   lines.push(current);
+   current = word;
+  }
+ }
+ if (current) lines.push(current);
+ return lines;
+}
+
+// One entry per ruled line. If the guide text has manual line breaks, each
+// break maps 1:1 to the next ruled line (unchanged). Otherwise it's treated
+// as one paragraph and word-wrapped to fill however many ruled lines are
+// available. Positioned at the bottom of the x-height band (`baseline`),
+// where the ruled baseline itself sits.
+const guideTextLines = computed(() => {
+ if (!showGuideText.value || !guideText.value) return [];
+ fontsReadyTick.value;
+
+ const ctx = getMeasureCtx();
+ if (ctx)
+  ctx.font = `${groupHeight.value}px '${guideFont.value.family}', cursive`;
+ const measure = ctx ? (s: string) => ctx.measureText(s).width : null;
+
+ // Each manual line break still starts a new ruled line, but a paragraph
+ // that's too wide to fit wraps onto however many additional ruled lines
+ // it needs, rather than just getting clipped.
+ const segments: string[] = [];
+ for (const paragraph of guideText.value.split("\n")) {
+  if (!paragraph.trim()) {
+   segments.push("");
+  } else if (measure) {
+   segments.push(...wrapWords(paragraph, writingAreaW.value, measure));
+  } else {
+   segments.push(paragraph);
+  }
+ }
+
+ return segments
+  .slice(0, ruleGroups.value.length)
+  .map((text, i) => ({ text, y: ruleGroups.value[i]!.baseline }));
+});
+
 const MM_PER_INCH = 25.4;
 const TICK_STEP = MM_PER_INCH / 4;
 const TICK_MAJOR_LEN = 2.5;
@@ -277,6 +380,16 @@ useSeoMeta({
   "Design and print custom calligraphy practice sheets with adjustable x-height, ascender, descender, line spacing, and slant guides.",
 });
 
+// Load every guide-text font up front so switching the selector is instant.
+useHead({
+ link: [
+  {
+   rel: "stylesheet",
+   href: `https://fonts.googleapis.com/css2?${GOOGLE_FONTS.map((f) => `family=${f.googleFamilyParam}`).join("&")}&display=swap`,
+  },
+ ],
+});
+
 // Inject print dimensions so the SVG fills the page correctly when printing.
 // The @page rules (named pages) handle the page orientation; these styles
 // ensure the print area and SVG match the page dimensions.
@@ -358,24 +471,59 @@ function buildFilename() {
  return `Calligraphy-Template-${slug}.pdf`;
 }
 
+// jsPDF/svg2pdf only render a font it has embedded via addFont — loading the
+// browser's CSS @font-face (for the on-screen preview) isn't enough. Fetch
+// the self-hosted .ttf and register it under the exact CSS family name so
+// svg2pdf's font lookup matches it.
+async function registerGuideFont(pdf: any, font: GuideFont) {
+ const res = await fetch(font.ttfFile);
+ const bytes = new Uint8Array(await res.arrayBuffer());
+ let binary = "";
+ const chunkSize = 0x8000;
+ for (let i = 0; i < bytes.length; i += chunkSize) {
+  binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+ }
+ const vfsName = font.ttfFile.split("/").pop()!;
+ pdf.addFileToVFS(vfsName, btoa(binary));
+ pdf.addFont(vfsName, font.family, "normal");
+}
+
 async function handleDownloadPdf() {
  if (!svgEl.value) return;
  const [{ jsPDF }, { svg2pdf }] = await Promise.all([
   import("jspdf"),
   import("svg2pdf.js"),
  ]);
- const pdf = new jsPDF({
-  orientation: orientation.value,
-  unit: "mm",
-  format: "letter",
- });
- await svg2pdf(svgEl.value, pdf, {
-  x: 0,
-  y: 0,
-  width: PAGE_W.value,
-  height: PAGE_H.value,
- });
- pdf.save(buildFilename());
+ // Guide text is a layout aid only — hide it for the export so it doesn't
+ // end up baked into the downloaded PDF, unless the customer explicitly
+ // wants it included.
+ const keepingGuideText =
+  guideTextLines.value.length > 0 && includeGuideTextInDownload.value;
+ const wasShowingGuide = showGuideText.value && !includeGuideTextInDownload.value;
+ if (wasShowingGuide) {
+  showGuideText.value = false;
+  await nextTick();
+ }
+ try {
+  const pdf = new jsPDF({
+   orientation: orientation.value,
+   unit: "mm",
+   format: "letter",
+  });
+  if (keepingGuideText) await registerGuideFont(pdf, guideFont.value);
+  await svg2pdf(svgEl.value, pdf, {
+   x: 0,
+   y: 0,
+   width: PAGE_W.value,
+   height: PAGE_H.value,
+  });
+  pdf.save(buildFilename());
+ } finally {
+  if (wasShowingGuide) {
+   showGuideText.value = true;
+   await nextTick();
+  }
+ }
 }
 
 const cleanPdfMessage = ref("");
@@ -384,7 +532,10 @@ const cleanPdfMessage = ref("");
 function serializeCleanSvg(): string | null {
  if (!svgEl.value) return null;
  const clone = svgEl.value.cloneNode(true) as SVGSVGElement;
- clone.querySelectorAll("[data-watermark]").forEach((n) => n.remove());
+ const stripSelector = includeGuideTextInDownload.value
+  ? "[data-watermark]"
+  : "[data-watermark], [data-guide-text]";
+ clone.querySelectorAll(stripSelector).forEach((n) => n.remove());
  return new XMLSerializer().serializeToString(clone);
 }
 
@@ -689,6 +840,97 @@ async function buyCleanTemplate(includePng = false) {
     </div>
 
     <div class="border-t border-gray-200 pt-5 space-y-3">
+     <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+      <input v-model="showGuideText" type="checkbox" class="accent-current" />
+      <span>Show guide text</span>
+     </label>
+     <template v-if="showGuideText">
+      <div>
+       <label class="block mb-1 text-sm font-medium">Guide text</label>
+       <textarea
+        v-model="guideText"
+        rows="4"
+        placeholder="Type your wording, one line per ruled line…"
+        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600"
+       />
+       <p class="mt-1 text-xs text-gray-500">
+        Each line break lands on the next ruled line. Shown at 50% opacity as
+        a layout guide only — it's left out of your printed sheet and any
+        downloaded or purchased file unless you check the boxes below.
+       </p>
+      </div>
+      <div>
+       <label class="block mb-1 text-sm font-medium">Guide font</label>
+       <select
+        v-model="guideFontId"
+        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600"
+       >
+        <option v-for="f in GOOGLE_FONTS" :key="f.id" :value="f.id">
+         {{ f.label }}
+        </option>
+       </select>
+      </div>
+      <div>
+       <label class="block mb-1 text-sm font-medium">Text alignment</label>
+       <div class="grid grid-cols-3 gap-2">
+        <button
+         type="button"
+         @click="guideTextAlign = 'left'"
+         :class="[
+          'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+          guideTextAlign === 'left'
+           ? 'bg-gray-800 text-white border-gray-800'
+           : 'border-gray-300 hover:bg-gray-100',
+         ]"
+        >
+         Left
+        </button>
+        <button
+         type="button"
+         @click="guideTextAlign = 'center'"
+         :class="[
+          'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+          guideTextAlign === 'center'
+           ? 'bg-gray-800 text-white border-gray-800'
+           : 'border-gray-300 hover:bg-gray-100',
+         ]"
+        >
+         Center
+        </button>
+        <button
+         type="button"
+         @click="guideTextAlign = 'right'"
+         :class="[
+          'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+          guideTextAlign === 'right'
+           ? 'bg-gray-800 text-white border-gray-800'
+           : 'border-gray-300 hover:bg-gray-100',
+         ]"
+        >
+         Right
+        </button>
+       </div>
+      </div>
+      <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+       <input
+        v-model="printGuideText"
+        type="checkbox"
+        class="accent-current"
+       />
+       <span>Print guide text</span>
+      </label>
+      <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+       <input
+        v-model="includeGuideTextInDownload"
+        type="checkbox"
+        class="accent-current"
+       />
+       <span>Include guide text in download</span>
+      </label>
+     </template>
+    </div>
+
+    <div class="border-t border-gray-200 pt-5 space-y-3">
      <p class="text-sm font-medium">Custom overlay (inches)</p>
      <div class="grid grid-cols-2 gap-3">
       <label class="text-sm">
@@ -936,6 +1178,25 @@ async function buyCleanTemplate(includePng = false) {
          stroke="#4b5563"
          stroke-width="0.25"
         />
+       </g>
+       <g
+        v-if="guideTextLines.length"
+        :class="{ 'no-print': !printGuideText }"
+        data-guide-text="true"
+        clip-path="url(#ruleGroupsClip)"
+        pointer-events="none"
+       >
+        <text
+         v-for="(line, i) in guideTextLines"
+         :key="`guide-${i}`"
+         :x="guideTextX"
+         :y="line.y"
+         :text-anchor="guideTextAnchor"
+         :font-family="guideFontFamilyCss"
+         :font-size="groupHeight"
+         fill="#1e3a8a"
+         opacity="0.5"
+        >{{ line.text }}</text>
        </g>
        <line
         v-if="showCenterLine"

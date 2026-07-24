@@ -28,6 +28,7 @@ useHead({
       innerHTML: `:root { --color-primary: ${primaryColor.value}; }`,
     },
   ],
+  link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
 });
 </script>
 
@@ -50,7 +51,7 @@ useHead({
       <MobileMenu v-if="isShowingMobileMenu" />
     </Transition>
 
-    <section class="mt-12 md:mt-24">
+    <section class="mt-0 md:mt-8">
       <NuxtPage />
     </section>
 

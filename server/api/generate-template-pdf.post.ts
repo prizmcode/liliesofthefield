@@ -1,6 +1,7 @@
 import { JSDOM } from "jsdom";
 import sharp from "sharp";
 import { ZipArchive } from "archiver";
+import { GOOGLE_FONTS } from "../../shared/utils/guideFonts";
 
 interface Body {
  svg: string;
@@ -118,6 +119,38 @@ export default defineEventHandler(async (event) => {
  const pageH = orientation === "landscape" ? 215.9 : 279.4;
  const pdf = new jsPDF({ orientation, unit: "mm", format: "letter" });
  try {
+  // jsPDF/svg2pdf only render a font it has embedded via addFont — the guide
+  // text's CSS font-family alone isn't enough here (no browser to resolve
+  // @font-face). Detect which guide font (if any) the SVG actually uses and
+  // register its self-hosted .ttf under the same family name so svg2pdf's
+  // font lookup matches it.
+  const guideTextEl = dom.window.document.querySelector(
+   "[data-guide-text] text",
+  );
+  const guideFamilyName = guideTextEl
+   ?.getAttribute("font-family")
+   ?.split(",")[0]
+   ?.trim()
+   .replace(/^['"]|['"]$/g, "");
+  const matchedGuideFont = guideFamilyName
+   ? GOOGLE_FONTS.find((f) => f.family === guideFamilyName)
+   : undefined;
+  if (matchedGuideFont) {
+   const requestOrigin = getRequestURL(event).origin;
+   const fontRes = await fetch(`${requestOrigin}${matchedGuideFont.ttfFile}`);
+   if (fontRes.ok) {
+    const fontBuffer = Buffer.from(await fontRes.arrayBuffer());
+    const vfsName = matchedGuideFont.ttfFile.split("/").pop()!;
+    pdf.addFileToVFS(vfsName, fontBuffer.toString("base64"));
+    pdf.addFont(vfsName, matchedGuideFont.family, "normal");
+   } else {
+    console.error(
+     "[generate-template-pdf] failed to fetch guide font:",
+     matchedGuideFont.ttfFile,
+     fontRes.status,
+    );
+   }
+  }
   await pdf.svg(svgEl, { x: 0, y: 0, width: pageW, height: pageH });
  } finally {
   g.document = prev.document;
