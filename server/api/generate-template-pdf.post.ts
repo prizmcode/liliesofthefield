@@ -1,7 +1,7 @@
 import { JSDOM } from "jsdom";
 import sharp from "sharp";
 import { ZipArchive } from "archiver";
-import { GOOGLE_FONTS } from "../../shared/utils/guideFonts";
+import { GOOGLE_FONTS } from "#shared/utils/guideFonts";
 
 interface Body {
  svg: string;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AddToCartInput } from "#types/gql";
-import { GOOGLE_FONTS, type GuideFont } from "../../shared/utils/guideFonts";
+import { GOOGLE_FONTS, type GuideFont } from "#shared/utils/guideFonts";
 import {
  AccordionContent,
  AccordionHeader,

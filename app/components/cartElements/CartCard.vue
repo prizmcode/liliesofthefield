@@ -1,5 +1,5 @@
 <script setup>
-import { GOOGLE_FONTS } from "../../../shared/utils/guideFonts";
+import { GOOGLE_FONTS } from "#shared/utils/guideFonts";
 
 const { updateItemQuantity } = useCart();
 const { addToWishlist } = useWishlist();
