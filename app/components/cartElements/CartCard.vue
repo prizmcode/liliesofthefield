@@ -1,4 +1,6 @@
 <script setup>
+import { GOOGLE_FONTS } from "../../../shared/utils/guideFonts";
+
 const { updateItemQuantity } = useCart();
 const { addToWishlist } = useWishlist();
 const { FALLBACK_IMG } = useHelpers();
@@ -97,6 +99,12 @@ const customizations = computed(() => {
   push("Slant spacing", num(s.slantSpacing) !== null ? `${s.slantSpacing}mm` : null);
  }
  push("Center line", s.showCenterLine ? "On" : null);
+ if (s.showGuideText && typeof s.guideText === "string" && s.guideText.trim()) {
+  const snippet = s.guideText.trim().replace(/\s+/g, " ").slice(0, 40);
+  push("Guide text", snippet.length < s.guideText.trim().length ? `${snippet}…` : snippet);
+  const font = GOOGLE_FONTS.find((f) => f.id === s.guideFontId);
+  push("Guide font", font?.label ?? null);
+ }
  return list;
 });
 

@@ -411,6 +411,11 @@ useHead(() => ({
 const svgEl = ref<SVGSVGElement | null>(null);
 const showWatermark = ref(true);
 
+// Tracks whether the customer already printed or downloaded the watermarked
+// preview before checking out, so the order records that context.
+const hasPrinted = ref(false);
+const hasDownloadedWatermarked = ref(false);
+
 const brandingTextX = computed(() => PAGE_W.value - FOOTER_STRIP);
 
 // Restore a previously saved design from a `?restore=<settings JSON>` query,
@@ -450,6 +455,19 @@ function restoreFromQuery() {
  applyBool(showCenterLine, parsed.showCenterLine);
  const o = parsed.orientation;
  if (o === "portrait" || o === "landscape") orientation.value = o;
+
+ const str = (v: unknown) => (typeof v === "string" ? v : null);
+ applyBool(showGuideText, parsed.showGuideText);
+ const gt = str(parsed.guideText);
+ if (gt !== null) guideText.value = gt;
+ const fid = str(parsed.guideFontId);
+ if (fid !== null && GOOGLE_FONTS.some((f) => f.id === fid))
+  guideFontId.value = fid;
+ const align = parsed.guideTextAlign;
+ if (align === "left" || align === "center" || align === "right")
+  guideTextAlign.value = align;
+ applyBool(printGuideText, parsed.printGuideText);
+ applyBool(includeGuideTextInDownload, parsed.includeGuideTextInDownload);
 }
 
 // Vue Router reuses this component instance for query-only navigations (e.g.
@@ -465,6 +483,7 @@ onMounted(() => {
 });
 
 function handlePrint() {
+ hasPrinted.value = true;
  window.print();
 }
 
@@ -525,6 +544,7 @@ async function handleDownloadPdf() {
    height: PAGE_H.value,
   });
   pdf.save(buildFilename());
+  hasDownloadedWatermarked.value = true;
  } finally {
   if (wasShowingGuide) {
    showGuideText.value = true;
@@ -561,6 +581,12 @@ function currentSettings() {
   slantAngle: slantAngle.value,
   slantSpacing: slantSpacing.value,
   showCenterLine: showCenterLine.value,
+  showGuideText: showGuideText.value,
+  guideText: guideText.value,
+  guideFontId: guideFontId.value,
+  guideTextAlign: guideTextAlign.value,
+  printGuideText: printGuideText.value,
+  includeGuideTextInDownload: includeGuideTextInDownload.value,
  };
 }
 
@@ -652,6 +678,8 @@ async function buyCleanTemplate(includePng = false) {
     calligraphy_settings: JSON.stringify(currentSettings()),
     calligraphy_svg: svg,
     calligraphy_include_png: includePng,
+    calligraphy_printed: hasPrinted.value,
+    calligraphy_downloaded: hasDownloadedWatermarked.value,
    }),
   };
   await addToCart(input);
