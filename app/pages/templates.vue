@@ -493,6 +493,44 @@ onMounted(() => {
  restoreFromQuery();
 });
 
+// Live variation prices, fetched from WooCommerce so the button labels never
+// drift from whatever price is actually charged at checkout.
+const pdfOnlyPrice = ref<string | null>(null);
+const pdfAndPngPrice = ref<string | null>(null);
+const pdfOnlyLabel = computed(() =>
+ pdfOnlyPrice.value ? `PDF Only — ${pdfOnlyPrice.value}` : "PDF Only",
+);
+const pdfAndPngLabel = computed(() =>
+ pdfAndPngPrice.value
+  ? `PDF + Transparent PNG — ${pdfAndPngPrice.value}`
+  : "PDF + Transparent PNG",
+);
+
+async function fetchTemplatePrices() {
+ if (!Number.isFinite(TEMPLATE_PRODUCT_ID) || TEMPLATE_PRODUCT_ID <= 0) return;
+ try {
+  const { product } = await GqlGetProductVariationPrices({
+   id: String(TEMPLATE_PRODUCT_ID),
+  });
+  const nodes = (product as any)?.variations?.nodes ?? [];
+  const pdfOnly = nodes.find(
+   (v: any) => v?.databaseId === TEMPLATE_VARIATION_PDF_ONLY,
+  );
+  const pdfAndPng = nodes.find(
+   (v: any) => v?.databaseId === TEMPLATE_VARIATION_PDF_AND_PNG,
+  );
+  if (pdfOnly?.price) pdfOnlyPrice.value = pdfOnly.price;
+  if (pdfAndPng?.price) pdfAndPngPrice.value = pdfAndPng.price;
+ } catch (error: any) {
+  const errorMessage = error?.gqlErrors?.[0]?.message;
+  console.error(errorMessage || error);
+ }
+}
+
+onMounted(() => {
+ void fetchTemplatePrices();
+});
+
 function handlePrint() {
  hasPrinted.value = true;
  window.print();
@@ -1231,7 +1269,7 @@ async function buyCleanTemplate(includePng = false) {
       :disabled="isAddingTemplate"
       class="w-full px-6 py-3 font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
      >
-      {{ addingVariant === "pdf" ? "Adding to cart…" : "PDF Only — $1.99" }}
+      {{ addingVariant === "pdf" ? "Adding to cart…" : pdfOnlyLabel }}
      </button>
      <button
       type="button"
@@ -1239,11 +1277,7 @@ async function buyCleanTemplate(includePng = false) {
       :disabled="isAddingTemplate"
       class="w-full px-6 py-3 font-bold text-white bg-gray-800 hover:bg-gray-900 rounded-xl cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
      >
-      {{
-       addingVariant === "pdf-png"
-        ? "Adding to cart…"
-        : "PDF + Transparent PNG — $2.99"
-      }}
+      {{ addingVariant === "pdf-png" ? "Adding to cart…" : pdfAndPngLabel }}
      </button>
      <p class="text-xs text-gray-500">
       The PDF+PNG option includes a high-resolution transparent PNG file for use
