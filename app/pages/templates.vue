@@ -35,10 +35,10 @@ const numLines = ref(8);
 const ascenderH = ref(5);
 const xHeight = ref(5);
 const descenderH = ref(5);
-const lineGap = ref(10);
+const lineGap = ref(5);
 const showSlant = ref(true);
 const slantAngle = ref(20);
-const slantSpacing = ref(10);
+const slantSpacing = ref(5);
 const showCenterLine = ref(false);
 const showRulers = ref(true);
 
@@ -49,10 +49,11 @@ const showGuideText = ref(true);
 const guideText = ref("");
 const guideFontId = ref(GOOGLE_FONTS[0]!.id);
 const guideFont = computed(
- () =>
-  GOOGLE_FONTS.find((f) => f.id === guideFontId.value) ?? GOOGLE_FONTS[0]!,
+ () => GOOGLE_FONTS.find((f) => f.id === guideFontId.value) ?? GOOGLE_FONTS[0]!,
 );
-const guideFontFamilyCss = computed(() => `'${guideFont.value.family}', cursive`);
+const guideFontFamilyCss = computed(
+ () => `'${guideFont.value.family}', cursive`,
+);
 const guideTextAlign = ref<"left" | "center" | "right">("left");
 const printGuideText = ref(false);
 const includeGuideTextInDownload = ref(false);
@@ -82,13 +83,13 @@ type Preset = {
 const presets: Preset[] = [
  {
   name: "Copperplate",
-  ascenderH: 3,
-  xHeight: 6,
-  descenderH: 3,
+  ascenderH: 7.5,
+  xHeight: 5,
+  descenderH: 7.5,
   lineGap: 5,
   showSlant: true,
-  slantAngle: 55,
-  slantSpacing: 6,
+  slantAngle: 52,
+  slantSpacing: 5,
  },
  {
   name: "Spencerian",
@@ -122,13 +123,13 @@ const presets: Preset[] = [
  },
  {
   name: "Modern Brush",
-  ascenderH: 12,
-  xHeight: 6,
-  descenderH: 12,
-  lineGap: 6,
+  ascenderH: 10,
+  xHeight: 5,
+  descenderH: 10,
+  lineGap: 5,
   showSlant: true,
   slantAngle: 17,
-  slantSpacing: 12,
+  slantSpacing: 5,
  },
 ];
 
@@ -525,7 +526,8 @@ async function handleDownloadPdf() {
  // wants it included.
  const keepingGuideText =
   guideTextLines.value.length > 0 && includeGuideTextInDownload.value;
- const wasShowingGuide = showGuideText.value && !includeGuideTextInDownload.value;
+ const wasShowingGuide =
+  showGuideText.value && !includeGuideTextInDownload.value;
  if (wasShowingGuide) {
   showGuideText.value = false;
   await nextTick();
@@ -718,11 +720,11 @@ async function buyCleanTemplate(includePng = false) {
     >
      <AccordionItem
       value="presets"
-      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden"
      >
-      <AccordionHeader>
+      <AccordionHeader class="py-0!">
        <AccordionTrigger
-        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-800"
        >
         <span>Presets</span>
         <Icon
@@ -732,14 +734,16 @@ async function buyCleanTemplate(includePng = false) {
         />
        </AccordionTrigger>
       </AccordionHeader>
-      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+      <AccordionContent
+       class="accordion-content overflow-hidden bg-white dark:bg-gray-800"
+      >
        <div class="grid grid-cols-2 gap-2 px-4 pt-3 pb-4">
         <button
          v-for="p in presets"
          :key="p.name"
          type="button"
          @click="applyPreset(p)"
-         class="px-3 py-1.5 text-sm border border-gray-400 hover:bg-gray-100 rounded-lg cursor-pointer"
+         class="px-3 py-1.5 text-sm border border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg cursor-pointer"
         >
          {{ p.name }}
         </button>
@@ -749,11 +753,11 @@ async function buyCleanTemplate(includePng = false) {
 
      <AccordionItem
       value="page-setup"
-      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden"
      >
-      <AccordionHeader>
+      <AccordionHeader class="py-0!">
        <AccordionTrigger
-        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-800"
        >
         <span>Page Setup</span>
         <Icon
@@ -763,7 +767,9 @@ async function buyCleanTemplate(includePng = false) {
         />
        </AccordionTrigger>
       </AccordionHeader>
-      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+      <AccordionContent
+       class="accordion-content overflow-hidden bg-white dark:bg-gray-800"
+      >
        <div class="space-y-4 px-4 pt-3 pb-4">
         <div>
          <p class="text-sm font-medium mb-2">Orientation</p>
@@ -774,8 +780,8 @@ async function buyCleanTemplate(includePng = false) {
            :class="[
             'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
             orientation === 'portrait'
-             ? 'bg-gray-800 text-white border-gray-800'
-             : 'border-gray-400 hover:bg-gray-100',
+             ? 'bg-gray-800 dark:bg-gray-600 text-white border-gray-800 dark:border-gray-600'
+             : 'border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700',
            ]"
           >
            Portrait
@@ -786,8 +792,8 @@ async function buyCleanTemplate(includePng = false) {
            :class="[
             'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
             orientation === 'landscape'
-             ? 'bg-gray-800 text-white border-gray-800'
-             : 'border-gray-400 hover:bg-gray-100',
+             ? 'bg-gray-800 dark:bg-gray-600 text-white border-gray-800 dark:border-gray-600'
+             : 'border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700',
            ]"
           >
            Landscape
@@ -796,7 +802,9 @@ async function buyCleanTemplate(includePng = false) {
         </div>
 
         <div class="space-y-3">
-         <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+         <label
+          class="flex items-center gap-2 text-sm font-medium cursor-pointer"
+         >
           <span>Number of lines</span>
           <input v-model="autoFill" type="checkbox" />
           <span>Auto-fill page</span>
@@ -834,11 +842,11 @@ async function buyCleanTemplate(includePng = false) {
 
      <AccordionItem
       value="lettering"
-      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden"
      >
-      <AccordionHeader>
+      <AccordionHeader class="py-0!">
        <AccordionTrigger
-        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-800"
        >
         <span>Lettering Guides</span>
         <Icon
@@ -848,7 +856,9 @@ async function buyCleanTemplate(includePng = false) {
         />
        </AccordionTrigger>
       </AccordionHeader>
-      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+      <AccordionContent
+       class="accordion-content overflow-hidden bg-white dark:bg-gray-800"
+      >
        <div class="space-y-4 px-4 pt-3 pb-4">
         <div>
          <label class="flex justify-between text-sm font-medium">
@@ -911,11 +921,11 @@ async function buyCleanTemplate(includePng = false) {
 
      <AccordionItem
       value="slant"
-      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden"
      >
-      <AccordionHeader>
+      <AccordionHeader class="py-0!">
        <AccordionTrigger
-        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-800"
        >
         <span>Slant Guides</span>
         <Icon
@@ -925,9 +935,13 @@ async function buyCleanTemplate(includePng = false) {
         />
        </AccordionTrigger>
       </AccordionHeader>
-      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+      <AccordionContent
+       class="accordion-content overflow-hidden bg-white dark:bg-gray-800"
+      >
        <div class="space-y-4 px-4 pt-3 pb-4">
-        <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+        <label
+         class="flex items-center gap-2 text-sm font-medium cursor-pointer"
+        >
          <input v-model="showSlant" type="checkbox" class="accent-current" />
          <span>Show slant guides</span>
         </label>
@@ -965,11 +979,11 @@ async function buyCleanTemplate(includePng = false) {
 
      <AccordionItem
       value="display"
-      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden"
      >
-      <AccordionHeader>
+      <AccordionHeader class="py-0!">
        <AccordionTrigger
-        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-800"
        >
         <span>Display Options</span>
         <Icon
@@ -979,9 +993,13 @@ async function buyCleanTemplate(includePng = false) {
         />
        </AccordionTrigger>
       </AccordionHeader>
-      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+      <AccordionContent
+       class="accordion-content overflow-hidden bg-white dark:bg-gray-800"
+      >
        <div class="space-y-4 px-4 pt-3 pb-4">
-        <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+        <label
+         class="flex items-center gap-2 text-sm font-medium cursor-pointer"
+        >
          <input
           v-model="showCenterLine"
           type="checkbox"
@@ -990,7 +1008,9 @@ async function buyCleanTemplate(includePng = false) {
          <span>Show center line</span>
         </label>
 
-        <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+        <label
+         class="flex items-center gap-2 text-sm font-medium cursor-pointer"
+        >
          <input v-model="showRulers" type="checkbox" class="accent-current" />
          <span>Show rulers</span>
         </label>
@@ -1000,11 +1020,11 @@ async function buyCleanTemplate(includePng = false) {
 
      <AccordionItem
       value="guide-text"
-      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden"
      >
-      <AccordionHeader>
+      <AccordionHeader class="py-0!">
        <AccordionTrigger
-        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-800"
        >
         <span>Guide Text</span>
         <Icon
@@ -1014,9 +1034,13 @@ async function buyCleanTemplate(includePng = false) {
         />
        </AccordionTrigger>
       </AccordionHeader>
-      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+      <AccordionContent
+       class="accordion-content overflow-hidden bg-white dark:bg-gray-800"
+      >
        <div class="space-y-3 px-4 pt-3 pb-4">
-        <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+        <label
+         class="flex items-center gap-2 text-sm font-medium cursor-pointer"
+        >
          <input
           v-model="showGuideText"
           type="checkbox"
@@ -1034,10 +1058,9 @@ async function buyCleanTemplate(includePng = false) {
            class="w-full px-3 py-2 text-sm border border-gray-400 rounded-lg dark:bg-gray-700 dark:border-gray-600"
           />
           <p class="mt-1 text-xs text-gray-500">
-           Each line break lands on the next ruled line. Shown at 50% opacity
-           as a layout guide only — it's left out of your printed sheet and
-           any downloaded or purchased file unless you check the boxes
-           below.
+           Each line break lands on the next ruled line. Shown at 50% opacity as
+           a layout guide only — it's left out of your printed sheet and any
+           downloaded or purchased file unless you check the boxes below.
           </p>
          </div>
          <div>
@@ -1060,8 +1083,8 @@ async function buyCleanTemplate(includePng = false) {
             :class="[
              'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
              guideTextAlign === 'left'
-              ? 'bg-gray-800 text-white border-gray-800'
-              : 'border-gray-400 hover:bg-gray-100',
+              ? 'bg-gray-800 dark:bg-gray-600 text-white border-gray-800 dark:border-gray-600'
+              : 'border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700',
             ]"
            >
             Left
@@ -1072,8 +1095,8 @@ async function buyCleanTemplate(includePng = false) {
             :class="[
              'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
              guideTextAlign === 'center'
-              ? 'bg-gray-800 text-white border-gray-800'
-              : 'border-gray-400 hover:bg-gray-100',
+              ? 'bg-gray-800 dark:bg-gray-600 text-white border-gray-800 dark:border-gray-600'
+              : 'border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700',
             ]"
            >
             Center
@@ -1084,15 +1107,17 @@ async function buyCleanTemplate(includePng = false) {
             :class="[
              'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
              guideTextAlign === 'right'
-              ? 'bg-gray-800 text-white border-gray-800'
-              : 'border-gray-400 hover:bg-gray-100',
+              ? 'bg-gray-800 dark:bg-gray-600 text-white border-gray-800 dark:border-gray-600'
+              : 'border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700',
             ]"
            >
             Right
            </button>
           </div>
          </div>
-         <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+         <label
+          class="flex items-center gap-2 text-sm font-medium cursor-pointer"
+         >
           <input
            v-model="printGuideText"
            type="checkbox"
@@ -1100,7 +1125,9 @@ async function buyCleanTemplate(includePng = false) {
           />
           <span>Print guide text</span>
          </label>
-         <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+         <label
+          class="flex items-center gap-2 text-sm font-medium cursor-pointer"
+         >
           <input
            v-model="includeGuideTextInDownload"
            type="checkbox"
@@ -1115,11 +1142,11 @@ async function buyCleanTemplate(includePng = false) {
 
      <AccordionItem
       value="overlay"
-      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800"
+      class="group border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden"
      >
-      <AccordionHeader>
+      <AccordionHeader class="py-0!">
        <AccordionTrigger
-        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer"
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer bg-gray-200 hover:bg-gray-300 dark:bg-gray-900 dark:hover:bg-gray-800"
        >
         <span>Custom Overlay</span>
         <Icon
@@ -1129,13 +1156,13 @@ async function buyCleanTemplate(includePng = false) {
         />
        </AccordionTrigger>
       </AccordionHeader>
-      <AccordionContent class="accordion-content overflow-hidden bg-gray-100 dark:bg-gray-900/40">
+      <AccordionContent
+       class="accordion-content overflow-hidden bg-white dark:bg-gray-800"
+      >
        <div class="space-y-3 px-4 pt-3 pb-4">
         <div class="grid grid-cols-2 gap-3">
          <label class="text-sm">
-          <span class="block mb-1 text-gray-600 dark:text-gray-300"
-           >Width</span
-          >
+          <span class="block mb-1 text-gray-600 dark:text-gray-300">Width</span>
           <input
            v-model.number="customWidthIn"
            type="number"
@@ -1186,7 +1213,7 @@ async function buyCleanTemplate(includePng = false) {
      Download (watermarked)
     </button>
 
-    <div class="border-t border-gray-200 pt-5 space-y-3">
+    <div class="border-t border-gray-200 dark:border-gray-600 pt-5 space-y-3">
      <p class="text-sm font-medium">Download Clean Template</p>
      <button
       type="button"
@@ -1403,7 +1430,9 @@ async function buyCleanTemplate(includePng = false) {
          :font-size="groupHeight"
          fill="#78350f"
          opacity="0.5"
-        >{{ line.text }}</text>
+        >
+         {{ line.text }}
+        </text>
        </g>
        <line
         v-if="showCenterLine"
