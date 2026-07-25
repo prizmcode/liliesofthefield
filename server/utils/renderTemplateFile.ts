@@ -1,6 +1,4 @@
 import { JSDOM } from "jsdom";
-import sharp from "sharp";
-import { ZipArchive } from "archiver";
 import { GOOGLE_FONTS } from "#shared/utils/guideFonts";
 
 export interface RenderTemplateFileParams {
@@ -123,6 +121,16 @@ export async function renderTemplateFile(
    downloadFilename: baseFilename,
   };
  }
+
+ // sharp/archiver are only needed for the PNG+zip path, and are dynamically
+ // imported (like jsPDF/svg2pdf above) so a broken sharp native binary can't
+ // crash the whole server at boot — Nitro auto-imports everything in
+ // server/utils/ into the eager startup bundle, so a static top-level import
+ // here would run on every server start, not just when this path is hit.
+ const [{ default: sharp }, { ZipArchive }] = await Promise.all([
+  import("sharp"),
+  import("archiver"),
+ ]);
 
  // Generate a transparent PNG from the SVG using sharp.
  // The SVG has no background rect (the white bg is a CSS class in the browser),
