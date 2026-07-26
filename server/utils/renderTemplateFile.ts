@@ -1,6 +1,87 @@
 import { JSDOM } from "jsdom";
 import { GOOGLE_FONTS } from "#shared/utils/guideFonts";
 
+// Renders the PNG via WASM (resvg), not sharp/libvips. Some managed hosting
+// tiers (e.g. Hostinger's shared/cloud Node.js hosting) hard-block dlopen()
+// of custom native .so binaries as a platform security policy — confirmed
+// directly with their support, not fixable by any file placement on our
+// end. WASM runs sandboxed inside Node's own runtime, no native binary
+// loading involved, so it isn't subject to that restriction. The module can
+// only be initialized once per process, so the init promise is cached.
+let resvgReady: Promise<typeof import("@resvg/resvg-wasm")> | null = null;
+async function getResvg() {
+ if (!resvgReady) {
+  resvgReady = (async () => {
+   const resvg = await import("@resvg/resvg-wasm");
+   const { readFile } = await import("node:fs/promises");
+   const { createRequire } = await import("node:module");
+   // `import.meta.resolve` doesn't survive Nitro's Rollup bundling — its
+   // import.meta shim only implements `.url`, not `.resolve()`. Node's
+   // `require.resolve` (via createRequire) is genuine runtime machinery
+   // Rollup leaves untouched, so it resolves this correctly even bundled.
+   // The file itself is force-included in the build via
+   // nitro.externals.traceInclude in nuxt.config.ts, since normal
+   // dependency tracing only sees this computed path, not a static import.
+   const wasmPath = createRequire(import.meta.url).resolve(
+    "@resvg/resvg-wasm/index_bg.wasm",
+   );
+   await resvg.initWasm(await readFile(wasmPath));
+   return resvg;
+  })();
+ }
+ return resvgReady;
+}
+
+// resvg-wasm's `loadSystemFonts` does not actually discover any host fonts
+// in this runtime (confirmed by testing: text using a generic family like
+// "sans-serif" renders as nothing at all unless a real font buffer is
+// supplied) — so unlike the guide font, this is needed on every PNG render,
+// not just when a custom guide font is in play. Cached per-process since
+// it's a fixed asset, not per-request data.
+let baseFontReady: Promise<Buffer> | null = null;
+function getBaseFont(requestOrigin: string): Promise<Buffer> {
+ if (!baseFontReady) {
+  baseFontReady = fetch(`${requestOrigin}/fonts/Inter-Regular.ttf`).then(
+   async (res) => {
+    if (!res.ok) {
+     throw new Error(`Failed to fetch base font: ${res.status}`);
+    }
+    return Buffer.from(await res.arrayBuffer());
+   },
+  );
+ }
+ return baseFontReady;
+}
+
+// 300 DPI US Letter, matching the page orientation so landscape designs
+// aren't squeezed into a portrait canvas. The SVG paints no page-fill rect
+// (the white paper background is CSS-only), so the render stays transparent.
+async function renderSvgToPng(params: {
+ svg: string;
+ orientation: "portrait" | "landscape";
+ requestOrigin: string;
+ guideFontBuffer?: Buffer;
+}): Promise<Buffer> {
+ const [resvg, baseFont] = await Promise.all([
+  getResvg(),
+  getBaseFont(params.requestOrigin),
+ ]);
+ const pngWidth = params.orientation === "landscape" ? 3300 : 2550;
+ // resvg can't discover our @font-face-only guide fonts on its own (same
+ // reasoning as the jsPDF addFont step above) — hand it the buffer directly,
+ // alongside the base Inter font every generic "sans-serif"/footer text
+ // needs (see getBaseFont above).
+ const fontBuffers = [new Uint8Array(baseFont)];
+ if (params.guideFontBuffer) {
+  fontBuffers.push(new Uint8Array(params.guideFontBuffer));
+ }
+ const rendered = new resvg.Resvg(params.svg, {
+  fitTo: { mode: "width", value: pngWidth },
+  font: { fontBuffers, loadSystemFonts: false } as any,
+ }).render();
+ return Buffer.from(rendered.asPng());
+}
+
 export interface RenderTemplateFileParams {
  svg: string;
  filename?: string;
@@ -67,6 +148,10 @@ export async function renderTemplateFile(
  const pageW = orientation === "landscape" ? 279.4 : 215.9;
  const pageH = orientation === "landscape" ? 215.9 : 279.4;
  const pdf = new jsPDF({ orientation, unit: "mm", format: "letter" });
+ // Hoisted so the PNG path below can reuse the same fetched font buffer
+ // instead of fetching it a second time.
+ let matchedGuideFont: (typeof GOOGLE_FONTS)[number] | undefined;
+ let guideFontBuffer: Buffer | undefined;
  try {
   // jsPDF/svg2pdf only render a font it has embedded via addFont — the guide
   // text's CSS font-family alone isn't enough here (no browser to resolve
@@ -81,7 +166,7 @@ export async function renderTemplateFile(
    ?.split(",")[0]
    ?.trim()
    .replace(/^['"]|['"]$/g, "");
-  const matchedGuideFont = guideFamilyName
+  matchedGuideFont = guideFamilyName
    ? GOOGLE_FONTS.find((f) => f.family === guideFamilyName)
    : undefined;
   if (matchedGuideFont) {
@@ -89,9 +174,9 @@ export async function renderTemplateFile(
     `${params.requestOrigin}${matchedGuideFont.ttfFile}`,
    );
    if (fontRes.ok) {
-    const fontBuffer = Buffer.from(await fontRes.arrayBuffer());
+    guideFontBuffer = Buffer.from(await fontRes.arrayBuffer());
     const vfsName = matchedGuideFont.ttfFile.split("/").pop()!;
-    pdf.addFileToVFS(vfsName, fontBuffer.toString("base64"));
+    pdf.addFileToVFS(vfsName, guideFontBuffer.toString("base64"));
     pdf.addFont(vfsName, matchedGuideFont.family, "normal");
    } else {
     console.error(
@@ -122,34 +207,19 @@ export async function renderTemplateFile(
   };
  }
 
- // sharp/archiver are only needed for the PNG+zip path, and are dynamically
- // imported (like jsPDF/svg2pdf above) so a broken sharp native binary can't
- // crash the whole server at boot — Nitro auto-imports everything in
- // server/utils/ into the eager startup bundle, so a static top-level import
- // here would run on every server start, not just when this path is hit.
- const [{ default: sharp }, { ZipArchive }] = await Promise.all([
-  import("sharp"),
-  import("archiver"),
- ]);
-
- // Generate a transparent PNG from the SVG using sharp.
- // The SVG has no background rect (the white bg is a CSS class in the browser),
- // so the PNG will naturally have a transparent background.
+ // archiver is only needed for the zip path, dynamically imported (like
+ // jsPDF/svg2pdf above) so it's only loaded when this path is actually hit —
+ // Nitro auto-imports everything in server/utils/ into the eager startup
+ // bundle, so a static top-level import here would load on every server
+ // start, not just when someone requests a PNG/zip.
+ const { ZipArchive } = await import("archiver");
+ const pngBuffer = await renderSvgToPng({
+  svg,
+  orientation,
+  guideFontBuffer,
+  requestOrigin: params.requestOrigin,
+ });
  const pngFilename = baseFilename.replace(/\.pdf$/i, "") + ".png";
- // 300 DPI US Letter, matching the page orientation so landscape designs are not
- // squeezed into a portrait canvas. The transparent background is preserved
- // because the SVG paints no page fill (the white paper is a CSS-only class).
- const pngWidth = orientation === "landscape" ? 3300 : 2550;
- const pngHeight = orientation === "landscape" ? 2550 : 3300;
- const pngBuffer = await sharp(Buffer.from(svg))
-  .resize({
-   width: pngWidth,
-   height: pngHeight,
-   fit: "contain",
-   background: { r: 0, g: 0, b: 0, alpha: 0 },
-  })
-  .png()
-  .toBuffer();
 
  // Create a zip archive containing both the PDF and PNG.
  const zipFilename = baseFilename.replace(/\.pdf$/i, "") + ".zip";

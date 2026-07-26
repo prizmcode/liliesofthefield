@@ -48,6 +48,17 @@ export default defineNuxtConfig({
    interval: 1000,
    failOnError: false,
   },
+  // renderTemplateFile.ts loads this .wasm file at runtime via
+  // import.meta.resolve(), which the build's dependency tracer can't follow
+  // (it only sees a computed string, not a static import) — without this,
+  // the file silently doesn't make it into .output/server/node_modules. Uses
+  // an absolute path rather than the package subpath specifier, since the
+  // tracer's own resolve() doesn't apply the package's "exports" map.
+  externals: {
+   traceInclude: [
+    resolve("./node_modules/@resvg/resvg-wasm/index_bg.wasm"),
+   ],
+  },
  },
  vite: {
   optimizeDeps: {

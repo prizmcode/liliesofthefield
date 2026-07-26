@@ -5,7 +5,7 @@
   "#tailwind": "./woonuxt_base/app/assets/css/main.css"
  },
  "scripts": {
-  "build": "nuxt build && node scripts/vendor-sharp-linux-binaries.mjs",
+  "build": "nuxt build",
   "dev": "nuxt dev --host 0.0.0.0",
   "dev:ssl": "NODE_TLS_REJECT_UNAUTHORIZED=0 nuxt dev --host 0.0.0.0 --https --ssl-cert localhost.pem --ssl-key localhost-key.pem",
   "generate": "nuxt generate",
@@ -16,6 +16,7 @@
  },
  "dependencies": {
   "@nuxtjs/color-mode": "^4.0.1",
+  "@resvg/resvg-wasm": "^2.6.2",
   "@sendgrid/mail": "^8.1.6",
   "@stripe/stripe-js": "^8.11.0",
   "@tailwindcss/postcss": "^4.3.3",
@@ -25,7 +26,6 @@
   "jspdf": "^4.2.1",
   "nuxt-gtag": "^4.1.0",
   "reka-ui": "^2.10.1",
-  "sharp": "^0.35.3",
   "svg2pdf.js": "^2.7.0",
   "tailwind-merge": "^3.6.0",
   "tailwindcss": "^4.3.3"
