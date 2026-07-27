@@ -65,6 +65,15 @@ const guideFontId = ref(GOOGLE_FONTS[0]!.id);
 const guideFont = computed(
  () => GOOGLE_FONTS.find((f) => f.id === guideFontId.value) ?? GOOGLE_FONTS[0]!,
 );
+// Picking a font from the dropdown also applies its suggested slant angle —
+// deliberately a plain function tied to the dropdown's change event rather
+// than a watcher on guideFontId, so restoring a saved design (which sets
+// guideFontId directly) doesn't clobber that design's own saved slant angle.
+function selectGuideFont(id: string) {
+ guideFontId.value = id;
+ const font = GOOGLE_FONTS.find((f) => f.id === id);
+ if (font) slantAngle.value = font.defaultSlantAngle;
+}
 const guideFontFamilyCss = computed(
  () => `'${guideFont.value.family}', cursive`,
 );
@@ -172,13 +181,16 @@ const groupHeight = computed(
 );
 
 // Guide text is sized off the x-height, not the full ascender+x-height+
-// descender box — a font's actual x-height is only roughly half its nominal
-// size, so sizing to the full group height (especially with tall
+// descender box — sizing to the full group height (especially with tall
 // ascenders/descenders) made the glyphs blow well past the x-height guide.
-// This won't match any given script font's metrics exactly, but keeps the
-// text roughly within the x-height band regardless of ascender/descender.
-const GUIDE_FONT_XHEIGHT_RATIO = 0.5;
-const guideFontSize = computed(() => xHeight.value / GUIDE_FONT_XHEIGHT_RATIO);
+// Each font's xHeightRatio (real x-height ÷ unitsPerEm, measured from its
+// OS/2 table) converts the target x-height into the right font-size for
+// that specific font — script fonts vary quite a bit here (~0.16–0.55
+// across the current set), so a single generic ratio undershot or
+// overshot depending on the font.
+const guideFontSize = computed(
+ () => xHeight.value / guideFont.value.xHeightRatio,
+);
 const writingAreaW = computed(() => PAGE_W.value - margin.value * 2);
 const writingAreaH = computed(() => PAGE_H.value - margin.value * 2);
 
@@ -1151,7 +1163,8 @@ async function buyCleanTemplate(includePng = false) {
          <div>
           <label class="block mb-1 text-sm font-medium">Guide font</label>
           <select
-           v-model="guideFontId"
+           :value="guideFontId"
+           @change="selectGuideFont(($event.target as HTMLSelectElement).value)"
            class="w-full px-3 py-2 text-sm border border-gray-400 rounded-lg dark:bg-gray-700 dark:border-gray-600"
           >
            <option v-for="f in GOOGLE_FONTS" :key="f.id" :value="f.id">
@@ -1424,6 +1437,18 @@ async function buyCleanTemplate(includePng = false) {
          :height="g.bottom - g.top"
         />
        </clipPath>
+       <!-- Unlike the slant guides (confined per ruled row, deliberately),
+            guide text is only clipped to the overall writing area — a font
+            whose glyphs run taller than the row should still show in full
+            rather than getting cut off at the row boundary. -->
+       <clipPath id="guideTextClip">
+        <rect
+         :x="margin"
+         :y="margin"
+         :width="writingAreaW"
+         :height="PAGE_H - effectiveBottomMargin - margin"
+        />
+       </clipPath>
        <clipPath v-if="customOverlay" id="overlayClip">
         <rect
          :x="customOverlay.x"
@@ -1498,7 +1523,7 @@ async function buyCleanTemplate(includePng = false) {
         v-if="guideTextLines.length"
         :class="{ 'no-print': !printGuideText }"
         data-guide-text="true"
-        clip-path="url(#ruleGroupsClip)"
+        clip-path="url(#guideTextClip)"
         pointer-events="none"
        >
         <text
