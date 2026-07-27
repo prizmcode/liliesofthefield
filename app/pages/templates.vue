@@ -36,6 +36,20 @@ const ascenderH = ref(5);
 const xHeight = ref(5);
 const descenderH = ref(5);
 const lineGap = ref(5);
+
+// Ascender/descender usually match (the common calligraphy convention), so
+// they're locked together by default — dragging either slider moves both.
+// Unlocking lets a creator dial in asymmetric heights on purpose.
+const lockAscenderDescender = ref(true);
+watch(ascenderH, (val) => {
+ if (lockAscenderDescender.value) descenderH.value = val;
+});
+watch(descenderH, (val) => {
+ if (lockAscenderDescender.value) ascenderH.value = val;
+});
+watch(lockAscenderDescender, (locked) => {
+ if (locked) descenderH.value = ascenderH.value;
+});
 const showSlant = ref(true);
 const slantAngle = ref(20);
 const slantSpacing = ref(5);
@@ -456,6 +470,10 @@ function restoreFromQuery() {
  apply(margin, parsed.margin);
  applyBool(autoFill, parsed.autoFill);
  apply(numLines, parsed.numLines);
+ // Restore the lock before the heights themselves, so a saved *unlocked*
+ // design with asymmetric ascender/descender doesn't get clobbered by the
+ // sync watcher when ascenderH is applied below.
+ applyBool(lockAscenderDescender, parsed.lockAscenderDescender);
  apply(ascenderH, parsed.ascenderH);
  apply(xHeight, parsed.xHeight);
  apply(descenderH, parsed.descenderH);
@@ -623,6 +641,7 @@ function currentSettings() {
   margin: margin.value,
   autoFill: autoFill.value,
   numLines: numLines.value,
+  lockAscenderDescender: lockAscenderDescender.value,
   ascenderH: ascenderH.value,
   xHeight: xHeight.value,
   descenderH: descenderH.value,
@@ -908,6 +927,15 @@ async function buyCleanTemplate(includePng = false) {
        class="accordion-content overflow-hidden bg-white dark:bg-gray-800"
       >
        <div class="space-y-4 px-4 pt-3 pb-4">
+        <label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+         <input
+          v-model="lockAscenderDescender"
+          type="checkbox"
+          class="accent-current"
+         />
+         <span>Lock ascender &amp; descender together</span>
+        </label>
+
         <div>
          <label class="flex justify-between text-sm font-medium">
           <span>Ascender height</span>
