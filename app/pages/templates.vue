@@ -170,6 +170,15 @@ function applyPreset(p: Preset) {
 const groupHeight = computed(
  () => ascenderH.value + xHeight.value + descenderH.value,
 );
+
+// Guide text is sized off the x-height, not the full ascender+x-height+
+// descender box — a font's actual x-height is only roughly half its nominal
+// size, so sizing to the full group height (especially with tall
+// ascenders/descenders) made the glyphs blow well past the x-height guide.
+// This won't match any given script font's metrics exactly, but keeps the
+// text roughly within the x-height band regardless of ascender/descender.
+const GUIDE_FONT_XHEIGHT_RATIO = 0.5;
+const guideFontSize = computed(() => xHeight.value / GUIDE_FONT_XHEIGHT_RATIO);
 const writingAreaW = computed(() => PAGE_W.value - margin.value * 2);
 const writingAreaH = computed(() => PAGE_H.value - margin.value * 2);
 
@@ -279,7 +288,7 @@ const guideTextLines = computed(() => {
 
  const ctx = getMeasureCtx();
  if (ctx)
-  ctx.font = `${groupHeight.value}px '${guideFont.value.family}', cursive`;
+  ctx.font = `${guideFontSize.value}px '${guideFont.value.family}', cursive`;
  const measure = ctx ? (s: string) => ctx.measureText(s).width : null;
 
  // Each manual line break still starts a new ruled line, but a paragraph
@@ -1499,7 +1508,7 @@ async function buyCleanTemplate(includePng = false) {
          :y="line.y"
          :text-anchor="guideTextAnchor"
          :font-family="guideFontFamilyCss"
-         :font-size="groupHeight"
+         :font-size="guideFontSize"
          fill="#78350f"
          opacity="0.5"
         >
