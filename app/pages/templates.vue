@@ -1534,7 +1534,7 @@ async function buyCleanTemplate(includePng = false) {
          :text-anchor="guideTextAnchor"
          :font-family="guideFontFamilyCss"
          :font-size="guideFontSize"
-         fill="#78350f"
+         fill="#6b7280"
          opacity="0.5"
         >
          {{ line.text }}

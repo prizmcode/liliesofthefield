@@ -79,7 +79,7 @@ export const GOOGLE_FONTS: GuideFont[] = [
   googleFamilyParam: "Monsieur+La+Doulaise",
   ttfFile: "/fonts/MonsieurLaDoulaise-Regular.ttf",
   xHeightRatio: 0.164,
-  defaultSlantAngle: 23,
+  defaultSlantAngle: 45,
  },
  {
   id: "ballet",
