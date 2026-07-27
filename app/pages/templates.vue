@@ -1405,7 +1405,7 @@ async function buyCleanTemplate(includePng = false) {
    <div
     :class="[
      'calligraphy-print-area',
-     'lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-112px)]',
+     'lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-112px)] lg:min-w-0 lg:overflow-x-auto',
      orientation === 'portrait'
       ? 'orientation-portrait'
       : 'orientation-landscape',
@@ -1468,7 +1468,8 @@ async function buyCleanTemplate(includePng = false) {
       ref="svgEl"
       :viewBox="`0 0 ${PAGE_W} ${PAGE_H}`"
       xmlns="http://www.w3.org/2000/svg"
-      class="paper w-full h-auto lg:w-auto lg:h-full lg:max-w-full bg-white border border-gray-300 shadow-sm"
+      class="paper w-full h-auto lg:w-auto lg:h-full bg-white border border-gray-300 shadow-sm"
+      :style="{ aspectRatio: `${PAGE_W} / ${PAGE_H}` }"
       preserveAspectRatio="none"
      >
       <defs>
