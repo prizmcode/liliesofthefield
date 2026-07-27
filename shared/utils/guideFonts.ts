@@ -34,7 +34,7 @@ export const GOOGLE_FONTS: GuideFont[] = [
   googleFamilyParam: "Great+Vibes",
   ttfFile: "/fonts/GreatVibes-Regular.ttf",
   xHeightRatio: 0.328,
-  defaultSlantAngle: 20,
+  defaultSlantAngle: 25,
  },
  {
   id: "sacramento",
@@ -43,7 +43,7 @@ export const GOOGLE_FONTS: GuideFont[] = [
   googleFamilyParam: "Sacramento",
   ttfFile: "/fonts/Sacramento-Regular.ttf",
   xHeightRatio: 0.306,
-  defaultSlantAngle: 15,
+  defaultSlantAngle: 0,
  },
  {
   id: "parisienne",
@@ -52,7 +52,7 @@ export const GOOGLE_FONTS: GuideFont[] = [
   googleFamilyParam: "Parisienne",
   ttfFile: "/fonts/Parisienne-Regular.ttf",
   xHeightRatio: 0.353,
-  defaultSlantAngle: 20,
+  defaultSlantAngle: 30,
  },
  {
   id: "pinyon-script",
@@ -61,7 +61,7 @@ export const GOOGLE_FONTS: GuideFont[] = [
   googleFamilyParam: "Pinyon+Script",
   ttfFile: "/fonts/PinyonScript-Regular.ttf",
   xHeightRatio: 0.371,
-  defaultSlantAngle: 30,
+  defaultSlantAngle: 34,
  },
  {
   id: "unifraktur-maguntia",
@@ -88,6 +88,6 @@ export const GOOGLE_FONTS: GuideFont[] = [
   googleFamilyParam: "Ballet",
   ttfFile: "/fonts/Ballet-Regular.ttf",
   xHeightRatio: 0.339,
-  defaultSlantAngle: 28,
+  defaultSlantAngle: 42,
  },
 ];

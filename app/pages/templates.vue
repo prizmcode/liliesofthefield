@@ -209,6 +209,29 @@ const effectiveBottomMargin = computed(() =>
  Math.max(margin.value, FOOTER_STRIP),
 );
 
+// Two large horizontal watermark bands (top and bottom) rather than a small
+// repeating diagonal tile. Font size is solved from the same char-width
+// approximation the server PDF path uses for text it can't measure directly
+// (jsdom's getBBox shim below assumes ~0.5em per character), sized against a
+// fixed reference margin (not the live `margin` ref) so the band's size never
+// tracks the margin slider — it only adapts to orientation via PAGE_W. Both
+// bands sit at a fixed distance from their page edge, exactly like the
+// footer text's position never moves with the margin either. They're allowed
+// to overlap the ruled lines a little (low-opacity decoration, not a
+// problem) — the writing area still just uses the actual margin/footer
+// strip, maximizing how many lines fit. The bottom band still needs a full
+// FOOTER_STRIP of clearance so it sits above the footer text rather than
+// through it, since that collision (unlike the rule lines) is genuinely
+// illegible.
+const WATERMARK_TEXT = "liliesofthefield.co/templates";
+const WATERMARK_REFERENCE_MARGIN = 12.7;
+const watermarkFontSize = computed(
+ () =>
+  (PAGE_W.value - WATERMARK_REFERENCE_MARGIN * 2) /
+  (WATERMARK_TEXT.length * 0.5),
+);
+const watermarkEdgePadding = FOOTER_STRIP / 2;
+
 const maxLines = computed(() => {
  const denom = groupHeight.value + lineGap.value;
  if (groupHeight.value <= 0 || denom <= 0) return 1;
@@ -1473,24 +1496,6 @@ async function buyCleanTemplate(includePng = false) {
       preserveAspectRatio="none"
      >
       <defs>
-       <pattern
-        id="wmPattern"
-        patternUnits="userSpaceOnUse"
-        width="135"
-        height="56"
-        patternTransform="rotate(-30)"
-       >
-        <text
-         x="0"
-         y="34"
-         font-family="Inter, sans-serif"
-         font-size="7"
-         fill="#111827"
-         opacity="0.15"
-        >
-         liliesofthefield.co/templates
-        </text>
-       </pattern>
        <clipPath id="ruleGroupsClip">
         <rect
          v-for="(g, i) in ruleGroups"
@@ -1522,16 +1527,30 @@ async function buyCleanTemplate(includePng = false) {
         />
        </clipPath>
       </defs>
-      <rect
-       v-if="showWatermark"
-       data-watermark="true"
-       x="0"
-       y="0"
-       :width="PAGE_W"
-       :height="PAGE_H"
-       fill="url(#wmPattern)"
-       pointer-events="none"
-      />
+      <g v-if="showWatermark" data-watermark="true" pointer-events="none">
+       <text
+        :x="PAGE_W / 2"
+        :y="watermarkEdgePadding + watermarkFontSize * 0.75"
+        text-anchor="middle"
+        font-family="Inter, sans-serif"
+        :font-size="watermarkFontSize"
+        fill="#111827"
+        opacity="0.08"
+       >
+        {{ WATERMARK_TEXT }}
+       </text>
+       <text
+        :x="PAGE_W / 2"
+        :y="PAGE_H - FOOTER_STRIP - watermarkFontSize * 0.2"
+        text-anchor="middle"
+        font-family="Inter, sans-serif"
+        :font-size="watermarkFontSize"
+        fill="#111827"
+        opacity="0.08"
+       >
+        {{ WATERMARK_TEXT }}
+       </text>
+      </g>
       <g :clip-path="customOverlay ? 'url(#overlayClip)' : undefined">
        <g
         v-if="showSlant"
@@ -1834,6 +1853,16 @@ input[type="range"] {
   margin: 0 !important;
   padding: 0 !important;
   background: white !important;
+ }
+ /* Without this, some browsers (notably Chromium-based ones under certain
+    print-background settings) flatten SVG stroke/fill/opacity to a
+    print-safe approximation instead of the exact on-screen colors — losing
+    the guide-text opacity and the red/blue rule-line colors in the print
+    preview even though the live preview and generated PDF/PNG are correct. */
+ .calligraphy-print-area,
+ .calligraphy-print-area * {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
  }
  .calligraphy-print-area {
   position: absolute !important;
