@@ -55,6 +55,15 @@ const slantAngle = ref(20);
 const slantSpacing = ref(5);
 const showCenterLine = ref(false);
 const showRulers = ref(true);
+const lineColorScheme = ref<"black" | "red-blue">("black");
+// "Black" keeps the existing tonal grays; "red-blue" is the classic
+// calligraphy-worksheet convention — red for the ascender/descender
+// boundary lines, blue for the x-height boundary lines.
+const ruleLineColors = computed(() =>
+ lineColorScheme.value === "red-blue"
+  ? { top: "#dc2626", waist: "#2563eb", baseline: "#2563eb", bottom: "#dc2626" }
+  : { top: "#4b5563", waist: "#374151", baseline: "#111827", bottom: "#4b5563" },
+);
 
 // GOOGLE_FONTS / GuideFont come from shared/utils/guideFonts.ts (auto-imported)
 // so the client page and the server PDF endpoint stay in sync on what's
@@ -80,6 +89,7 @@ const guideFontFamilyCss = computed(
 const guideTextAlign = ref<"left" | "center" | "right">("left");
 const printGuideText = ref(false);
 const includeGuideTextInDownload = ref(false);
+const guideTextOpacity = ref(50);
 const guideTextX = computed(() => {
  if (guideTextAlign.value === "center")
   return margin.value + writingAreaW.value / 2;
@@ -423,6 +433,7 @@ const settingsLabel = computed(() => {
  if (showSlant.value)
   parts.push(`Slant ${slantAngle.value}° @ ${slantSpacing.value}mm`);
  if (showCenterLine.value) parts.push("Center line");
+ if (lineColorScheme.value === "red-blue") parts.push("Red/Blue lines");
  parts.push(`${ruleGroups.value.length} lines`);
  return parts.join(" · ");
 });
@@ -505,6 +516,8 @@ function restoreFromQuery() {
  applyBool(showCenterLine, parsed.showCenterLine);
  const o = parsed.orientation;
  if (o === "portrait" || o === "landscape") orientation.value = o;
+ const scheme = parsed.lineColorScheme;
+ if (scheme === "black" || scheme === "red-blue") lineColorScheme.value = scheme;
 
  const str = (v: unknown) => (typeof v === "string" ? v : null);
  applyBool(showGuideText, parsed.showGuideText);
@@ -518,6 +531,7 @@ function restoreFromQuery() {
   guideTextAlign.value = align;
  applyBool(printGuideText, parsed.printGuideText);
  applyBool(includeGuideTextInDownload, parsed.includeGuideTextInDownload);
+ apply(guideTextOpacity, parsed.guideTextOpacity);
 }
 
 // Vue Router reuses this component instance for query-only navigations (e.g.
@@ -671,12 +685,14 @@ function currentSettings() {
   slantAngle: slantAngle.value,
   slantSpacing: slantSpacing.value,
   showCenterLine: showCenterLine.value,
+  lineColorScheme: lineColorScheme.value,
   showGuideText: showGuideText.value,
   guideText: guideText.value,
   guideFontId: guideFontId.value,
   guideTextAlign: guideTextAlign.value,
   printGuideText: printGuideText.value,
   includeGuideTextInDownload: includeGuideTextInDownload.value,
+  guideTextOpacity: guideTextOpacity.value,
  };
 }
 
@@ -1111,6 +1127,40 @@ async function buyCleanTemplate(includePng = false) {
          <input v-model="showRulers" type="checkbox" class="accent-current" />
          <span>Show rulers</span>
         </label>
+
+        <div>
+         <label class="block mb-1 text-sm font-medium">Line color</label>
+         <div class="grid grid-cols-2 gap-2">
+          <button
+           type="button"
+           @click="lineColorScheme = 'black'"
+           :class="[
+            'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+            lineColorScheme === 'black'
+             ? 'bg-gray-800 dark:bg-gray-600 text-white border-gray-800 dark:border-gray-600'
+             : 'border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700',
+           ]"
+          >
+           Black
+          </button>
+          <button
+           type="button"
+           @click="lineColorScheme = 'red-blue'"
+           :class="[
+            'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+            lineColorScheme === 'red-blue'
+             ? 'bg-gray-800 dark:bg-gray-600 text-white border-gray-800 dark:border-gray-600'
+             : 'border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700',
+           ]"
+          >
+           Red &amp; Blue
+          </button>
+         </div>
+         <p class="mt-1 text-xs text-gray-500">
+          Red for the ascender/descender boundary lines, blue for the
+          x-height lines.
+         </p>
+        </div>
        </div>
       </AccordionContent>
      </AccordionItem>
@@ -1212,6 +1262,19 @@ async function buyCleanTemplate(includePng = false) {
             Right
            </button>
           </div>
+         </div>
+         <div>
+          <label class="flex justify-between text-sm font-medium">
+           <span>Guide text opacity</span>
+           <span class="text-gray-500">{{ guideTextOpacity }}%</span>
+          </label>
+          <input
+           v-model.number="guideTextOpacity"
+           type="range"
+           min="10"
+           max="100"
+           step="5"
+          />
          </div>
          <label
           class="flex items-center gap-2 text-sm font-medium cursor-pointer"
@@ -1491,7 +1554,7 @@ async function buyCleanTemplate(includePng = false) {
          :y1="g.top"
          :x2="PAGE_W - margin"
          :y2="g.top"
-         stroke="#4b5563"
+         :stroke="ruleLineColors.top"
          stroke-width="0.25"
         />
         <line
@@ -1499,7 +1562,7 @@ async function buyCleanTemplate(includePng = false) {
          :y1="g.waist"
          :x2="PAGE_W - margin"
          :y2="g.waist"
-         stroke="#374151"
+         :stroke="ruleLineColors.waist"
          stroke-width="0.3"
         />
         <line
@@ -1507,7 +1570,7 @@ async function buyCleanTemplate(includePng = false) {
          :y1="g.baseline"
          :x2="PAGE_W - margin"
          :y2="g.baseline"
-         stroke="#111827"
+         :stroke="ruleLineColors.baseline"
          stroke-width="0.4"
         />
         <line
@@ -1515,7 +1578,7 @@ async function buyCleanTemplate(includePng = false) {
          :y1="g.bottom"
          :x2="PAGE_W - margin"
          :y2="g.bottom"
-         stroke="#4b5563"
+         :stroke="ruleLineColors.bottom"
          stroke-width="0.25"
         />
        </g>
@@ -1535,7 +1598,7 @@ async function buyCleanTemplate(includePng = false) {
          :font-family="guideFontFamilyCss"
          :font-size="guideFontSize"
          fill="#6b7280"
-         opacity="0.5"
+         :opacity="guideTextOpacity / 100"
         >
          {{ line.text }}
         </text>
