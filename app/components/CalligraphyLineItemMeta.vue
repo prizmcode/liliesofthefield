@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import {
+ matchGuideFontFromFamilyAttr,
+ registerGuideFont,
+} from "#shared/utils/guideFonts";
+
 export interface CalligraphyLineItem {
  text?: string | null;
  letters?: number | null;
@@ -70,6 +75,15 @@ async function downloadPdf() {
   const orientation = svgOrientation();
   const isLandscape = orientation === "landscape";
   const pdf = new jsPDF({ orientation, unit: "mm", format: "letter" });
+  // Without this, jsPDF/svg2pdf has no way to know the guide text's custom
+  // font and silently falls back to its default (Helvetica/Times) — the
+  // saved SVG's font-family attribute alone isn't enough here, same as the
+  // server-side PDF generation in renderTemplateFile.ts.
+  const guideTextEl = svgEl.querySelector("[data-guide-text] text");
+  const matchedFont = matchGuideFontFromFamilyAttr(
+   guideTextEl?.getAttribute("font-family"),
+  );
+  if (matchedFont) await registerGuideFont(pdf, matchedFont);
   await svg2pdf(svgEl, pdf, {
    x: 0,
    y: 0,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AddToCartInput } from "#types/gql";
-import { GOOGLE_FONTS, type GuideFont } from "#shared/utils/guideFonts";
+import { GOOGLE_FONTS, registerGuideFont } from "#shared/utils/guideFonts";
 import {
  AccordionContent,
  AccordionHeader,
@@ -620,23 +620,6 @@ function buildFilename() {
   .replace(/-+/g, "-")
   .replace(/^-|-$/g, "");
  return `Calligraphy-Template-${slug}.pdf`;
-}
-
-// jsPDF/svg2pdf only render a font it has embedded via addFont — loading the
-// browser's CSS @font-face (for the on-screen preview) isn't enough. Fetch
-// the self-hosted .ttf and register it under the exact CSS family name so
-// svg2pdf's font lookup matches it.
-async function registerGuideFont(pdf: any, font: GuideFont) {
- const res = await fetch(font.ttfFile);
- const bytes = new Uint8Array(await res.arrayBuffer());
- let binary = "";
- const chunkSize = 0x8000;
- for (let i = 0; i < bytes.length; i += chunkSize) {
-  binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
- }
- const vfsName = font.ttfFile.split("/").pop()!;
- pdf.addFileToVFS(vfsName, btoa(binary));
- pdf.addFont(vfsName, font.family, "normal");
 }
 
 async function handleDownloadPdf() {

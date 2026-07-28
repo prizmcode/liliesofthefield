@@ -100,3 +100,38 @@ export const GOOGLE_FONTS: GuideFont[] = [
   defaultSlantAngle: 0,
  },
 ];
+
+// Matches a saved guide-text SVG element's `font-family` attribute (e.g.
+// `"'Monsieur La Doulaise', cursive"`) back to its GuideFont entry, the same
+// way the server (renderTemplateFile.ts) detects which font a saved design
+// uses when it wasn't generated with one live in memory.
+export function matchGuideFontFromFamilyAttr(
+ fontFamilyAttr: string | null | undefined,
+): GuideFont | undefined {
+ const name = fontFamilyAttr
+  ?.split(",")[0]
+  ?.trim()
+  .replace(/^['"]|['"]$/g, "");
+ return name ? GOOGLE_FONTS.find((f) => f.family === name) : undefined;
+}
+
+// jsPDF/svg2pdf only render a font it has embedded via addFont — the CSS
+// @font-face used for the on-screen preview doesn't carry over. Fetch the
+// self-hosted .ttf and register it under the exact CSS family name so
+// svg2pdf's font lookup matches it. `pdf` is a jsPDF instance (typed `any`
+// here since jsPDF ships no usable public type for it).
+export async function registerGuideFont(
+ pdf: any,
+ font: GuideFont,
+): Promise<void> {
+ const res = await fetch(font.ttfFile);
+ const bytes = new Uint8Array(await res.arrayBuffer());
+ let binary = "";
+ const chunkSize = 0x8000;
+ for (let i = 0; i < bytes.length; i += chunkSize) {
+  binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+ }
+ const vfsName = font.ttfFile.split("/").pop()!;
+ pdf.addFileToVFS(vfsName, btoa(binary));
+ pdf.addFont(vfsName, font.family, "normal");
+}
