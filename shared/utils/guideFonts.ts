@@ -90,4 +90,13 @@ export const GOOGLE_FONTS: GuideFont[] = [
   xHeightRatio: 0.339,
   defaultSlantAngle: 42,
  },
+ {
+  id: "pirata-one",
+  label: "Pirata One",
+  family: "Pirata One",
+  googleFamilyParam: "Pirata+One",
+  ttfFile: "/fonts/PirataOne-Regular.ttf",
+  xHeightRatio: 0.594,
+  defaultSlantAngle: 0,
+ },
 ];

@@ -170,9 +170,23 @@ export async function renderTemplateFile(
    ? GOOGLE_FONTS.find((f) => f.family === guideFamilyName)
    : undefined;
   if (matchedGuideFont) {
-   const fontRes = await fetch(
-    `${params.requestOrigin}${matchedGuideFont.ttfFile}`,
-   );
+   const fontUrl = `${params.requestOrigin}${matchedGuideFont.ttfFile}`;
+   // This fetch hairpins back to the server's own domain (managed hosting
+   // here gives no direct filesystem access to public/ from server code —
+   // see getBaseFont above), which is occasionally flaky on a cold-starting
+   // instance. A non-ok response otherwise fails silently: the PDF still
+   // generates, just without the custom font, so a customer's download can
+   // quietly come out wrong. One retry covers a transient blip without
+   // risking a real failure looking like it hung.
+   let fontRes = await fetch(fontUrl);
+   if (!fontRes.ok) {
+    console.error(
+     "[renderTemplateFile] failed to fetch guide font (attempt 1):",
+     matchedGuideFont.ttfFile,
+     fontRes.status,
+    );
+    fontRes = await fetch(fontUrl);
+   }
    if (fontRes.ok) {
     guideFontBuffer = Buffer.from(await fontRes.arrayBuffer());
     const vfsName = matchedGuideFont.ttfFile.split("/").pop()!;
@@ -180,7 +194,7 @@ export async function renderTemplateFile(
     pdf.addFont(vfsName, matchedGuideFont.family, "normal");
    } else {
     console.error(
-     "[renderTemplateFile] failed to fetch guide font:",
+     "[renderTemplateFile] failed to fetch guide font (attempt 2):",
      matchedGuideFont.ttfFile,
      fontRes.status,
     );
