@@ -11,7 +11,7 @@
   <div
    class="cover bg-center bg-cover h-[80vh] w-full relative -top-24"
    style="
-    background-image: url('https://prizmstudio.com/wp-content/uploads/2023/10/IMG_1121-scaled.jpeg'"
+    background-image: url('/images/ceramic-products.webp'""
    );
   ></div>
   <div
