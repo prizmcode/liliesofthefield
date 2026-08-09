@@ -135,3 +135,37 @@ export async function registerGuideFont(
  pdf.addFileToVFS(vfsName, btoa(binary));
  pdf.addFont(vfsName, font.family, "normal");
 }
+
+// svg2pdf positions text (e.g. resolving `text-anchor="middle"`) using the
+// *browser's* live glyph metrics for the SVG's font-family, not the font
+// registered into the PDF above — those are separate concerns. templates.vue
+// gets this for free by always preloading every guide font's stylesheet for
+// the live preview, but a page that only ever renders a saved SVG (e.g. the
+// order-summary download button) has no @font-face for it at all, so the
+// browser measures against a fallback font with different glyph widths and
+// any centered/right-aligned guide text comes out visibly off. This injects
+// the font's stylesheet (idempotently) and waits for it to actually be
+// usable before any font-metric-dependent code runs.
+export async function ensureGuideFontLoaded(font: GuideFont): Promise<void> {
+ if (typeof document === "undefined" || !("fonts" in document)) return;
+ const linkId = `guide-font-link-${font.id}`;
+ let link = document.getElementById(linkId) as HTMLLinkElement | null;
+ if (!link) {
+  link = document.createElement("link");
+  link.id = linkId;
+  link.rel = "stylesheet";
+  link.href = `https://fonts.googleapis.com/css2?family=${font.googleFamilyParam}&display=swap`;
+  document.head.appendChild(link);
+ }
+ // The browser has no @font-face for this family until the stylesheet
+ // itself has finished loading — calling document.fonts.load() any earlier
+ // is a silent no-op (no matching rule to load yet), not an error, so this
+ // step is easy to skip by accident and have nothing downstream catch it.
+ await new Promise<void>((resolve) => {
+  if ((link as any).sheet) return resolve(); // already loaded (link reused)
+  link!.addEventListener("load", () => resolve(), { once: true });
+  link!.addEventListener("error", () => resolve(), { once: true });
+ });
+ await document.fonts.load(`16px "${font.family}"`);
+ await document.fonts.ready;
+}
