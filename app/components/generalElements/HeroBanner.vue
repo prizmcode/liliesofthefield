@@ -10,9 +10,8 @@
   /> -->
   <div
    class="cover bg-center bg-cover h-[80vh] w-full relative -top-24"
-   style="
-    background-image: url('/images/ceramic-products.webp'""
-   );
+   style="background-image: url(&quot;/images/ceramic-products.webp&quot;)"
+   ;
   ></div>
   <div
    class="container absolute inset-0 -top-24 flex flex-col items-center justify-center text-white"
