@@ -363,12 +363,12 @@ useSeoMeta({
         </NuxtLink>
       </div>
 
-      <form v-else class="container flex flex-wrap items-start gap-8 my-16 justify-evenly lg:gap-20" @submit.prevent="payNow">
+      <form v-else class="container flex flex-wrap items-start gap-8 my-6 md:my-12 justify-evenly lg:gap-20" @submit.prevent="payNow">
         <div class="grid w-full max-w-2xl gap-8 wn-form md:flex-1">
           <!-- Customer details -->
           <div v-if="!viewer && customer?.billing">
             <h2 class="w-full mb-2 text-2xl font-semibold leading-none dark:text-white">Contact Information</h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p class="mt-1 text-sm text-gray-500 dark:text-forest-400">
               Already have an account? <NuxtLink to="/my-account" @click="navigateToLogin('/checkout')" class="text-primary text-semibold">Log in</NuxtLink>.
             </p>
             <div class="w-full mt-4">
@@ -419,8 +419,8 @@ useSeoMeta({
                   v-model="shipToDifferentAddress"
                   type="checkbox"
                   name="useSameAddress"
-                  class="w-4 h-4 bg-white border-gray-300 rounded-sm text-primary dark:bg-gray-700 dark:border-gray-600 focus:ring-3 focus:ring-primary" />
-                <label for="useSameAddress" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  class="w-4 h-4 bg-white border-gray-300 rounded-sm text-primary dark:bg-forest-700 dark:border-forest-600 focus:ring-3 focus:ring-primary" />
+                <label for="useSameAddress" class="text-sm font-medium text-gray-700 dark:text-forest-300">
                   {{ $t('billing.differentAddress') }}
                 </label>
               </div>
@@ -439,8 +439,8 @@ useSeoMeta({
                   v-model="shipToDifferentAddress"
                   type="checkbox"
                   name="useSameAddressEdit"
-                  class="w-4 h-4 bg-white border-gray-300 rounded-sm text-primary dark:bg-gray-700 dark:border-gray-600 focus:ring-3 focus:ring-primary" />
-                <label for="useSameAddressEdit" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  class="w-4 h-4 bg-white border-gray-300 rounded-sm text-primary dark:bg-forest-700 dark:border-forest-600 focus:ring-3 focus:ring-primary" />
+                <label for="useSameAddressEdit" class="text-sm font-medium text-gray-700 dark:text-forest-300">
                   {{ $t('billing.differentAddress') }}
                 </label>
               </div>
@@ -459,7 +459,7 @@ useSeoMeta({
             <BillingDetails v-if="customer?.billing" v-model="customer.billing" />
           </div>
 
-          <hr class="border-gray-300 dark:border-gray-600" />
+          <hr class="border-gray-300 dark:border-forest-600" />
 
           <!-- Shipping methods -->
           <div v-if="cart?.availableShippingMethods?.length">
@@ -472,7 +472,7 @@ useSeoMeta({
 
           <!-- Pay methods -->
           <div v-if="paymentGateways?.nodes.length" class="mt-2 col-span-full">
-            <hr class="border-gray-300 dark:border-gray-600" />
+            <hr class="border-gray-300 dark:border-forest-600" />
             <h2 class="mb-4 text-xl font-semibold leading-none dark:text-white">{{ $t('billing.paymentOptions') }}</h2>
             <PaymentOptions v-model="orderInput.paymentMethod" class="mb-4" :paymentGateways />
             <StripeElement v-if="stripe" v-show="orderInput.paymentMethod.id == 'stripe'" :stripe @updateElement="handleStripeElement" />

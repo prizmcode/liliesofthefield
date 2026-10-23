@@ -480,7 +480,7 @@ const addToCartLoading = computed(() =>
 </script>
 
 <template>
- <main class="container relative py-6 xl:max-w-7xl">
+ <main class="container relative pt-6 md:pt-12 pb-6 xl:max-w-7xl">
   <div v-if="product">
    <SEOHead :info="product" />
    <Breadcrumb
@@ -530,7 +530,7 @@ const addToCartLoading = computed(() =>
 
      <div class="grid gap-2 my-4 text-sm empty:hidden">
       <div v-if="!isExternalProduct" class="flex items-center gap-2">
-       <span class="text-gray-400 dark:text-gray-500"
+       <span class="text-gray-400 dark:text-forest-500"
         >{{ $t("shop.availability") }}:
        </span>
        <StockStatus
@@ -542,10 +542,10 @@ const addToCartLoading = computed(() =>
        class="flex items-center gap-2"
        v-if="storeSettings.showSKU && product?.sku"
       >
-       <span class="text-gray-400 dark:text-gray-500"
+       <span class="text-gray-400 dark:text-forest-500"
         >{{ $t("shop.sku") }}:
        </span>
-       <span class="dark:text-gray-300">{{ product?.sku || "N/A" }}</span>
+       <span class="dark:text-forest-300">{{ product?.sku || "N/A" }}</span>
       </div>
      </div>
 
@@ -554,12 +554,12 @@ const addToCartLoading = computed(() =>
       v-html="product.shortDescription || product.description"
      />
 
-     <hr class="border-gray-300 dark:border-gray-600" />
+     <hr class="border-gray-300 dark:border-forest-600" />
 
      <form @submit.prevent="handleAddToCart">
       <p
        v-if="isCalligraphyProduct && wordCountAttribute"
-       class="mt-4 text-xs text-gray-500 dark:text-gray-400"
+       class="mt-4 text-xs text-gray-500 dark:text-forest-400"
       >
        Word count is calculated automatically based on the text you enter
        below.
@@ -584,14 +584,14 @@ const addToCartLoading = computed(() =>
       />
       <div
        v-if="isVariableProduct || isSimpleProduct"
-       class="fixed bottom-0 left-0 z-10 flex items-center w-full gap-4 p-4 mt-12 shadow-lg bg-white/90 md:static md:bg-transparent md:p-0 md:shadow-none dark:shadow-gray-900"
+       class="fixed bottom-0 left-0 z-10 flex items-center w-full gap-4 p-4 mt-12 shadow-lg bg-white/90 md:static md:bg-transparent md:p-0 md:shadow-none dark:shadow-forest-900"
       >
        <input
         v-model="quantity"
         type="number"
         min="1"
         aria-label="Quantity"
-        class="flex items-center justify-center w-20 gap-4 p-2 text-left bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:outline-hidden dark:text-white"
+        class="flex items-center justify-center w-20 gap-4 p-2 text-left bg-white border border-gray-300 rounded-lg dark:bg-forest-700 dark:border-forest-600 focus:outline-hidden dark:text-white"
        />
        <Button
         class="flex-1 w-full"
@@ -606,7 +606,7 @@ const addToCartLoading = computed(() =>
        v-if="externalProduct?.externalUrl"
        :href="externalProduct.externalUrl"
        target="_blank"
-       class="rounded-lg flex font-bold bg-gray-800 dark:bg-gray-700 text-white text-center min-w-37.5 p-2.5 gap-4 items-center justify-center focus:outline-hidden hover:bg-gray-700 dark:hover:bg-gray-600"
+       class="rounded-lg flex font-bold bg-gray-800 dark:bg-forest-700 text-white text-center min-w-37.5 p-2.5 gap-4 items-center justify-center focus:outline-hidden hover:bg-gray-700 dark:hover:bg-forest-600"
       >
        {{ externalProduct?.buttonText || "View product" }}
       </a>
@@ -620,7 +620,7 @@ const addToCartLoading = computed(() =>
      >
       <div class="grid gap-2 my-4 text-sm">
        <div class="flex items-center gap-2">
-        <span class="text-gray-400 dark:text-gray-500"
+        <span class="text-gray-400 dark:text-forest-500"
          >{{ $t("shop.category", 2) }}:</span
         >
         <div class="product-categories">
@@ -628,14 +628,14 @@ const addToCartLoading = computed(() =>
           v-for="category in product.productCategories.nodes"
           :key="category.databaseId"
           :to="`/product-category/${decodeURIComponent(category?.slug || '')}`"
-          class="hover:text-primary dark:text-gray-300 dark:hover:text-primary"
+          class="hover:text-primary dark:text-forest-300 dark:hover:text-primary"
           :title="category.name || ''"
           >{{ category.name }}<span class="comma">, </span>
          </NuxtLink>
         </div>
        </div>
       </div>
-      <hr class="border-gray-300 dark:border-gray-600" />
+      <hr class="border-gray-300 dark:border-forest-600" />
      </div>
 
      <div class="flex flex-wrap gap-4">

@@ -52,7 +52,7 @@ header a {
 }
 
 footer a {
-  @apply uppercase text-xs text-amber-900 dark:text-amber-100;
+  @apply uppercase text-xs text-gold-400 hover:text-gold-200;
   transition: color 300ms ease-in-out;
 }
 nav {
@@ -83,9 +83,9 @@ header a {
   --color-primary-light: oklch(from var(--color-primary) calc(l + 0.15) c h);
   --color-primary-dark: oklch(from var(--color-primary) calc(l - 0.15) c h);
 
-  --font-sans: 'Inter', sans-serif;
+  --font-sans: 'Tenor Sans', sans-serif;
   --font-script: 'Pinyon Script', cursive; /* example for a brand site */
-  --font-display: 'Mr Dafoe', cursive; /* example for a brand site */
+  --font-display: 'Playfair Display', serif;
   --font-blackletter: 'Manufacturing Consent', cursive; /* example for a brand site */
   /* --font-display: 'Great Vibes', cursive; /* example for a brand site */
 
@@ -96,7 +96,56 @@ header a {
   --spacing-safe: env(safe-area-inset-bottom);
 }
 
+/* Brand palettes */
+@theme {
+  /* Forest: base #1E2D24 = 900 */
+  --color-forest-50: oklch(0.975 0.008 158);
+  --color-forest-100: oklch(0.945 0.016 158);
+  --color-forest-200: oklch(0.89 0.026 158);
+  --color-forest-300: oklch(0.81 0.038 158);
+  --color-forest-400: oklch(0.68 0.048 158);
+  --color-forest-500: oklch(0.56 0.05 158);
+  --color-forest-600: oklch(0.47 0.045 158);
+  --color-forest-700: oklch(0.4 0.04 158);
+  --color-forest-800: oklch(0.34 0.033 158);
+  --color-forest-900: #1e2d24;
+  --color-forest-950: oklch(0.2 0.02 158);
+
+  /* Gold: base #D4AF37 = 500 */
+  --color-gold-50: oklch(0.985 0.025 95);
+  --color-gold-100: oklch(0.96 0.055 95);
+  --color-gold-200: oklch(0.92 0.095 94);
+  --color-gold-300: oklch(0.87 0.125 93);
+  --color-gold-400: oklch(0.82 0.14 92);
+  --color-gold-500: #d4af37;
+  --color-gold-600: oklch(0.66 0.125 85);
+  --color-gold-700: oklch(0.55 0.105 80);
+  --color-gold-800: oklch(0.46 0.085 78);
+  --color-gold-900: oklch(0.39 0.07 76);
+  --color-gold-950: oklch(0.27 0.05 75);
+
+  /* Linen: warm neutral for the main content background */
+  --color-linen: #f8f5ee;
+}
+
 @variant dark (&:where(.dark, .dark *));
+
+/* Shiny gold metallic background */
+@utility bg-gold-shine {
+  background-color: var(--color-gold-500);
+  background-image:
+    linear-gradient(180deg, rgb(255 255 255 / 0.26) 0%, rgb(255 255 255 / 0) 48%, rgb(0 0 0 / 0.09) 100%),
+    linear-gradient(
+      110deg,
+      var(--color-gold-600) 0%,
+      var(--color-gold-400) 20%,
+      var(--color-gold-200) 35%,
+      var(--color-gold-500) 50%,
+      var(--color-gold-300) 65%,
+      var(--color-gold-500) 82%,
+      var(--color-gold-600) 100%
+    );
+}
 
 /* Class for no slider */
 .no-slider {
@@ -108,7 +157,7 @@ header a {
 
 @layer components {
   .select {
-    @apply bg-white border rounded-md border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 appearance-none px-4 py-2 text-base leading-6 text-gray-900 dark:text-white dark:bg-gray-800;
+    @apply bg-white border rounded-md border-gray-300 dark:border-forest-700 hover:bg-gray-50 dark:hover:bg-forest-700 focus:z-20 appearance-none px-4 py-2 text-base leading-6 text-gray-900 dark:text-white dark:bg-forest-800;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3E%3Cpath stroke='%23333' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
     background-position: center right 10px;
     background-repeat: no-repeat;
@@ -126,7 +175,7 @@ header a {
   .wn-form input[type='password'],
   .wn-form textarea,
   .wn-form select {
-    @apply bg-white border rounded-md outline-hidden border-gray-300 shadow-inner w-full py-2 px-4 text-base text-gray-900 leading-6 dark:bg-gray-700 dark:border-gray-600 dark:text-white;
+    @apply bg-white border rounded-md outline-hidden border-gray-300 shadow-inner w-full py-2 px-4 text-base text-gray-900 leading-6 dark:bg-forest-700 dark:border-forest-600 dark:text-white;
   }
 
   .wn-form select {
@@ -143,7 +192,7 @@ header a {
   }
 
   .wn-form label {
-    @apply dark:text-gray-300;
+    @apply dark:text-forest-300;
   }
 
   .wn-form input.has-error,

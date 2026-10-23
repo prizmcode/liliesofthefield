@@ -45,7 +45,7 @@ watch(isValid, (v) => emit("update:isValid", v), { immediate: true });
 
 <template>
  <fieldset
-  class="mt-6 mb-8 grid gap-4 border-t border-gray-300 dark:border-gray-600 pt-6"
+  class="mt-6 mb-8 grid gap-4 border-t border-gray-300 dark:border-forest-600 pt-6"
  >
   <legend class="sr-only">Calligraphy options</legend>
 
@@ -59,7 +59,7 @@ watch(isValid, (v) => emit("update:isValid", v), { immediate: true });
    </p>
    <label
     for="calligraphy-text"
-    class="block text-sm font-medium mb-1 dark:text-gray-200"
+    class="block text-sm font-medium mb-1 dark:text-forest-200"
    >
     Your text <span class="text-red-500">*</span>
    </label>
@@ -68,11 +68,11 @@ watch(isValid, (v) => emit("update:isValid", v), { immediate: true });
     v-model="text"
     maxlength="1000"
     rows="3"
-    class="w-full p-2 bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+    class="w-full p-2 bg-white border border-gray-300 rounded-lg dark:bg-forest-700 dark:border-forest-600 dark:text-white"
     placeholder="Exact wording you'd like calligraphed."
    />
    <div
-    class="mt-1 text-right text-xs text-gray-500 dark:text-gray-400"
+    class="mt-1 text-right text-xs text-gray-500 dark:text-forest-400"
     :class="{ 'text-red-500 dark:text-red-400': isOverWordLimit }"
    >
     {{ words }} / {{ MAX_WORDS }} words counted
@@ -88,7 +88,7 @@ watch(isValid, (v) => emit("update:isValid", v), { immediate: true });
   <div>
    <label
     for="calligraphy-notes"
-    class="block text-sm font-medium mb-1 dark:text-gray-200"
+    class="block text-sm font-medium mb-1 dark:text-forest-200"
    >
     Special instructions
     <span class="text-gray-400 font-normal">(optional)</span>
@@ -98,10 +98,10 @@ watch(isValid, (v) => emit("update:isValid", v), { immediate: true });
     v-model="notes"
     maxlength="2000"
     rows="2"
-    class="w-full p-2 bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+    class="w-full p-2 bg-white border border-gray-300 rounded-lg dark:bg-forest-700 dark:border-forest-600 dark:text-white"
     placeholder=""
    />
-   <div class="mt-1 text-right text-xs text-gray-500 dark:text-gray-400">
+   <div class="mt-1 text-right text-xs text-gray-500 dark:text-forest-400">
     {{ notes.length }} / 2000
    </div>
   </div>

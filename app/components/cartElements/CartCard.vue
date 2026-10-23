@@ -141,7 +141,7 @@ const moveToWishList = () => {
    <NuxtLink :to="itemLink">
     <div
      v-if="designSvg"
-     class="w-16 h-16 rounded-md bg-white p-1 border border-gray-200 dark:border-gray-700 overflow-hidden [&>svg]:w-full [&>svg]:h-full"
+     class="w-16 h-16 rounded-md bg-white p-1 border border-gray-200 dark:border-forest-700 overflow-hidden [&>svg]:w-full [&>svg]:h-full"
      :title="productType.name"
      v-html="designSvg"
     />
@@ -159,7 +159,7 @@ const moveToWishList = () => {
    <div class="flex-1">
     <div class="flex gap-x-2 gap-y-1 flex-wrap items-center">
      <NuxtLink
-      class="leading-tight line-clamp-2 text-gray-900 dark:text-gray-100 hover:text-primary dark:hover:text-primary"
+      class="leading-tight line-clamp-2 text-gray-900 dark:text-forest-100 hover:text-primary dark:hover:text-primary"
       :to="itemLink"
       >{{ productType.name }}</NuxtLink
      >
@@ -178,17 +178,17 @@ const moveToWishList = () => {
     </div>
     <p
      v-if="templateVariantLabel"
-     class="text-xs font-bold leading-tight text-gray-600 dark:text-gray-300"
+     class="text-xs font-bold leading-tight text-gray-600 dark:text-forest-300"
     >
      {{ templateVariantLabel }}
     </p>
     <ul
      v-if="customizations.length"
-     class="mt-0.5 text-[11px] leading-tight text-gray-500 dark:text-gray-400"
+     class="mt-0.5 text-[11px] leading-tight text-gray-500 dark:text-forest-400"
     >
      <li v-for="c in customizations" :key="c.label" class="flex gap-1">
-      <span class="text-gray-400 dark:text-gray-500">{{ c.label }}:</span>
-      <span class="text-gray-600 dark:text-gray-300">{{ c.value }}</span>
+      <span class="text-gray-400 dark:text-forest-500">{{ c.label }}:</span>
+      <span class="text-gray-600 dark:text-forest-300">{{ c.value }}</span>
      </li>
     </ul>
     <ProductPrice
@@ -205,11 +205,11 @@ const moveToWishList = () => {
    <div class="inline-flex gap-2 flex-col items-end">
     <QuantityInput :item />
     <div
-     class="text-xs text-gray-400 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 flex leading-none items-center"
+     class="text-xs text-gray-400 dark:text-forest-500 group-hover:text-gray-700 dark:group-hover:text-forest-300 flex leading-none items-center"
     >
      <button
       v-if="storeSettings.showMoveToWishlist"
-      class="mr-2 pr-2 border-r border-gray-300 dark:border-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+      class="mr-2 pr-2 border-r border-gray-300 dark:border-forest-600 disabled:cursor-not-allowed disabled:opacity-50"
       :disabled="isOptimisticItem"
       @click="moveToWishList"
       type="button"

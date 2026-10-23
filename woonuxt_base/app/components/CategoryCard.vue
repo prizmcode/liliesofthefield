@@ -14,7 +14,7 @@ const imgHeight = 220;
   <NuxtLink
     v-if="node"
     :to="`/product-category/${decodeURIComponent(node.slug)}`"
-    class="relative flex justify-center overflow-hidden border border-white dark:border-gray-700 rounded-xl item snap-mandatory snap-x aspect-square">
+    class="relative flex justify-center overflow-hidden border border-white dark:border-forest-700 rounded-xl item snap-mandatory snap-x aspect-square">
     <NuxtImg
       :width="imgWidth"
       :height="imgHeight"

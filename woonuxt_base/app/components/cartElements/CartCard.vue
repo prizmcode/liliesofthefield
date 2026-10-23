@@ -43,7 +43,7 @@ const moveToWishList = () => {
       </NuxtLink>
       <div class="flex-1">
         <div class="flex gap-x-2 gap-y-1 flex-wrap items-center">
-          <NuxtLink class="leading-tight line-clamp-2 text-gray-900 dark:text-gray-100 hover:text-primary dark:hover:text-primary" :to="productSlug">{{
+          <NuxtLink class="leading-tight line-clamp-2 text-gray-900 dark:text-forest-100 hover:text-primary dark:hover:text-primary" :to="productSlug">{{
             productType.name
           }}</NuxtLink>
           <span
@@ -61,10 +61,10 @@ const moveToWishList = () => {
       </div>
       <div class="inline-flex gap-2 flex-col items-end">
         <QuantityInput :item />
-        <div class="text-xs text-gray-400 dark:text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-300 flex leading-none items-center">
+        <div class="text-xs text-gray-400 dark:text-forest-500 group-hover:text-gray-700 dark:group-hover:text-forest-300 flex leading-none items-center">
           <button
             v-if="storeSettings.showMoveToWishlist"
-            class="mr-2 pr-2 border-r border-gray-300 dark:border-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+            class="mr-2 pr-2 border-r border-gray-300 dark:border-forest-600 disabled:cursor-not-allowed disabled:opacity-50"
             :disabled="isOptimisticItem"
             @click="moveToWishList"
             type="button">

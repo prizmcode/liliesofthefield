@@ -113,12 +113,12 @@ onMounted(() => {
     <div
       v-if="paymentMethodType === 'payment'"
       id="payment-element"
-      class="stripe-element bg-white dark:bg-gray-700 rounded-md p-4 border border-gray-300 dark:border-gray-600">
+      class="stripe-element bg-white dark:bg-forest-700 rounded-md p-4 border border-gray-300 dark:border-forest-600">
       <!-- Payment Element will be mounted here -->
     </div>
 
     <!-- Card Element container (traditional single card input) -->
-    <div v-else id="card-element" class="stripe-element bg-white dark:bg-gray-700 rounded-md p-4 border border-gray-300 dark:border-gray-600">
+    <div v-else id="card-element" class="stripe-element bg-white dark:bg-forest-700 rounded-md p-4 border border-gray-300 dark:border-forest-600">
       <!-- Card Element will be mounted here -->
     </div>
   </div>

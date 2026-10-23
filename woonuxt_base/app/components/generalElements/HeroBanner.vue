@@ -11,7 +11,7 @@
       :preload="{ fetchPriority: 'high' }"
       placeholder
       placeholder-class="blur-xl" />
-    <div class="container absolute inset-0 flex flex-col items-start justify-center bg-linear-to-l from-gray-200 sm:bg-none dark:text-gray-700">
+    <div class="container absolute inset-0 flex flex-col items-start justify-center bg-linear-to-l from-gray-200 sm:bg-none dark:text-forest-700">
       <h1 class="text-2xl font-bold md:mb-4 md:text-4xl lg:text-6xl font-display">Just landed.</h1>
       <div class="max-w-sm mb-8 text-md font-light lg:max-w-md text-balance">
         <p>Cooking up some beautiful stuff.</p>

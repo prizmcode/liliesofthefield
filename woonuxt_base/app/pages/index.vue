@@ -42,25 +42,25 @@ useSeoMeta({
     </section>
 
     <!-- <section class="container grid gap-4 my-24 md:grid-cols-3">
-      <div class="flex items-center gap-8 p-8 bg-white dark:bg-gray-800 rounded-lg">
+      <div class="flex items-center gap-8 p-8 bg-white dark:bg-forest-800 rounded-lg">
         <img src="/icons/moneyback.svg" width="60" height="60" alt="Money Back" loading="lazy" />
         <div>
           <h3 class="text-xl font-semibold dark:text-white">Peace of Mind</h3>
-          <p class="text-sm dark:text-gray-300">30 days money back guarantee</p>
+          <p class="text-sm dark:text-forest-300">30 days money back guarantee</p>
         </div>
       </div>
-      <div class="flex items-center gap-8 p-8 bg-white dark:bg-gray-800 rounded-lg">
+      <div class="flex items-center gap-8 p-8 bg-white dark:bg-forest-800 rounded-lg">
         <img src="/icons/secure.svg" width="60" height="60" alt="Secure Payment" loading="lazy" />
         <div>
           <h3 class="text-xl font-semibold dark:text-white">100% Payment Secure</h3>
-          <p class="text-sm dark:text-gray-300">Your payment are safe with us.</p>
+          <p class="text-sm dark:text-forest-300">Your payment are safe with us.</p>
         </div>
       </div>
-      <div class="flex items-center gap-8 p-8 bg-white dark:bg-gray-800 rounded-lg">
+      <div class="flex items-center gap-8 p-8 bg-white dark:bg-forest-800 rounded-lg">
         <img src="/icons/support.svg" width="60" height="60" alt="Support 24/7" loading="lazy" />
         <div>
           <h3 class="text-xl font-semibold dark:text-white">Support 24/7</h3>
-          <p class="text-sm dark:text-gray-300">24/7 Online support</p>
+          <p class="text-sm dark:text-forest-300">24/7 Online support</p>
         </div>
       </div>
     </section> -->

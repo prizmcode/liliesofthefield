@@ -47,9 +47,9 @@ useSeoMeta({
 </script>
 
 <template>
- <div class="container my-12 max-w-2xl" style="padding: 0 32px">
+ <div class="container my-6 md:my-12 max-w-2xl" style="padding: 0 32px">
   <h1 class="mb-2 text-5xl font-display">Contact</h1>
-  <p class="mb-8 text-gray-600 dark:text-gray-300">
+  <p class="mb-8 text-gray-600 dark:text-forest-300">
    Have a question or commission in mind? Send us a message and we'll get back
    to you within 1–2 business days.
   </p>

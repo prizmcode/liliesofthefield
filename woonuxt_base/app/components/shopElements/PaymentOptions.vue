@@ -45,7 +45,7 @@ onMounted(() => {
       <icon name="ion:checkmark-circle" size="20" class="ml-auto text-primary checkmark opacity-0" />
     </div>
     <div v-if="activePaymentMethod.description" class="prose block w-full">
-      <p class="text-sm text-gray-500 dark:text-gray-400" v-html="activePaymentMethod.description" />
+      <p class="text-sm text-gray-500 dark:text-forest-400" v-html="activePaymentMethod.description" />
     </div>
   </div>
 </template>
@@ -54,7 +54,7 @@ onMounted(() => {
 @reference "#tailwind";
 
 .option {
-  @apply bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 cursor-pointer flex flex-1 text-sm py-3 px-4 gap-2 items-center hover:border-primary dark:hover:border-primary font-medium;
+  @apply bg-white dark:bg-forest-700 border border-gray-300 dark:border-forest-600 rounded-lg text-gray-700 dark:text-forest-200 cursor-pointer flex flex-1 text-sm py-3 px-4 gap-2 items-center hover:border-primary dark:hover:border-primary font-medium;
 
   &.active-option {
     @apply border-primary/50 cursor-default shadow-xs pointer-events-none;

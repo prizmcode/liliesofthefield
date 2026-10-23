@@ -42,9 +42,9 @@ useSeoMeta({
 </script>
 
 <template>
- <div class="container my-12 max-w-3xl" style="padding: 0 32px">
+ <div class="container my-6 md:my-12 max-w-3xl" style="padding: 0 32px">
   <h1 class="mb-2 text-5xl font-display">Frequently Asked Questions</h1>
-  <p class="mb-8 text-gray-600 dark:text-gray-300">
+  <p class="mb-8 text-gray-600 dark:text-forest-300">
    Can't find what you're looking for?
    <NuxtLink to="/contact" class="underline">Get in touch</NuxtLink>.
   </p>
@@ -52,7 +52,7 @@ useSeoMeta({
   <AccordionRoot
    type="single"
    :collapsible="true"
-   class="divide-y divide-gray-200 dark:divide-gray-700 border-y border-gray-200 dark:border-gray-700"
+   class="divide-y divide-gray-200 dark:divide-forest-700 border-y border-gray-200 dark:border-forest-700"
   >
    <AccordionItem
     v-for="(item, idx) in faqs"
@@ -60,9 +60,9 @@ useSeoMeta({
     :value="`item-${idx}`"
     class="group"
    >
-    <AccordionHeader class="bg-white px-6">
+    <AccordionHeader class="bg-stone-200 hover:bg-stone-300 text-forest-900 px-6 transition-colors">
      <AccordionTrigger
-      class="flex w-full items-center justify-between gap-4 py-2 text-left text-lg font-medium hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-sm cursor-pointer"
+      class="flex w-full items-center justify-between gap-4 py-2 text-left text-lg font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-forest-700/50 rounded-sm cursor-pointer"
      >
       <span class="font-bold text-lg">{{ item.q }}</span>
       <Icon
@@ -72,8 +72,8 @@ useSeoMeta({
       />
      </AccordionTrigger>
     </AccordionHeader>
-    <AccordionContent class="accordion-content overflow-hidden p-8 bg-gray-200">
-     <p class="pb-5 pr-8 text-gray-600 dark:text-gray-300 leading-relaxed">
+    <AccordionContent class="accordion-content overflow-hidden p-8 bg-linen dark:bg-forest-800">
+     <p class="pb-5 pr-8 text-gray-600 dark:text-forest-300 leading-relaxed">
       {{ item.a }}
      </p>
     </AccordionContent>

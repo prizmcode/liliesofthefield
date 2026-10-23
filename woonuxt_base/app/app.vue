@@ -38,7 +38,7 @@ useHead({
     <!-- SITE UNDER CONSTRUCTION 
     
     <section
-      class="right-8 bg-primary-dark dark:bg-primary-light p-4 text-white dark:text-gray-900 font-Inter uppercase text-center text-xl md:text-2xl z-40 font-light no-print sticky">
+      class="right-8 bg-primary-dark dark:bg-primary-light p-4 text-white dark:text-forest-900 font-Inter uppercase text-center text-xl md:text-2xl z-40 font-light no-print sticky">
       !! site under construction !!
     </section> -->
     <AppHeader />
@@ -51,7 +51,7 @@ useHead({
       <MobileMenu v-if="isShowingMobileMenu" />
     </Transition>
 
-    <section class="mt-0 md:mt-8">
+    <section>
       <NuxtPage />
     </section>
 
@@ -74,7 +74,7 @@ useHead({
 
 html,
 body {
-  @apply bg-gray-100 dark:bg-[#18202f] text-gray-900 dark:text-gray-100;
+  @apply bg-linen dark:bg-forest-700 text-gray-900 dark:text-forest-100;
   scroll-behavior: smooth;
 }
 
@@ -220,7 +220,7 @@ img.skeleton {
 
 input[type='checkbox'],
 input[type='radio'] {
-  @apply bg-white border rounded-lg cursor-pointer font-sans outline-hidden border-gray-300 w-full p-3 transition-all duration-150 appearance-none hover:border-primary dark:bg-gray-700 dark:border-gray-600;
+  @apply bg-white border rounded-lg cursor-pointer font-sans outline-hidden border-gray-300 w-full p-3 transition-all duration-150 appearance-none hover:border-primary dark:bg-forest-700 dark:border-forest-600;
 
   width: 1em;
   height: 1em;
@@ -272,7 +272,7 @@ input[type='radio']:after {
 input[type='checkbox']:checked:after,
 input[type='checkbox'] + label,
 input[type='radio'] + label {
-  @apply cursor-pointer text-gray-600 dark:text-gray-400 hover:text-primary;
+  @apply cursor-pointer text-gray-600 dark:text-forest-400 hover:text-primary;
 }
 
 input[type='checkbox']:checked + label,

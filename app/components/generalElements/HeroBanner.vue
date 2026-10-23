@@ -27,7 +27,7 @@
      <p>Bespoke works of art to add beauty and inspiration to your home.</p>
     </div>
     <NuxtLink
-     class="px-6 py-3 font-bold text-white bg-primary hover:bg-gray-800"
+     class="px-6 py-3 font-bold text-forest-900 bg-gold-shine hover:brightness-110 transition-all"
      to="/products"
      >Shop now</NuxtLink
     >

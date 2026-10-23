@@ -25,7 +25,7 @@ function handleActionClick(t: Toast): void {
    <div
     v-for="t in toasts"
     :key="t.id"
-    class="toast pointer-events-auto flex items-center gap-3 w-full max-w-xl rounded-lg shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 pl-3 pr-2 py-2"
+    class="toast pointer-events-auto flex items-center gap-3 w-full max-w-xl rounded-lg shadow-lg bg-white dark:bg-forest-800 border border-gray-200 dark:border-forest-700 pl-3 pr-2 py-2"
     :class="{
      'border-l-4 border-l-green-500': t.type === 'success',
      'border-l-4 border-l-red-500': t.type === 'error',
@@ -52,7 +52,7 @@ function handleActionClick(t: Toast): void {
       >
        {{ t.title }}
       </div>
-      <div class="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+      <div class="text-sm text-gray-600 dark:text-forest-300 line-clamp-2">
        {{ t.message }}
       </div>
      </div>
@@ -77,7 +77,7 @@ function handleActionClick(t: Toast): void {
 
     <button
      type="button"
-     class="shrink-0 p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer"
+     class="shrink-0 p-1 text-gray-400 hover:text-gray-700 dark:hover:text-forest-200 cursor-pointer"
      aria-label="Dismiss notification"
      @click="dismiss(t.id)"
     >

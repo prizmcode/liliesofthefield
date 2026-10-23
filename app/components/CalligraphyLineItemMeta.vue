@@ -156,11 +156,11 @@ async function downloadDesign() {
 <template>
  <div
   v-if="hasData || savedSvg"
-  class="mt-1 text-xs text-gray-600 dark:text-gray-300 space-y-0.5"
+  class="mt-1 text-xs text-gray-600 dark:text-forest-300 space-y-0.5"
   :class="compact ? '' : 'sm:text-sm'"
  >
   <div v-if="calligraphy?.text" class="flex gap-1">
-   <span class="text-gray-400 dark:text-gray-500 shrink-0">Text:</span>
+   <span class="text-gray-400 dark:text-forest-500 shrink-0">Text:</span>
    <span
     class="italic line-clamp-2 wrap-break-word"
     :title="calligraphy.text || undefined"
@@ -169,7 +169,7 @@ async function downloadDesign() {
    </span>
   </div>
   <div v-if="calligraphy?.notes" class="flex gap-1">
-   <span class="text-gray-400 dark:text-gray-500 shrink-0">Notes:</span>
+   <span class="text-gray-400 dark:text-forest-500 shrink-0">Notes:</span>
    <span
     class="line-clamp-2 wrap-break-word"
     :title="calligraphy.notes || undefined"

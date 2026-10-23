@@ -3,7 +3,7 @@ import InstagramFeed from "~/components/InstagramFeed.vue";
 </script>
 
 <template>
- <div class="container mx-auto page">
+ <div class="container mx-auto page pt-6! md:pt-8! md:mt-4">
   <div class="px-4">
    <h1>About Us.</h1>
    <p>
@@ -12,11 +12,11 @@ import InstagramFeed from "~/components/InstagramFeed.vue";
     things with the time, talent and treasure I have been given, while trusting
     in God's provision.
    </p>
-   <section class="verse text-sm">
-    <p>
+   <section class="verse text-base">
+    <p class="text-[#8b2a1a]">
      27 And which of you by being anxious can add a single hour to his span of
      life?[a] 28 And why are you anxious about clothing? Consider the
-     <span class="font-display text-2xl bg-amber-200">lilies of the field</span
+     <span class="font-display font-semibold bg-amber-200">lilies of the field</span
      >, how they grow: they neither toil nor spin, 29 yet I tell you, even
      Solomon in all his glory was not arrayed like one of these. 30 But if God
      so clothes the grass of the field, which today is alive and tomorrow is
@@ -56,7 +56,7 @@ import InstagramFeed from "~/components/InstagramFeed.vue";
   </div>
 
   <div class="content-section flex flex-col-reverse md:block md:flex-row">
-   <div class="flex-1 bg-black text-white">
+   <div class="flex-1 bg-forest-800 text-white">
     <div class="p-8">
      <h2>Portraits</h2>
      <p>

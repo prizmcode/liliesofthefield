@@ -7,8 +7,9 @@ const appConfig = useAppConfig();
 const img = useImage();
 const runtimeConfig = useRuntimeConfig();
 const colorMode = useColorMode();
+// Footer is forest green in both color modes, so always use the light-on-dark logo
 const logoUrl = computed(() => {
-  const source = colorMode.value === 'dark' && appConfig.darkLogoUrl ? appConfig.darkLogoUrl : appConfig.logoUrl;
+  const source = appConfig.darkLogoUrl || appConfig.logoUrl;
   return `${runtimeConfig.app.baseURL}${source}`.replace(/\/+/g, '/');
 });
 const faviconUrl = '/liliesofthefield.webp';
@@ -20,7 +21,7 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
 </script>
 
 <template>
-  <footer class="bg-stone-50 dark:bg-gray-800 order-last">
+  <footer class="bg-forest-900 text-white order-last">
     <div class="container flex flex-wrap lg:flex-nowrap justify-between gap-2 mt-12 mb-24 md:gap-3">
       <div class="mr-auto px-4">
         <div class="max-w-[400px] mx-auto">
@@ -39,8 +40,8 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
         </div>
       </div>
       <div class="w-[45%] lg:w-auto mb-10 px-4">
-        <div class="mb-1 font-semibold text-gray-900 dark:text-white">{{ $t('general.information') }}</div>
-        <div class="text-sm text-gray-700 dark:text-gray-300">
+        <div class="mb-1 font-semibold text-white">{{ $t('general.information') }}</div>
+        <div class="text-sm text-white">
           <ClientOnly>
             <NuxtLink to="/about" class="py-1.5 block">{{ $t('general.about') }}</NuxtLink>
             <template #fallback>
@@ -56,8 +57,8 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
         </div>
       </div>
       <div class="w-[45%] lg:w-auto mb-10 px-4">
-        <div class="mb-1 font-semibold text-gray-900 dark:text-white">{{ $t('general.products') }}</div>
-        <div class="text-sm text-gray-700 dark:text-gray-300">
+        <div class="mb-1 font-semibold text-white">{{ $t('general.products') }}</div>
+        <div class="text-sm text-white">
           <ClientOnly>
             <NuxtLink
               v-for="category in productCategories"
@@ -80,8 +81,8 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
         </div>
       </div>
       <div class="w-[45%] lg:w-auto px-4">
-        <div class="mb-1 font-semibold text-gray-900 dark:text-white">{{ $t('general.customerService') }}</div>
-        <div class="text-sm text-gray-700 dark:text-gray-300">
+        <div class="mb-1 font-semibold text-white">{{ $t('general.customerService') }}</div>
+        <div class="text-sm text-white">
           <ClientOnly>
             <NuxtLink to="/contact" class="py-1.5 block">{{ $t('general.contactUs') }}</NuxtLink>
             <template #fallback>
@@ -94,8 +95,8 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
         </div>
       </div>
       <div class="w-[45%] lg:w-auto px-4">
-        <div class="mb-1 font-semibold text-gray-900 dark:text-white">{{ $t('account.myAccount') }}</div>
-        <div class="text-sm text-gray-700 dark:text-gray-300">
+        <div class="mb-1 font-semibold text-white">{{ $t('account.myAccount') }}</div>
+        <div class="text-sm text-white">
           <ClientOnly>
             <NuxtLink to="/my-account/" class="py-1.5 block">{{ $t('account.myAccount') }}</NuxtLink>
             <template #fallback>
@@ -118,14 +119,14 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
         </div>
       </div>
     </div>
-    <div class="bg-amber-900 text-center p-4 text-amber-300 uppercase text-xs">
-      10% of all proceeds donated to <a href="https://www.atlasfree.org/" class="text-white!">Atlas Free</a>
+    <div class="bg-gold-800 text-center p-4 text-white uppercase text-xs">
+      10% of all proceeds donated to <a href="https://www.atlasfree.org/" class="text-white! font-semibold">Atlas Free</a>
     </div>
     <!-- plug ;) -->
-    <section class="bg-amber-50 dark:bg-gray-900 py-2">
-      <div class="container dark:border-gray-700 flex items-center justify-center mb-8">
+    <section class="bg-forest-950 py-2">
+      <div class="container border-forest-700 flex items-center justify-center mb-8">
         <div class="copywrite">
-          <p class="py-4 text-xs text-center text-gray-400 dark:text-gray-400">
+          <p class="py-4 text-xs text-center text-white">
             Lilies of the Field is a DBA of <a href="https://prizmstudio.com" title="Prizm Studio">Prizm Studio, LLC.</a> &copy;
             {{ new Date().getFullYear() }} | Website Design & Development by
             <a href="https://prizmstudio.com" title="Prizm Studio">Prizm Studio</a>

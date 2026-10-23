@@ -32,11 +32,14 @@ useHead({
 
 <template>
   <main>
+    <div class="container mt-6 md:mt-12">
+      <h1>{{ $t('general.products') }}</h1>
+    </div>
     <div class="container flex items-start gap-16 products" v-if="hasProducts">
       <Filters v-if="storeSettings.showFilters" />
 
       <div class="w-full">
-        <div class="flex items-center justify-between w-full gap-4 mt-8 md:gap-8">
+        <div class="flex items-center justify-between w-full gap-4 md:gap-8">
           <ProductResultCount />
           <OrderByDropdown class="hidden md:inline-flex" v-if="storeSettings.showOrderByDropdown" />
           <ShowFilterTrigger v-if="storeSettings.showFilters" class="md:hidden" />

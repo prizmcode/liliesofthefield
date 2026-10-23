@@ -50,7 +50,7 @@ const linkTitle = computed<string>(() => viewer.value?.username || 'Sign In');
 
 .avatar {
   .account-dropdown {
-    @apply absolute gap-1 top-6 -right-2 z-50 p-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg dark:shadow-gray-900/50 text-sm text-gray-700 dark:text-gray-300 hidden;
+    @apply absolute gap-1 top-6 -right-2 z-50 p-1 bg-white dark:bg-forest-800 border border-gray-200 dark:border-forest-700 rounded-lg shadow-lg dark:shadow-forest-900/50 text-sm text-gray-700 dark:text-forest-300 hidden;
 
     a,
     button {
@@ -58,7 +58,7 @@ const linkTitle = computed<string>(() => viewer.value?.username || 'Sign In');
     }
 
     a:hover {
-      @apply bg-gray-100 dark:bg-gray-700;
+      @apply bg-gray-100 dark:bg-forest-700;
     }
 
     button {

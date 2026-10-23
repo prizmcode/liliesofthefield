@@ -93,7 +93,7 @@ const numberSrc = (pageNumber: number) => {
 .prev,
 .next,
 .page-number {
-  @apply bg-white dark:bg-gray-800 border font-medium border-gray-300 dark:border-gray-600 text-sm p-2 text-gray-500 dark:text-gray-400 relative inline-flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-10;
+  @apply bg-white dark:bg-forest-800 border font-medium border-gray-300 dark:border-forest-600 text-sm p-2 text-gray-500 dark:text-forest-400 relative inline-flex items-center hover:bg-gray-50 dark:hover:bg-forest-700 focus:z-10;
 }
 
 .prev {
