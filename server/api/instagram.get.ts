@@ -10,8 +10,7 @@ interface IGMedia {
 
 export default defineCachedEventHandler(
  async () => {
-  const config = useRuntimeConfig();
-  const token = config.instagramAccessToken;
+  const token = await getInstagramToken();
 
   if (!token) {
    return { media: [] as IGMedia[] };
