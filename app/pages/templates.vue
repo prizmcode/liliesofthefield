@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import type { AddToCartInput } from "#types/gql";
-import { GOOGLE_FONTS, registerGuideFont } from "#shared/utils/guideFonts";
+import {
+ DEFAULT_GUIDE_FONT,
+ GOOGLE_FONTS,
+ GUIDE_FONT_OPTIONS,
+ registerGuideFont,
+} from "#shared/utils/guideFonts";
 import {
  AccordionContent,
  AccordionHeader,
@@ -70,9 +75,10 @@ const ruleLineColors = computed(() =>
 // offered — add, remove, or swap fonts there, not here.
 const showGuideText = ref(true);
 const guideText = ref("");
-const guideFontId = ref(GOOGLE_FONTS[0]!.id);
+const guideFontId = ref(DEFAULT_GUIDE_FONT.id);
 const guideFont = computed(
- () => GOOGLE_FONTS.find((f) => f.id === guideFontId.value) ?? GOOGLE_FONTS[0]!,
+ () =>
+  GOOGLE_FONTS.find((f) => f.id === guideFontId.value) ?? DEFAULT_GUIDE_FONT,
 );
 // Picking a font from the dropdown also applies its suggested slant angle —
 // deliberately a plain function tied to the dropdown's change event rather
@@ -1223,9 +1229,15 @@ async function buyCleanTemplate(includePng = false) {
            @change="selectGuideFont(($event.target as HTMLSelectElement).value)"
            class="w-full px-3 py-2 text-sm border border-gray-400 rounded-lg dark:bg-forest-700 dark:border-forest-600"
           >
-           <option v-for="f in GOOGLE_FONTS" :key="f.id" :value="f.id">
-            {{ f.label }}
-           </option>
+           <optgroup
+            v-for="option in GUIDE_FONT_OPTIONS"
+            :key="option.group"
+            :label="option.group"
+           >
+            <option v-for="f in option.fonts" :key="f.id" :value="f.id">
+             {{ f.label }}
+            </option>
+           </optgroup>
           </select>
          </div>
          <div>

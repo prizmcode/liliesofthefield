@@ -24,36 +24,19 @@ export type GuideFont = {
  // xHeightRatio. Applied when the guide font is picked from the dropdown;
  // the slant slider can still be adjusted afterward.
  defaultSlantAngle: number;
+ // Which heading the font is listed under in the guide font dropdown.
+ group: GuideFontGroup;
 };
 
+export const GUIDE_FONT_GROUPS = [
+ "Pointed Pen",
+ "Italic",
+ "Blackletter",
+ "Uncial",
+] as const;
+export type GuideFontGroup = (typeof GUIDE_FONT_GROUPS)[number];
+
 export const GOOGLE_FONTS: GuideFont[] = [
- {
-  id: "great-vibes",
-  label: "Great Vibes",
-  family: "Great Vibes",
-  googleFamilyParam: "Great+Vibes",
-  ttfFile: "/fonts/GreatVibes-Regular.ttf",
-  xHeightRatio: 0.328,
-  defaultSlantAngle: 25,
- },
- {
-  id: "sacramento",
-  label: "Sacramento",
-  family: "Sacramento",
-  googleFamilyParam: "Sacramento",
-  ttfFile: "/fonts/Sacramento-Regular.ttf",
-  xHeightRatio: 0.306,
-  defaultSlantAngle: 0,
- },
- {
-  id: "parisienne",
-  label: "Parisienne",
-  family: "Parisienne",
-  googleFamilyParam: "Parisienne",
-  ttfFile: "/fonts/Parisienne-Regular.ttf",
-  xHeightRatio: 0.353,
-  defaultSlantAngle: 30,
- },
  {
   id: "pinyon-script",
   label: "Pinyon Script",
@@ -62,24 +45,17 @@ export const GOOGLE_FONTS: GuideFont[] = [
   ttfFile: "/fonts/PinyonScript-Regular.ttf",
   xHeightRatio: 0.371,
   defaultSlantAngle: 34,
+  group: "Pointed Pen",
  },
  {
-  id: "unifraktur-maguntia",
-  label: "UnifrakturMaguntia",
-  family: "UnifrakturMaguntia",
-  googleFamilyParam: "UnifrakturMaguntia",
-  ttfFile: "/fonts/UnifrakturMaguntia-Book.ttf",
-  xHeightRatio: 0.535,
-  defaultSlantAngle: 0,
- },
- {
-  id: "monsieur-la-doulaise",
-  label: "Monsieur La Doulaise",
-  family: "Monsieur La Doulaise",
-  googleFamilyParam: "Monsieur+La+Doulaise",
-  ttfFile: "/fonts/MonsieurLaDoulaise-Regular.ttf",
-  xHeightRatio: 0.164,
-  defaultSlantAngle: 45,
+  id: "petit-formal-script",
+  label: "Petit Formal Script",
+  family: "Petit Formal Script",
+  googleFamilyParam: "Petit+Formal+Script",
+  ttfFile: "/fonts/PetitFormalScript-Regular.ttf",
+  xHeightRatio: 0.579,
+  defaultSlantAngle: 12,
+  group: "Pointed Pen",
  },
  {
   id: "ballet",
@@ -89,6 +65,69 @@ export const GOOGLE_FONTS: GuideFont[] = [
   ttfFile: "/fonts/Ballet-Regular.ttf",
   xHeightRatio: 0.339,
   defaultSlantAngle: 42,
+  group: "Pointed Pen",
+ },
+ {
+  id: "monsieur-la-doulaise",
+  label: "Monsieur La Doulaise",
+  family: "Monsieur La Doulaise",
+  googleFamilyParam: "Monsieur+La+Doulaise",
+  ttfFile: "/fonts/MonsieurLaDoulaise-Regular.ttf",
+  xHeightRatio: 0.164,
+  defaultSlantAngle: 45,
+  group: "Pointed Pen",
+ },
+ {
+  id: "tangerine",
+  label: "Tangerine",
+  family: "Tangerine",
+  googleFamilyParam: "Tangerine",
+  ttfFile: "/fonts/Tangerine-Regular.ttf",
+  xHeightRatio: 0.255,
+  defaultSlantAngle: 23,
+  group: "Italic",
+ },
+ {
+  id: "unifraktur-maguntia",
+  label: "UnifrakturMaguntia",
+  family: "UnifrakturMaguntia",
+  googleFamilyParam: "UnifrakturMaguntia",
+  ttfFile: "/fonts/UnifrakturMaguntia-Book.ttf",
+  xHeightRatio: 0.535,
+  defaultSlantAngle: 0,
+  group: "Blackletter",
+ },
+ {
+  id: "unifraktur-cook",
+  label: "UnifrakturCook",
+  family: "UnifrakturCook",
+  googleFamilyParam: "UnifrakturCook:wght@700",
+  ttfFile: "/fonts/UnifrakturCook-Bold.ttf",
+  // This font's OS/2.sxHeight (0.156) is wrong, so this is the measured
+  // height of its lowercase x glyph instead. It only ships in bold.
+  xHeightRatio: 0.527,
+  defaultSlantAngle: 0,
+  group: "Blackletter",
+ },
+ {
+  id: "texturina",
+  label: "Texturina",
+  family: "Texturina",
+  googleFamilyParam: "Texturina",
+  ttfFile: "/fonts/Texturina-Regular.ttf",
+  xHeightRatio: 0.5,
+  defaultSlantAngle: 0,
+  group: "Blackletter",
+ },
+ {
+  id: "grenze-gotisch",
+  label: "Grenze Gotisch",
+  family: "Grenze Gotisch",
+  googleFamilyParam: "Grenze+Gotisch",
+  ttfFile: "/fonts/GrenzeGotisch-Regular.ttf",
+  xHeightRatio: 0.448,
+  defaultSlantAngle: 0,
+  group: "Blackletter",
  },
  {
   id: "pirata-one",
@@ -98,8 +137,28 @@ export const GOOGLE_FONTS: GuideFont[] = [
   ttfFile: "/fonts/PirataOne-Regular.ttf",
   xHeightRatio: 0.594,
   defaultSlantAngle: 0,
+  group: "Blackletter",
+ },
+ {
+  id: "uncial-antiqua",
+  label: "Uncial Antiqua",
+  family: "Uncial Antiqua",
+  googleFamilyParam: "Uncial+Antiqua",
+  ttfFile: "/fonts/UncialAntiqua-Regular.ttf",
+  xHeightRatio: 0.527,
+  defaultSlantAngle: 0,
+  group: "Uncial",
  },
 ];
+
+/** Fonts offered in the dropdown, in display order, keyed by group. */
+export const GUIDE_FONT_OPTIONS = GUIDE_FONT_GROUPS.map((group) => ({
+ group,
+ fonts: GOOGLE_FONTS.filter((f) => f.group === group),
+}));
+
+/** The font a new design starts with. */
+export const DEFAULT_GUIDE_FONT = GUIDE_FONT_OPTIONS[0]!.fonts[0]!;
 
 // Matches a saved guide-text SVG element's `font-family` attribute (e.g.
 // `"'Monsieur La Doulaise', cursive"`) back to its GuideFont entry, the same
