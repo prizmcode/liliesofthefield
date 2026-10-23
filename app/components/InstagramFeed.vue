@@ -27,7 +27,7 @@ function captionPreview(c?: string) {
 </script>
 
 <template>
- <section class="instagram-feed bg-amber-900 text-white">
+ <section class="instagram-feed bg-gold-800 text-white">
   <section
    v-if="pending || data?.media?.length"
    class="container mt-8 mb-16 md:mt-16 md:mb-24"
@@ -40,7 +40,7 @@ function captionPreview(c?: string) {
      href="https://www.instagram.com/liliesofthefield.co"
      target="_blank"
      rel="noopener noreferrer"
-     class="mt-1 inline-block text-sm text-amber-300 hover:text-amber-100 ease-in-out"
+     class="mt-1 inline-block text-sm text-gold-100 hover:text-white ease-in-out"
     >
      @liliesofthefield.co
     </a>
@@ -50,7 +50,7 @@ function captionPreview(c?: string) {
      <div
       v-for="i in 12"
       :key="`skel-${i}`"
-      class="aspect-square bg-gray-100 animate-pulse rounded"
+      class="aspect-square bg-gold-700 animate-pulse rounded"
      />
     </template>
 

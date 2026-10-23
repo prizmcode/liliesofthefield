@@ -119,7 +119,7 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
         </div>
       </div>
     </div>
-    <div class="bg-gold-800 text-center p-4 text-white uppercase text-xs">
+    <div class="bg-gold-950 text-center p-4 text-white uppercase text-xs">
       10% of all proceeds donated to <a href="https://www.atlasfree.org/" class="text-white! font-semibold">Atlas Free</a>
     </div>
     <!-- plug ;) -->
