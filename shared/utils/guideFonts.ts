@@ -26,6 +26,10 @@ export type GuideFont = {
  defaultSlantAngle: number;
  // Which heading the font is listed under in the guide font dropdown.
  group: GuideFontGroup;
+ // Set for a font that is the italic style of its family (e.g. Playfair
+ // Display Italic), so the SVG text, canvas measuring, and PDF/PNG embedding
+ // all ask for that style rather than the family's upright one.
+ style?: "italic";
 };
 
 export const GUIDE_FONT_GROUPS = [
@@ -86,6 +90,18 @@ export const GOOGLE_FONTS: GuideFont[] = [
   xHeightRatio: 0.255,
   defaultSlantAngle: 23,
   group: "Italic",
+ },
+ {
+  id: "playfair-display-italic",
+  label: "Playfair Display Italic",
+  family: "Playfair Display",
+  googleFamilyParam: "Playfair+Display:ital@1",
+  ttfFile: "/fonts/PlayfairDisplay-Italic.ttf",
+  xHeightRatio: 0.514,
+  // The font's own post.italicAngle
+  defaultSlantAngle: 14,
+  group: "Italic",
+  style: "italic",
  },
  {
   id: "unifraktur-maguntia",
@@ -192,7 +208,7 @@ export async function registerGuideFont(
  }
  const vfsName = font.ttfFile.split("/").pop()!;
  pdf.addFileToVFS(vfsName, btoa(binary));
- pdf.addFont(vfsName, font.family, "normal");
+ pdf.addFont(vfsName, font.family, font.style ?? "normal");
 }
 
 // svg2pdf positions text (e.g. resolving `text-anchor="middle"`) using the
@@ -225,6 +241,6 @@ export async function ensureGuideFontLoaded(font: GuideFont): Promise<void> {
   link!.addEventListener("load", () => resolve(), { once: true });
   link!.addEventListener("error", () => resolve(), { once: true });
  });
- await document.fonts.load(`16px "${font.family}"`);
+ await document.fonts.load(`${font.style ?? "normal"} 16px "${font.family}"`);
  await document.fonts.ready;
 }

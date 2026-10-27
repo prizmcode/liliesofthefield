@@ -191,7 +191,11 @@ export async function renderTemplateFile(
     guideFontBuffer = Buffer.from(await fontRes.arrayBuffer());
     const vfsName = matchedGuideFont.ttfFile.split("/").pop()!;
     pdf.addFileToVFS(vfsName, guideFontBuffer.toString("base64"));
-    pdf.addFont(vfsName, matchedGuideFont.family, "normal");
+    pdf.addFont(
+     vfsName,
+     matchedGuideFont.family,
+     matchedGuideFont.style ?? "normal",
+    );
    } else {
     console.error(
      "[renderTemplateFile] failed to fetch guide font (attempt 2):",

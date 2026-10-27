@@ -3,7 +3,6 @@ import type { AddToCartInput } from "#types/gql";
 import {
  DEFAULT_GUIDE_FONT,
  GOOGLE_FONTS,
- GUIDE_FONT_OPTIONS,
  registerGuideFont,
 } from "#shared/utils/guideFonts";
 import {
@@ -339,7 +338,7 @@ const guideTextLines = computed(() => {
 
  const ctx = getMeasureCtx();
  if (ctx)
-  ctx.font = `${guideFontSize.value}px '${guideFont.value.family}', cursive`;
+  ctx.font = `${guideFont.value.style ?? "normal"} ${guideFontSize.value}px '${guideFont.value.family}', cursive`;
  const measure = ctx ? (s: string) => ctx.measureText(s).width : null;
 
  // Each manual line break still starts a new ruled line, but a paragraph
@@ -1224,21 +1223,11 @@ async function buyCleanTemplate(includePng = false) {
          </div>
          <div>
           <label class="block mb-1 text-sm font-medium">Guide font</label>
-          <select
-           :value="guideFontId"
-           @change="selectGuideFont(($event.target as HTMLSelectElement).value)"
-           class="w-full px-3 py-2 text-sm border border-gray-400 rounded-lg dark:bg-forest-700 dark:border-forest-600"
-          >
-           <optgroup
-            v-for="option in GUIDE_FONT_OPTIONS"
-            :key="option.group"
-            :label="option.group"
-           >
-            <option v-for="f in option.fonts" :key="f.id" :value="f.id">
-             {{ f.label }}
-            </option>
-           </optgroup>
-          </select>
+          <GuideFontPicker
+           :model-value="guideFontId"
+           :sample-text="guideText"
+           @update:model-value="selectGuideFont"
+          />
          </div>
          <div>
           <label class="block mb-1 text-sm font-medium">Text alignment</label>
@@ -1611,6 +1600,7 @@ async function buyCleanTemplate(includePng = false) {
          :y="line.y"
          :text-anchor="guideTextAnchor"
          :font-family="guideFontFamilyCss"
+         :font-style="guideFont.style"
          :font-size="guideFontSize"
          fill="#6b7280"
          :opacity="guideTextOpacity / 100"
