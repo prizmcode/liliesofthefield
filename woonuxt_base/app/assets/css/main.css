@@ -60,18 +60,18 @@ nav {
 }
 
 .display {
-  @apply font-display text-xl;
+  @apply font-display italic text-xl;
 }
 h1 {
-  @apply text-4xl md:text-6xl font-display text-center md:text-left;
+  @apply text-4xl md:text-6xl font-display italic text-center md:text-left;
 }
 
 h2 {
-  @apply text-3xl font-display md:text-4xl;
+  @apply text-3xl font-display italic md:text-4xl;
 }
 .products h1,
 .products h2 {
-  @apply text-base font-sans py-0;
+  @apply text-base font-sans not-italic py-0;
 }
 header a {
   @apply text-primary no-underline dark:text-amber-100;

@@ -118,7 +118,7 @@ const lastUpdated = "October 22, 2026";
  @apply text-2xl md:text-3xl text-gray-900 dark:text-white pt-8 pb-2;
 }
 .policy h3 {
- @apply text-lg font-display text-gray-900 dark:text-white pt-4 pb-1;
+ @apply text-lg font-display italic text-gray-900 dark:text-white pt-4 pb-1;
 }
 .policy p {
  @apply py-2;

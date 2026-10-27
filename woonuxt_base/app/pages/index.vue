@@ -67,7 +67,7 @@ useSeoMeta({
 
     <section class="container mt-8 md:mt-16 mb-24 products" v-if="popularProducts">
       <div class="flex items-end justify-between">
-        <h2 class="text-3xl! font-display! md:text-4xl! dark:text-white">{{ $t('shop.popularProducts') }}</h2>
+        <h2 class="text-3xl! font-display! italic! md:text-4xl! dark:text-white">{{ $t('shop.popularProducts') }}</h2>
         <NuxtLink class="font-medium text-primary-dark dark:text-primary" to="/products">{{ $t('general.viewAll') }}</NuxtLink>
       </div>
       <ProductRow :products="popularProducts" class="grid-cols-2 md:grid-cols-4 lg:grid-cols-5 mt-8 gap-2" />
