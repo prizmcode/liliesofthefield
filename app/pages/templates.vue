@@ -72,7 +72,8 @@ const ruleLineColors = computed(() =>
 // GOOGLE_FONTS / GuideFont come from shared/utils/guideFonts.ts (auto-imported)
 // so the client page and the server PDF endpoint stay in sync on what's
 // offered — add, remove, or swap fonts there, not here.
-const showGuideText = ref(true);
+// Set only while exporting a file that should leave the guide text out.
+const hidingGuideTextForExport = ref(false);
 const guideText = ref("");
 const guideFontId = ref(DEFAULT_GUIDE_FONT.id);
 const guideFont = computed(
@@ -92,8 +93,11 @@ const guideFontFamilyCss = computed(
  () => `'${guideFont.value.family}', cursive`,
 );
 const guideTextAlign = ref<"left" | "center" | "right">("left");
-const printGuideText = ref(false);
-const includeGuideTextInDownload = ref(false);
+// Guide text prints and downloads with the sheet unless the customer marks it
+// as an on-screen layout aid only.
+const guideTextPreviewOnly = ref(false);
+const printGuideText = computed(() => !guideTextPreviewOnly.value);
+const includeGuideTextInDownload = computed(() => !guideTextPreviewOnly.value);
 const guideTextOpacity = ref(50);
 const guideTextX = computed(() => {
  if (guideTextAlign.value === "center")
@@ -333,7 +337,7 @@ function wrapWords(
 // available. Positioned at the bottom of the x-height band (`baseline`),
 // where the ruled baseline itself sits.
 const guideTextLines = computed(() => {
- if (!showGuideText.value || !guideText.value) return [];
+ if (hidingGuideTextForExport.value || !guideText.value) return [];
  fontsReadyTick.value;
 
  const ctx = getMeasureCtx();
@@ -548,7 +552,6 @@ function restoreFromQuery() {
  if (scheme === "black" || scheme === "red-blue") lineColorScheme.value = scheme;
 
  const str = (v: unknown) => (typeof v === "string" ? v : null);
- applyBool(showGuideText, parsed.showGuideText);
  const gt = str(parsed.guideText);
  if (gt !== null) guideText.value = gt;
  const fid = str(parsed.guideFontId);
@@ -557,8 +560,7 @@ function restoreFromQuery() {
  const align = parsed.guideTextAlign;
  if (align === "left" || align === "center" || align === "right")
   guideTextAlign.value = align;
- applyBool(printGuideText, parsed.printGuideText);
- applyBool(includeGuideTextInDownload, parsed.includeGuideTextInDownload);
+ applyBool(guideTextPreviewOnly, parsed.guideTextPreviewOnly);
  apply(guideTextOpacity, parsed.guideTextOpacity);
 }
 
@@ -638,10 +640,10 @@ async function handleDownloadPdf() {
  // wants it included.
  const keepingGuideText =
   guideTextLines.value.length > 0 && includeGuideTextInDownload.value;
- const wasShowingGuide =
-  showGuideText.value && !includeGuideTextInDownload.value;
- if (wasShowingGuide) {
-  showGuideText.value = false;
+ const hidingGuide =
+  guideTextLines.value.length > 0 && !includeGuideTextInDownload.value;
+ if (hidingGuide) {
+  hidingGuideTextForExport.value = true;
   await nextTick();
  }
  try {
@@ -660,8 +662,8 @@ async function handleDownloadPdf() {
   pdf.save(buildFilename());
   hasDownloadedWatermarked.value = true;
  } finally {
-  if (wasShowingGuide) {
-   showGuideText.value = true;
+  if (hidingGuide) {
+   hidingGuideTextForExport.value = false;
    await nextTick();
   }
  }
@@ -697,12 +699,10 @@ function currentSettings() {
   slantSpacing: slantSpacing.value,
   showCenterLine: showCenterLine.value,
   lineColorScheme: lineColorScheme.value,
-  showGuideText: showGuideText.value,
   guideText: guideText.value,
   guideFontId: guideFontId.value,
   guideTextAlign: guideTextAlign.value,
-  printGuideText: printGuideText.value,
-  includeGuideTextInDownload: includeGuideTextInDownload.value,
+  guideTextPreviewOnly: guideTextPreviewOnly.value,
   guideTextOpacity: guideTextOpacity.value,
  };
 }
@@ -867,95 +867,6 @@ async function buyCleanTemplate(includePng = false) {
      </AccordionItem>
 
      <AccordionItem
-      value="page-setup"
-      class="group border border-gray-200 dark:border-forest-600 rounded-lg overflow-hidden"
-     >
-      <AccordionHeader class="py-0!">
-       <AccordionTrigger
-        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer text-forest-900 bg-stone-200 hover:bg-stone-300"
-       >
-        <span>Page Setup</span>
-        <Icon
-         name="ion:chevron-down"
-         size="18"
-         class="shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
-        />
-       </AccordionTrigger>
-      </AccordionHeader>
-      <AccordionContent
-       class="accordion-content overflow-hidden bg-white dark:bg-forest-800"
-      >
-       <div class="space-y-4 px-4 pt-3 pb-4">
-        <div>
-         <p class="text-sm font-medium mb-2">Orientation</p>
-         <div class="grid grid-cols-2 gap-2">
-          <button
-           type="button"
-           @click="orientation = 'portrait'"
-           :class="[
-            'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
-            orientation === 'portrait'
-             ? 'bg-forest-900 text-white border-forest-900'
-             : 'border-gray-400 dark:border-forest-600 hover:bg-gray-100 dark:hover:bg-forest-700',
-           ]"
-          >
-           Portrait
-          </button>
-          <button
-           type="button"
-           @click="orientation = 'landscape'"
-           :class="[
-            'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
-            orientation === 'landscape'
-             ? 'bg-forest-900 text-white border-forest-900'
-             : 'border-gray-400 dark:border-forest-600 hover:bg-gray-100 dark:hover:bg-forest-700',
-           ]"
-          >
-           Landscape
-          </button>
-         </div>
-        </div>
-
-        <div class="space-y-3">
-         <label
-          class="flex items-center gap-2 text-sm font-medium cursor-pointer"
-         >
-          <span>Number of lines</span>
-          <input v-model="autoFill" type="checkbox" />
-          <span>Auto-fill page</span>
-         </label>
-         <div v-if="!autoFill">
-          <label class="flex justify-between text-sm font-medium">
-           <span class="text-gray-500">{{ numLines }} / {{ maxLines }}</span>
-          </label>
-          <input
-           v-model.number="numLines"
-           type="range"
-           min="1"
-           :max="maxLines"
-           step="1"
-          />
-         </div>
-        </div>
-
-        <div>
-         <label class="flex justify-between text-sm font-medium">
-          <span>Page margin</span>
-          <span class="text-gray-500">{{ margin }} mm</span>
-         </label>
-         <input
-          v-model.number="margin"
-          type="range"
-          min="5"
-          max="80"
-          step="0.5"
-         />
-        </div>
-       </div>
-      </AccordionContent>
-     </AccordionItem>
-
-     <AccordionItem
       value="lettering"
       class="group border border-gray-200 dark:border-forest-600 rounded-lg overflow-hidden"
      >
@@ -1102,6 +1013,205 @@ async function buyCleanTemplate(includePng = false) {
      </AccordionItem>
 
      <AccordionItem
+      value="guide-text"
+      class="group border border-gray-200 dark:border-forest-600 rounded-lg overflow-hidden"
+     >
+      <AccordionHeader class="py-0!">
+       <AccordionTrigger
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer text-forest-900 bg-stone-200 hover:bg-stone-300"
+       >
+        <span>Guide Text</span>
+        <Icon
+         name="ion:chevron-down"
+         size="18"
+         class="shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+        />
+       </AccordionTrigger>
+      </AccordionHeader>
+      <AccordionContent
+       class="accordion-content overflow-hidden bg-white dark:bg-forest-800"
+      >
+       <div class="space-y-3 px-4 pt-3 pb-4">
+        <div>
+         <label class="block mb-1 text-sm font-medium">Guide text</label>
+         <textarea
+          v-model="guideText"
+          rows="4"
+          placeholder="Type your wording, one line per ruled line…"
+          class="w-full px-3 py-2 text-sm border border-gray-400 rounded-lg dark:bg-forest-700 dark:border-forest-600"
+         />
+         <p class="mt-1 text-xs text-gray-500">
+          Each line break lands on the next ruled line. It prints and
+          downloads with your sheet at the opacity below — check “Preview
+          only” to keep it ONLY on screen as a layout guide.
+         </p>
+        </div>
+        <div>
+         <label class="block mb-1 text-sm font-medium">Guide font</label>
+         <GuideFontPicker
+          :model-value="guideFontId"
+          :sample-text="guideText"
+          @update:model-value="selectGuideFont"
+         />
+        </div>
+        <div>
+         <label class="block mb-1 text-sm font-medium">Text alignment</label>
+         <div class="grid grid-cols-3 gap-2">
+          <button
+           type="button"
+           @click="guideTextAlign = 'left'"
+           :class="[
+            'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+            guideTextAlign === 'left'
+             ? 'bg-forest-900 text-white border-forest-900'
+             : 'border-gray-400 dark:border-forest-600 hover:bg-gray-100 dark:hover:bg-forest-700',
+           ]"
+          >
+           Left
+          </button>
+          <button
+           type="button"
+           @click="guideTextAlign = 'center'"
+           :class="[
+            'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+            guideTextAlign === 'center'
+             ? 'bg-forest-900 text-white border-forest-900'
+             : 'border-gray-400 dark:border-forest-600 hover:bg-gray-100 dark:hover:bg-forest-700',
+           ]"
+          >
+           Center
+          </button>
+          <button
+           type="button"
+           @click="guideTextAlign = 'right'"
+           :class="[
+            'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+            guideTextAlign === 'right'
+             ? 'bg-forest-900 text-white border-forest-900'
+             : 'border-gray-400 dark:border-forest-600 hover:bg-gray-100 dark:hover:bg-forest-700',
+           ]"
+          >
+           Right
+          </button>
+         </div>
+        </div>
+        <div>
+         <label class="flex justify-between text-sm font-medium">
+          <span>Guide text opacity</span>
+          <span class="text-gray-500">{{ guideTextOpacity }}%</span>
+         </label>
+         <input
+          v-model.number="guideTextOpacity"
+          type="range"
+          min="10"
+          max="100"
+          step="5"
+         />
+        </div>
+        <label
+         class="flex items-center gap-2 text-sm font-medium cursor-pointer"
+        >
+         <input
+          v-model="guideTextPreviewOnly"
+          type="checkbox"
+          class="accent-current"
+         />
+         <span>Preview only — don't print or download</span>
+        </label>
+       </div>
+      </AccordionContent>
+     </AccordionItem>
+
+     <AccordionItem
+      value="page-setup"
+      class="group border border-gray-200 dark:border-forest-600 rounded-lg overflow-hidden"
+     >
+      <AccordionHeader class="py-0!">
+       <AccordionTrigger
+        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer text-forest-900 bg-stone-200 hover:bg-stone-300"
+       >
+        <span>Page Setup</span>
+        <Icon
+         name="ion:chevron-down"
+         size="18"
+         class="shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
+        />
+       </AccordionTrigger>
+      </AccordionHeader>
+      <AccordionContent
+       class="accordion-content overflow-hidden bg-white dark:bg-forest-800"
+      >
+       <div class="space-y-4 px-4 pt-3 pb-4">
+        <div>
+         <p class="text-sm font-medium mb-2">Orientation</p>
+         <div class="grid grid-cols-2 gap-2">
+          <button
+           type="button"
+           @click="orientation = 'portrait'"
+           :class="[
+            'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+            orientation === 'portrait'
+             ? 'bg-forest-900 text-white border-forest-900'
+             : 'border-gray-400 dark:border-forest-600 hover:bg-gray-100 dark:hover:bg-forest-700',
+           ]"
+          >
+           Portrait
+          </button>
+          <button
+           type="button"
+           @click="orientation = 'landscape'"
+           :class="[
+            'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
+            orientation === 'landscape'
+             ? 'bg-forest-900 text-white border-forest-900'
+             : 'border-gray-400 dark:border-forest-600 hover:bg-gray-100 dark:hover:bg-forest-700',
+           ]"
+          >
+           Landscape
+          </button>
+         </div>
+        </div>
+
+        <div class="space-y-3">
+         <label
+          class="flex items-center gap-2 text-sm font-medium cursor-pointer"
+         >
+          <span>Number of lines</span>
+          <input v-model="autoFill" type="checkbox" />
+          <span>Auto-fill page</span>
+         </label>
+         <div v-if="!autoFill">
+          <label class="flex justify-between text-sm font-medium">
+           <span class="text-gray-500">{{ numLines }} / {{ maxLines }}</span>
+          </label>
+          <input
+           v-model.number="numLines"
+           type="range"
+           min="1"
+           :max="maxLines"
+           step="1"
+          />
+         </div>
+        </div>
+
+        <div>
+         <label class="flex justify-between text-sm font-medium">
+          <span>Page margin</span>
+          <span class="text-gray-500">{{ margin }} mm</span>
+         </label>
+         <input
+          v-model.number="margin"
+          type="range"
+          min="5"
+          max="80"
+          step="0.5"
+         />
+        </div>
+       </div>
+      </AccordionContent>
+     </AccordionItem>
+
+     <AccordionItem
       value="display"
       class="group border border-gray-200 dark:border-forest-600 rounded-lg overflow-hidden"
      >
@@ -1172,138 +1282,6 @@ async function buyCleanTemplate(includePng = false) {
           x-height lines.
          </p>
         </div>
-       </div>
-      </AccordionContent>
-     </AccordionItem>
-
-     <AccordionItem
-      value="guide-text"
-      class="group border border-gray-200 dark:border-forest-600 rounded-lg overflow-hidden"
-     >
-      <AccordionHeader class="py-0!">
-       <AccordionTrigger
-        class="flex w-full items-center justify-between gap-4 px-4 py-1.5 text-left text-sm font-semibold cursor-pointer text-forest-900 bg-stone-200 hover:bg-stone-300"
-       >
-        <span>Guide Text</span>
-        <Icon
-         name="ion:chevron-down"
-         size="18"
-         class="shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180"
-        />
-       </AccordionTrigger>
-      </AccordionHeader>
-      <AccordionContent
-       class="accordion-content overflow-hidden bg-white dark:bg-forest-800"
-      >
-       <div class="space-y-3 px-4 pt-3 pb-4">
-        <label
-         class="flex items-center gap-2 text-sm font-medium cursor-pointer"
-        >
-         <input
-          v-model="showGuideText"
-          type="checkbox"
-          class="accent-current"
-         />
-         <span>Show guide text</span>
-        </label>
-        <template v-if="showGuideText">
-         <div>
-          <label class="block mb-1 text-sm font-medium">Guide text</label>
-          <textarea
-           v-model="guideText"
-           rows="4"
-           placeholder="Type your wording, one line per ruled line…"
-           class="w-full px-3 py-2 text-sm border border-gray-400 rounded-lg dark:bg-forest-700 dark:border-forest-600"
-          />
-          <p class="mt-1 text-xs text-gray-500">
-           Each line break lands on the next ruled line. Shown at 50% opacity as
-           a layout guide only — it's left out of your printed sheet and any
-           downloaded or purchased file unless you check the boxes below.
-          </p>
-         </div>
-         <div>
-          <label class="block mb-1 text-sm font-medium">Guide font</label>
-          <GuideFontPicker
-           :model-value="guideFontId"
-           :sample-text="guideText"
-           @update:model-value="selectGuideFont"
-          />
-         </div>
-         <div>
-          <label class="block mb-1 text-sm font-medium">Text alignment</label>
-          <div class="grid grid-cols-3 gap-2">
-           <button
-            type="button"
-            @click="guideTextAlign = 'left'"
-            :class="[
-             'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
-             guideTextAlign === 'left'
-              ? 'bg-forest-900 text-white border-forest-900'
-              : 'border-gray-400 dark:border-forest-600 hover:bg-gray-100 dark:hover:bg-forest-700',
-            ]"
-           >
-            Left
-           </button>
-           <button
-            type="button"
-            @click="guideTextAlign = 'center'"
-            :class="[
-             'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
-             guideTextAlign === 'center'
-              ? 'bg-forest-900 text-white border-forest-900'
-              : 'border-gray-400 dark:border-forest-600 hover:bg-gray-100 dark:hover:bg-forest-700',
-            ]"
-           >
-            Center
-           </button>
-           <button
-            type="button"
-            @click="guideTextAlign = 'right'"
-            :class="[
-             'px-3 py-1.5 text-sm border rounded-lg cursor-pointer',
-             guideTextAlign === 'right'
-              ? 'bg-forest-900 text-white border-forest-900'
-              : 'border-gray-400 dark:border-forest-600 hover:bg-gray-100 dark:hover:bg-forest-700',
-            ]"
-           >
-            Right
-           </button>
-          </div>
-         </div>
-         <div>
-          <label class="flex justify-between text-sm font-medium">
-           <span>Guide text opacity</span>
-           <span class="text-gray-500">{{ guideTextOpacity }}%</span>
-          </label>
-          <input
-           v-model.number="guideTextOpacity"
-           type="range"
-           min="10"
-           max="100"
-           step="5"
-          />
-         </div>
-         <label
-          class="flex items-center gap-2 text-sm font-medium cursor-pointer"
-         >
-          <input
-           v-model="printGuideText"
-           type="checkbox"
-           class="accent-current"
-          />
-          <span>Print guide text</span>
-         </label>
-         <label
-          class="flex items-center gap-2 text-sm font-medium cursor-pointer"
-         >
-          <input
-           v-model="includeGuideTextInDownload"
-           type="checkbox"
-           class="accent-current"
-          />
-          <span>Include guide text in download</span>
-         </label>
-        </template>
        </div>
       </AccordionContent>
      </AccordionItem>
@@ -1412,13 +1390,14 @@ async function buyCleanTemplate(includePng = false) {
    <div
     :class="[
      'calligraphy-print-area',
-     'lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-112px)] lg:min-w-0 lg:overflow-x-auto',
+     'lg:sticky lg:top-[88px] lg:self-start lg:h-[calc(100vh-112px)] lg:min-w-0',
      orientation === 'portrait'
       ? 'orientation-portrait'
       : 'orientation-landscape',
     ]"
+    :style="{ '--page-ratio': PAGE_W / PAGE_H }"
    >
-    <div class="preview-grid lg:h-full lg:w-fit lg:mx-auto">
+    <div class="preview-grid lg:w-fit lg:mx-auto">
      <div v-if="showRulers" class="ruler ruler-top no-print">
       <svg
        :viewBox="`0 0 ${PAGE_W} ${RULER_THICKNESS}`"
@@ -1475,7 +1454,7 @@ async function buyCleanTemplate(includePng = false) {
       ref="svgEl"
       :viewBox="`0 0 ${PAGE_W} ${PAGE_H}`"
       xmlns="http://www.w3.org/2000/svg"
-      class="paper w-full h-auto lg:w-auto lg:h-full bg-white border border-gray-300 shadow-sm"
+      class="paper w-full h-auto bg-white border border-gray-300 shadow-sm"
       :style="{ aspectRatio: `${PAGE_W} / ${PAGE_H}` }"
       preserveAspectRatio="none"
      >
@@ -1718,6 +1697,22 @@ input[type="range"] {
 .preview-grid {
  position: relative;
  padding: 22px;
+}
+
+/* On desktop the preview column is a fixed-height sticky panel. Size the
+   sheet to whichever limit it hits first, the column's width or its height
+   (less the 22px ruler gutter on each side), so landscape shrinks to fit
+   rather than scrolling sideways. */
+@media screen and (min-width: 1024px) {
+ .calligraphy-print-area {
+  container-type: size;
+ }
+ .paper {
+  width: min(
+   calc(100cqw - 44px),
+   calc((100cqh - 44px) * var(--page-ratio))
+  );
+ }
 }
 
 .ruler {

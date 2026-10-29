@@ -99,7 +99,7 @@ const customizations = computed(() => {
   push("Slant spacing", num(s.slantSpacing) !== null ? `${s.slantSpacing}mm` : null);
  }
  push("Center line", s.showCenterLine ? "On" : null);
- if (s.showGuideText && typeof s.guideText === "string" && s.guideText.trim()) {
+ if (typeof s.guideText === "string" && s.guideText.trim()) {
   const snippet = s.guideText.trim().replace(/\s+/g, " ").slice(0, 40);
   push("Guide text", snippet.length < s.guideText.trim().length ? `${snippet}…` : snippet);
   const font = GOOGLE_FONTS.find((f) => f.id === s.guideFontId);

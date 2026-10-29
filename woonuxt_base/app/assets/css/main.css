@@ -126,6 +126,7 @@ header a {
 
   /* Linen: warm neutral for the main content background */
   --color-linen: #f8f5ee;
+  --color-linen-light: #fcfaf6;
 }
 
 @variant dark (&:where(.dark, .dark *));

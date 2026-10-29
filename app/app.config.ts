@@ -4,10 +4,8 @@
  * Only specify the keys you want to change.
  */
 export default defineAppConfig({
- logoUrl: "/images/lilies-logo-colored.png",
+ logoUrl: "/images/lilies-logo.png",
  darkLogoUrl: "/images/lilies-logo-dark.png",
- // Navbar-only logo (footer keeps logoUrl)
- navLogoUrl: "/images/lilies-logo.jpg",
  //logoUrl: "/images/liliesofthefield.webp",
  storeSettings: {
   // Set to `true` to re-enable star ratings, the reviews tab, the rating filter,

@@ -74,7 +74,7 @@ useHead({
 
 html,
 body {
-  @apply bg-linen dark:bg-forest-700 text-gray-900 dark:text-forest-100;
+  @apply bg-linen-light dark:bg-forest-700 text-gray-900 dark:text-forest-100;
   scroll-behavior: smooth;
 }
 
