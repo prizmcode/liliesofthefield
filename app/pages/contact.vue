@@ -1,4 +1,11 @@
 <script setup lang="ts">
+// Submissions go to WordPress (prizm-contact mu-plugin in prizm-studio-wp-content),
+// which emails them through WP Mail SMTP.
+const config = useRuntimeConfig();
+const graphqlHost = (config.public["graphql-client"] as any).clients.default
+ .host as string;
+const contactEndpoint = `${graphqlHost.replace(/\/graphql\/?$/, "")}/wp-json/prizm/v1/contact`;
+
 const form = reactive({
  name: "",
  email: "",
@@ -25,16 +32,14 @@ const handleSubmit = async () => {
  errorMessage.value = "";
  isSubmitting.value = true;
  try {
-  await $fetch("/api/contact", {
+  await $fetch(contactEndpoint, {
    method: "POST",
-   body: { ...form },
+   body: { site: "lilies", ...form },
   });
   submitted.value = true;
  } catch (err: any) {
   errorMessage.value =
-   err?.statusMessage ||
-   err?.data?.statusMessage ||
-   "Something went wrong. Please try again.";
+   err?.data?.message || "Something went wrong. Please try again.";
  } finally {
   isSubmitting.value = false;
  }

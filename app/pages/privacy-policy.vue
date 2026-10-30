@@ -93,8 +93,8 @@ const lastUpdated = "October 22, 2026";
      sign-in with Google.
     </li>
     <li>
-     <strong>Twilio SendGrid</strong> delivers contact form messages and
-     confirmation emails.
+     <strong>Our email delivery provider</strong> delivers contact form
+     messages and confirmation emails.
     </li>
     <li>
      <strong>Shipping carriers</strong> receive your name and shipping address
