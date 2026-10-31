@@ -17,6 +17,7 @@ const form = reactive({
 const isSubmitting = ref(false);
 const submitted = ref(false);
 const errorMessage = ref("");
+const thankYou = ref<HTMLElement | null>(null);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -37,6 +38,11 @@ const handleSubmit = async () => {
    body: { site: "lilies", ...form },
   });
   submitted.value = true;
+  // The form collapses into the shorter thank-you message, which can leave
+  // mobile visitors looking at the footer, so bring the message into view.
+  await nextTick();
+  thankYou.value?.scrollIntoView({ behavior: "smooth", block: "start" });
+  thankYou.value?.focus({ preventScroll: true });
  } catch (err: any) {
   errorMessage.value =
    err?.data?.message || "Something went wrong. Please try again.";
@@ -61,7 +67,10 @@ useSeoMeta({
 
   <div
    v-if="submitted"
-   class="p-6 border border-green-200 bg-green-50 text-green-900 rounded-lg dark:bg-green-900/20 dark:border-green-700 dark:text-green-100 text-center"
+   ref="thankYou"
+   role="status"
+   tabindex="-1"
+   class="p-6 border border-forest-200 bg-forest-100 text-forest-900 rounded-lg scroll-mt-28 outline-none dark:bg-forest-800 dark:border-forest-600 dark:text-forest-50 text-center"
   >
    <h2 class="font-semibold mb-2 font-display text-6xl">Thank you!</h2>
    <p>
