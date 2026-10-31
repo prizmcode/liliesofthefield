@@ -1,4 +1,6 @@
-@import 'tailwindcss';
+/* Explicit file path: Vite 8 can't resolve the bare 'tailwindcss' import when
+   this file is pulled into component styles via @reference "#tailwind". */
+@import 'tailwindcss/index.css';
 
 /* Center container */
 .container {
