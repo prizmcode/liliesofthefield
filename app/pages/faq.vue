@@ -10,6 +10,7 @@ import {
 interface FaqItem {
  q: string;
  a: string;
+ points?: { label: string; text: string }[];
 }
 
 const faqs: FaqItem[] = [
@@ -32,6 +33,32 @@ const faqs: FaqItem[] = [
  {
   q: "How should I care for my original artwork?",
   a: "Keep pieces out of direct sunlight and away from high-humidity areas to preserve color and paper. For framed artwork, dust the glass with a soft, dry cloth — avoid spraying cleaners directly on the frame.",
+ },
+ {
+  q: "How should I print my digital art?",
+  a: "To get the best results from your digital scripture art, keep these recommendations in mind:",
+  points: [
+   {
+    label: "Paper",
+    text: "For wall art, heavy cardstock (80 lb / 110 lb, or 220 gsm and up) with a matte or textured linen finish looks best. If you're trimming edges or mounting the art in a custom frame, a sturdy heavyweight paper is highly recommended.",
+   },
+   {
+    label: "Color",
+    text: "Colors can vary slightly between screens and printers. For rich, deep blacks and precise lettering tones, choose \"High Quality\" or \"Fine Art\" in your printer settings.",
+   },
+   {
+    label: "Size and margins",
+    text: "Files are formatted with standard print margins. Set your printer scale to \"Actual Size\" or \"100%\" rather than \"Fit to Page\" to keep the intended layout.",
+   },
+  ],
+ },
+ {
+  q: "Can I share or sell prints of my digital files?",
+  a: "Your purchase includes a non-exclusive, personal-use license. You may print your file as many times as you like for your own home decor or to give as physical gifts to family and friends. You may not resell, share, or redistribute the digital files themselves, or use them to mass-produce products for commercial sale.",
+ },
+ {
+  q: "Which Bible translation do you use?",
+  a: "Unless otherwise noted, scripture quotations are from the ESV® Bible (The Holy Bible, English Standard Version®), © 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.",
  },
 ];
 
@@ -76,6 +103,15 @@ useSeoMeta({
      <p class="pb-5 pr-8 text-gray-600 dark:text-forest-300 leading-relaxed">
       {{ item.a }}
      </p>
+     <ul
+      v-if="item.points"
+      class="pb-5 pr-8 pl-5 list-disc space-y-2 text-gray-600 dark:text-forest-300 leading-relaxed"
+     >
+      <li v-for="point in item.points" :key="point.label">
+       <strong class="text-forest-900 dark:text-forest-100">{{ point.label }}:</strong>
+       {{ point.text }}
+      </li>
+     </ul>
     </AccordionContent>
    </AccordionItem>
   </AccordionRoot>

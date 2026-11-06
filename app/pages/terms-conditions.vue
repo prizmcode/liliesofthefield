@@ -5,7 +5,7 @@ useSeoMeta({
   "The terms that apply when you shop with or use the Lilies of the Field website.",
 });
 
-const lastUpdated = "October 22, 2026";
+const lastUpdated = "October 31, 2026";
 </script>
 
 <template>
@@ -52,14 +52,36 @@ const lastUpdated = "October 22, 2026";
     spelling carefully, because we work from the text you approve.
    </p>
 
-   <h2>Calligraphy templates</h2>
+   <h2>Digital downloads and license</h2>
    <p>
-    Templates from our template generator are digital downloads for your
-    personal use, such as practicing, tracing, or making a gift. You may not
-    resell, share, or redistribute the template files, or sell products made
-    with them, without our written permission. Free previews include a
-    watermark. Purchased templates can be downloaded again from your
-    account.
+    Digital files, including printable scripture art and templates from our
+    template generator, come with a non-exclusive, personal-use license.
+   </p>
+   <ul>
+    <li>
+     <strong>What's allowed:</strong> you may print your file as many times
+     as you like for your own home decor or practice, or to give as physical
+     gifts to family and friends.
+    </li>
+    <li>
+     <strong>What's restricted:</strong> you may not resell, share, or
+     redistribute the digital files themselves, or use them to mass-produce
+     products for commercial sale, without our written permission.
+    </li>
+   </ul>
+   <p>
+    Free template previews include a watermark. Purchased files can be
+    downloaded again from your account. For the best results, see our
+    <NuxtLink to="/faq">printing guidelines</NuxtLink>. Colors can vary
+    slightly between screens and printers.
+   </p>
+
+   <h2>Scripture attribution</h2>
+   <p>
+    Scripture text in our designs is handled with care and respect. Unless
+    otherwise noted, scripture quotations are from the ESV® Bible (The Holy
+    Bible, English Standard Version®), © 2001 by Crossway, a publishing
+    ministry of Good News Publishers. Used by permission. All rights reserved.
    </p>
 
    <h2>Shipping</h2>

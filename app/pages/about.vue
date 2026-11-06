@@ -15,7 +15,7 @@ import InstagramFeed from "~/components/InstagramFeed.vue";
    <section class="verse text-base">
     <p class="text-[#8b2a1a]">
      27 And which of you by being anxious can add a single hour to his span of
-     life?[a] 28 And why are you anxious about clothing? Consider the
+     life? 28 And why are you anxious about clothing? Consider the
      <span class="font-display font-semibold bg-amber-200">lilies of the field</span
      >, how they grow: they neither toil nor spin, 29 yet I tell you, even
      Solomon in all his glory was not arrayed like one of these. 30 But if God
@@ -23,7 +23,7 @@ import InstagramFeed from "~/components/InstagramFeed.vue";
      thrown into the oven, will he not much more clothe you, O you of little
      faith?
     </p>
-    <p class="font-black uppercase">Matthew 6:27-30</p>
+    <p class="font-black uppercase">Matthew 6:27–30 (ESV)</p>
    </section>
   </div>
  </div>

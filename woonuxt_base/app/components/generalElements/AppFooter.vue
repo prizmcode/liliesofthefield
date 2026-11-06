@@ -131,6 +131,10 @@ const productCategories = ((data.value?.productCategories?.nodes as ProductCateg
             {{ new Date().getFullYear() }} | Website Design & Development by
             <a href="https://prizmstudio.com" title="Prizm Studio">Prizm Studio</a>
           </p>
+          <p class="pb-4 text-[11px] text-center text-forest-300">
+            Scripture quotations are from the ESV® Bible (The Holy Bible, English Standard Version®), © 2001 by Crossway, a
+            publishing ministry of Good News Publishers. Used by permission. All rights reserved.
+          </p>
         </div>
         <SocialIcons class="ml-auto" />
       </div>
